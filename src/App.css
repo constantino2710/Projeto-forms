@@ -172,6 +172,15 @@
   color: hsl(var(--muted-foreground));
 }
 
+.ui-input[type='date']::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  filter: brightness(0);
+}
+
+.dark .ui-input[type='date']::-webkit-calendar-picker-indicator {
+  filter: brightness(0) invert(1);
+}
+
 .ui-textarea {
   width: 100%;
   border: 1px solid hsl(var(--input));
