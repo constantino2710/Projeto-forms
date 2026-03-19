@@ -1,11 +1,17 @@
 import { useEffect, useState } from 'react'
+import { FilePlus2, FolderKanban, History, LayoutList } from 'lucide-react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import './App.css'
 import { clearSessionToken, getStoredSessionToken, validateSession } from './auth/appAuth'
+import { DashboardLayout } from './components/layout/DashboardLayout'
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card'
-import { AdminPage } from './pages/AdminPage'
+import { AdminProjectDetailPage } from './pages/admin/AdminProjectDetailPage'
+import { AdminProjectHistoryPage } from './pages/admin/AdminProjectHistoryPage'
+import { AdminProjectsPage } from './pages/admin/AdminProjectsPage'
 import { LoginPage } from './pages/LoginPage'
-import { UserPage } from './pages/UserPage'
+import { UserProjectDetailPage } from './pages/user/UserProjectDetailPage'
+import { UserNewProjectPage } from './pages/user/UserNewProjectPage'
+import { UserProjectsPage } from './pages/user/UserProjectsPage'
 
 export type AuthRole = 'admin' | 'user'
 
@@ -87,9 +93,23 @@ function App() {
             ? <Navigate to="/login" replace />
             : session.role !== 'user'
               ? <Navigate to="/admin" replace />
-              : <UserPage session={session} onLogout={handleLogout} />
+              : (
+                <DashboardLayout
+                  session={session}
+                  onLogout={handleLogout}
+                  items={[
+                    { label: 'Meus Projetos', to: '/usuario/meus-projetos', icon: FolderKanban },
+                    { label: 'Novo Projeto', to: '/usuario/novo-projeto', icon: FilePlus2 },
+                  ]}
+                />
+              )
         }
-      />
+      >
+        <Route index element={<Navigate to="meus-projetos" replace />} />
+        <Route path="meus-projetos" element={<UserProjectsPage />} />
+        <Route path="meus-projetos/:projectId" element={<UserProjectDetailPage />} />
+        <Route path="novo-projeto" element={<UserNewProjectPage />} />
+      </Route>
       <Route
         path="/admin"
         element={
@@ -97,9 +117,23 @@ function App() {
             ? <Navigate to="/login" replace />
             : session.role !== 'admin'
               ? <Navigate to="/usuario" replace />
-              : <AdminPage session={session} onLogout={handleLogout} />
+              : (
+                <DashboardLayout
+                  session={session}
+                  onLogout={handleLogout}
+                  items={[
+                    { label: 'Projetos', to: '/admin/projetos', icon: LayoutList },
+                    { label: 'Historico', to: '/admin/historico', icon: History },
+                  ]}
+                />
+              )
         }
-      />
+      >
+        <Route index element={<Navigate to="projetos" replace />} />
+        <Route path="projetos" element={<AdminProjectsPage />} />
+        <Route path="projetos/:projectId" element={<AdminProjectDetailPage />} />
+        <Route path="historico" element={<AdminProjectHistoryPage />} />
+      </Route>
       <Route path="*" element={<Navigate to={session ? defaultPath : '/login'} replace />} />
     </Routes>
   )
