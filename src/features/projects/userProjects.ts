@@ -20,6 +20,7 @@ export type UserProject = {
   budget: number
   description: string
   status: UserProjectStatus
+  admin_message: string | null
   created_at: string
   updated_at: string
 }
@@ -33,6 +34,13 @@ type CreateProjectInput = {
   targetAudience: string
   budget: number
   description: string
+}
+
+export type CreateProjectResult = {
+  id: string
+  title: string
+  status: UserProjectStatus
+  created_at: string
 }
 
 type UpdateProjectInput = {
@@ -55,7 +63,7 @@ const getTokenOrThrow = () => {
   return token
 }
 
-export const createUserProject = async (input: CreateProjectInput) => {
+export const createUserProject = async (input: CreateProjectInput): Promise<CreateProjectResult> => {
   const token = getTokenOrThrow()
 
   const { data, error } = await supabase.rpc('app_create_project_v2', {
@@ -74,7 +82,7 @@ export const createUserProject = async (input: CreateProjectInput) => {
     throw new Error(error.message)
   }
 
-  return data
+  return data as CreateProjectResult
 }
 
 export const listMyProjects = async (): Promise<UserProject[]> => {

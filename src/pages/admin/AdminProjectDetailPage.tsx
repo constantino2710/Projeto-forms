@@ -2,8 +2,11 @@ import { ArrowLeft } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
+import { Textarea } from '../../components/ui/textarea'
+import { sendProjectStatusEmail } from '../../features/notifications/projectEmails'
 import {
   decideAdminProject,
+  type AdminProjectStatus,
   getAdminProjectDetail,
   type AdminProjectDetail,
 } from '../../features/projects/adminProjects'
@@ -16,6 +19,7 @@ export function AdminProjectDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isDeciding, setIsDeciding] = useState(false)
   const [error, setError] = useState('')
+  const [adminMessage, setAdminMessage] = useState('')
 
   useEffect(() => {
     const loadProject = async () => {
@@ -41,7 +45,9 @@ export function AdminProjectDetailPage() {
     loadProject()
   }, [projectId])
 
-  const handleDecision = async (decision: 'aprovado' | 'reprovado') => {
+  const handleDecision = async (
+    decision: Extract<AdminProjectStatus, 'aprovado' | 'reprovado' | 'em_ajustes'>,
+  ) => {
     if (!projectId) {
       return
     }
@@ -50,7 +56,25 @@ export function AdminProjectDetailPage() {
     setIsDeciding(true)
 
     try {
-      await decideAdminProject(projectId, decision)
+      const result = await decideAdminProject(projectId, decision, adminMessage)
+
+      if (result.recipient_email) {
+        try {
+          await sendProjectStatusEmail({
+            projectId: result.id,
+            recipientEmail: result.recipient_email,
+            recipientName: result.professor_name,
+            projectTitle: result.project_title,
+            decision: result.status,
+            adminMessage: result.admin_message,
+          })
+        } catch {
+          setError('Decisao registrada, mas nao foi possivel enviar o e-mail.')
+          setIsDeciding(false)
+          return
+        }
+      }
+
       navigate('/admin/projetos')
     } catch (err) {
       const nextError = err instanceof Error ? err.message : 'Falha ao registrar decisao.'
@@ -89,6 +113,17 @@ export function AdminProjectDetailPage() {
           <p>Orcamento: R$ {Number(project.budget).toFixed(2)}</p>
           <p>Descricao: {project.description}</p>
 
+          <label>
+            Mensagem ao professor
+            <Textarea
+              value={adminMessage}
+              onChange={(event) => setAdminMessage(event.target.value)}
+              rows={5}
+              placeholder="Opcional para aprovado. Use para orientar em caso de recusa ou ajustes."
+              disabled={isDeciding}
+            />
+          </label>
+
           <div className="project-detail-actions">
             <Button
               type="button"
@@ -96,7 +131,16 @@ export function AdminProjectDetailPage() {
               onClick={() => handleDecision('aprovado')}
               disabled={isDeciding}
             >
-              {isDeciding ? 'Processando...' : 'Aceitar'}
+              {isDeciding ? 'Processando...' : 'Aprovar'}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => handleDecision('em_ajustes')}
+              disabled={isDeciding}
+            >
+              {isDeciding ? 'Processando...' : 'Solicitar ajustes'}
             </Button>
             <Button
               type="button"

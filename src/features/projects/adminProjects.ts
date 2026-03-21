@@ -25,7 +25,7 @@ export type AdminProjectHistoryCard = {
   professor: string
   discipline: string
   course: string
-  status: Extract<AdminProjectStatus, 'aprovado' | 'reprovado'>
+  status: Extract<AdminProjectStatus, 'aprovado' | 'reprovado' | 'em_ajustes'>
   reviewed_at: string | null
 }
 
@@ -43,6 +43,16 @@ export type AdminProjectDetail = {
   status: AdminProjectStatus
   created_at: string
   updated_at: string
+}
+
+export type AdminProjectDecisionResult = {
+  id: string
+  status: Extract<AdminProjectStatus, 'aprovado' | 'reprovado' | 'em_ajustes'>
+  updated_at: string
+  project_title: string
+  professor_name: string | null
+  recipient_email: string | null
+  admin_message: string | null
 }
 
 const getTokenOrThrow = () => {
@@ -103,19 +113,21 @@ export const getAdminProjectDetail = async (projectId: string): Promise<AdminPro
 
 export const decideAdminProject = async (
   projectId: string,
-  decision: Extract<AdminProjectStatus, 'aprovado' | 'reprovado'>,
-) => {
+  decision: Extract<AdminProjectStatus, 'aprovado' | 'reprovado' | 'em_ajustes'>,
+  adminMessage?: string,
+): Promise<AdminProjectDecisionResult> => {
   const token = getTokenOrThrow()
 
   const { data, error } = await supabase.rpc('app_admin_decide_project', {
     p_token: token,
     p_project_id: projectId,
     p_decision: decision,
+    p_admin_message: adminMessage?.trim() || null,
   })
 
   if (error) {
     throw new Error(error.message)
   }
 
-  return data
+  return data as AdminProjectDecisionResult
 }

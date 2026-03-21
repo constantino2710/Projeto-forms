@@ -48,7 +48,7 @@ export function AdminProjectHistoryPage() {
       <div className="projects-header">
         <div>
           <h1>Historico de Projetos</h1>
-          <p>Projetos que voce aprovou ou recusou.</p>
+          <p>Projetos que voce aprovou, recusou ou enviou para ajustes.</p>
         </div>
         <div className="view-toggle">
           <Button

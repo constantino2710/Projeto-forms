@@ -1,9 +1,15 @@
 import { ArrowLeft } from 'lucide-react'
-import { type FormEvent, useEffect, useState } from 'react'
+import { type ChangeEvent, type FormEvent, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Textarea } from '../../components/ui/textarea'
+import {
+  deleteProjectAttachment,
+  listProjectAttachments,
+  type ProjectAttachment,
+  uploadProjectAttachment,
+} from '../../features/projects/projectAttachments'
 import {
   getMyProjectDetail,
   projectStatusLabel,
@@ -31,6 +37,11 @@ export function UserProjectDetailPage() {
   const [error, setError] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState<EditFormState | null>(null)
+  const [attachments, setAttachments] = useState<ProjectAttachment[]>([])
+  const [isAttachmentsLoading, setIsAttachmentsLoading] = useState(false)
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false)
+  const [attachmentError, setAttachmentError] = useState('')
+  const [deletingAttachmentId, setDeletingAttachmentId] = useState<string | null>(null)
 
   const loadProject = async () => {
     if (!projectId) {
@@ -57,8 +68,31 @@ export function UserProjectDetailPage() {
     loadProject()
   }, [projectId])
 
+  const loadAttachments = async () => {
+    if (!projectId) {
+      return
+    }
+
+    setAttachmentError('')
+    setIsAttachmentsLoading(true)
+
+    try {
+      const data = await listProjectAttachments(projectId)
+      setAttachments(data)
+    } catch (err) {
+      const nextError = err instanceof Error ? err.message : 'Falha ao carregar anexos.'
+      setAttachmentError(nextError)
+    } finally {
+      setIsAttachmentsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadAttachments()
+  }, [projectId])
+
   const startEdit = () => {
-    if (!project || project.status !== 'rascunho') {
+    if (!project || (project.status !== 'rascunho' && project.status !== 'em_ajustes')) {
       return
     }
 
@@ -113,7 +147,12 @@ export function UserProjectDetailPage() {
   }
 
   const handleStatusToggle = async () => {
-    if (!project || (project.status !== 'rascunho' && project.status !== 'submetido')) {
+    if (
+      !project ||
+      (project.status !== 'rascunho' &&
+        project.status !== 'submetido' &&
+        project.status !== 'em_ajustes')
+    ) {
       return
     }
 
@@ -121,7 +160,10 @@ export function UserProjectDetailPage() {
     setIsSubmitting(true)
 
     try {
-      const nextStatus = project.status === 'rascunho' ? 'submetido' : 'rascunho'
+      const nextStatus =
+        project.status === 'submetido'
+          ? 'rascunho'
+          : 'submetido'
       await updateMyProjectStatus(project.id, nextStatus)
       await loadProject()
     } catch (err) {
@@ -129,6 +171,54 @@ export function UserProjectDetailPage() {
       setError(nextError)
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const formatAttachmentSize = (size: number) => {
+    if (size < 1024) {
+      return `${size} B`
+    }
+    if (size < 1024 * 1024) {
+      return `${(size / 1024).toFixed(1)} KB`
+    }
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`
+  }
+
+  const handleUploadAttachment = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file || !projectId) {
+      return
+    }
+
+    setAttachmentError('')
+    setIsUploadingAttachment(true)
+    try {
+      await uploadProjectAttachment(projectId, file)
+      await loadAttachments()
+    } catch (err) {
+      const nextError = err instanceof Error ? err.message : 'Falha ao enviar anexo.'
+      setAttachmentError(nextError)
+    } finally {
+      setIsUploadingAttachment(false)
+      event.target.value = ''
+    }
+  }
+
+  const handleDeleteAttachment = async (attachmentId: string) => {
+    if (!projectId) {
+      return
+    }
+
+    setAttachmentError('')
+    setDeletingAttachmentId(attachmentId)
+    try {
+      await deleteProjectAttachment(projectId, attachmentId)
+      await loadAttachments()
+    } catch (err) {
+      const nextError = err instanceof Error ? err.message : 'Falha ao excluir anexo.'
+      setAttachmentError(nextError)
+    } finally {
+      setDeletingAttachmentId(null)
     }
   }
 
@@ -161,23 +251,91 @@ export function UserProjectDetailPage() {
               <p>Publico-alvo: {project.target_audience}</p>
               <p>Orcamento: R$ {Number(project.budget).toFixed(2)}</p>
               <p>Descricao: {project.description}</p>
+              {project.admin_message && <p>Mensagem da avaliacao: {project.admin_message}</p>}
 
               <div className="project-detail-actions">
-                {project.status === 'rascunho' && (
+                {(project.status === 'rascunho' || project.status === 'em_ajustes') && (
                   <Button type="button" variant="outline" size="sm" onClick={startEdit}>
                     Editar
                   </Button>
                 )}
-                {(project.status === 'rascunho' || project.status === 'submetido') && (
+                {(project.status === 'rascunho' ||
+                  project.status === 'submetido' ||
+                  project.status === 'em_ajustes') && (
                   <Button type="button" size="sm" onClick={handleStatusToggle} disabled={isSubmitting}>
                     {isSubmitting
                       ? 'Atualizando...'
-                      : project.status === 'rascunho'
-                        ? 'Submeter'
-                        : 'Voltar para rascunho'}
+                      : project.status === 'submetido'
+                        ? 'Voltar para rascunho'
+                        : project.status === 'em_ajustes'
+                          ? 'Reenviar para avaliacao'
+                          : 'Submeter'}
                   </Button>
                 )}
               </div>
+
+              <section className="attachments-panel">
+                <div className="attachments-header">
+                  <h2>Anexos</h2>
+                  <label className="attachments-upload">
+                    <Input
+                      type="file"
+                      onChange={handleUploadAttachment}
+                      disabled={isUploadingAttachment}
+                    />
+                  </label>
+                </div>
+
+                <p className="dashboard-note">
+                  Envie arquivos de apoio (PDF, imagens, DOC, XLS, PPT) ate 20 MB.
+                </p>
+
+                {isAttachmentsLoading && (
+                  <p className="dashboard-note">Carregando anexos...</p>
+                )}
+                {attachmentError && <p className="error">{attachmentError}</p>}
+
+                {!isAttachmentsLoading && attachments.length === 0 && (
+                  <p className="dashboard-note">Nenhum anexo enviado.</p>
+                )}
+
+                {!isAttachmentsLoading && attachments.length > 0 && (
+                  <ul className="attachments-list">
+                    {attachments.map((attachment) => (
+                      <li key={attachment.id} className="attachment-item">
+                        <div>
+                          <p className="attachment-name">{attachment.file_name}</p>
+                          <p className="attachment-meta">
+                            {formatAttachmentSize(attachment.size_bytes)} -{' '}
+                            {new Date(attachment.created_at).toLocaleString('pt-BR')}
+                          </p>
+                        </div>
+                        <div className="attachment-actions">
+                          {attachment.download_url && (
+                            <a
+                              href={attachment.download_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="attachment-link"
+                            >
+                              Baixar
+                            </a>
+                          )}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteAttachment(attachment.id)}
+                            disabled={deletingAttachmentId === attachment.id}
+                          >
+                            {deletingAttachmentId === attachment.id ? 'Excluindo...' : 'Excluir'}
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
             </>
           ) : (
             <form className="project-form" onSubmit={handleSaveEdit}>
