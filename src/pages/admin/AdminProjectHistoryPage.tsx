@@ -85,18 +85,24 @@ export function AdminProjectHistoryPage() {
           <Link key={project.id} to={`/admin/projetos/${project.id}`} className="project-card-link">
             <section className="project-card">
               <div className="project-card-top">
-                <h2>{project.title}</h2>
+                <div className="project-title-wrap">
+                  <h2>{project.title}</h2>
+                  <span
+                    className={`project-type-badge ${
+                      project.tipo === 'disciplina' ? 'project-type-badge--disciplina' : 'project-type-badge--extensao'
+                    }`}
+                  >
+                    {project.tipo === 'disciplina' ? 'Disciplina Extensionista' : 'Projeto de Extensão'}
+                  </span>
+                </div>
                 <span className={`status-badge status-${project.status}`}>
                   {projectStatusLabel[project.status]}
                 </span>
               </div>
-              <p>Professor: {project.professor}</p>
-              <p>Disciplina: {project.discipline}</p>
-              <p>Curso: {project.course}</p>
-              <p>
-                Decidido em:{' '}
-                {project.reviewed_at ? new Date(project.reviewed_at).toLocaleString('pt-BR') : '-'}
+              <p className="project-card-meta">
+                Periodo: {project.period_start} ate {project.period_end}
               </p>
+              <p className="project-card-meta">Orcamento: R$ {Number(project.budget).toFixed(2)}</p>
             </section>
           </Link>
         ))}

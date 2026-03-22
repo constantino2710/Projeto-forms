@@ -468,8 +468,42 @@
 
 .success {
   margin: 0;
-  color: hsl(142 72% 29%);
+  color: hsl(var(--success-foreground));
   font-weight: 600;
+}
+
+.project-type-toggle {
+  margin-top: 16px;
+  display: inline-flex;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--radius) - 2px);
+  background: hsl(var(--muted) / 0.5);
+}
+
+.project-type-option {
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius) - 4px);
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.62rem 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.project-type-option:hover {
+  background: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.project-type-option.active {
+  border-color: hsl(var(--primary));
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
 }
 
 .dashboard-note {
@@ -513,6 +547,10 @@
   border-radius: calc(var(--radius) - 2px);
   padding: 14px;
   background: hsl(var(--background));
+  min-height: 170px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .project-card h2 {
@@ -520,8 +558,14 @@
   font-size: 1rem;
 }
 
+.project-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .project-card p {
-  margin: 7px 0 0;
+  margin: 0;
   font-size: 0.88rem;
 }
 
@@ -568,6 +612,41 @@
 .status-reprovado {
   background: hsl(0 93% 94%);
   color: hsl(var(--destructive));
+}
+
+.project-type-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0.18rem 0.5rem;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.project-type-badge--extensao {
+  border-color: hsl(var(--status-submitted-border));
+  background: hsl(var(--status-submitted-bg));
+  color: hsl(var(--status-submitted-fg));
+}
+
+.project-type-badge--disciplina {
+  border-color: hsl(var(--status-adjust-border));
+  background: hsl(var(--status-adjust-bg));
+  color: hsl(var(--status-adjust-fg));
+}
+
+.project-discipline-meta {
+  color: hsl(var(--status-submitted-fg));
+  font-weight: 700;
+}
+
+.project-card-meta {
+  color: hsl(var(--muted-foreground));
+  font-weight: 600;
 }
 
 .project-card-actions {

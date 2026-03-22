@@ -12,9 +12,10 @@ export type AdminProjectStatus =
 export type AdminProjectCard = {
   id: string
   title: string
-  professor: string
-  discipline: string
-  course: string
+  tipo: 'extensao' | 'disciplina'
+  period_start: string
+  period_end: string
+  budget: number
   status: AdminProjectStatus
   created_at: string
 }
@@ -22,9 +23,10 @@ export type AdminProjectCard = {
 export type AdminProjectHistoryCard = {
   id: string
   title: string
-  professor: string
-  discipline: string
-  course: string
+  tipo: 'extensao' | 'disciplina'
+  period_start: string
+  period_end: string
+  budget: number
   status: Extract<AdminProjectStatus, 'aprovado' | 'reprovado' | 'em_ajustes'>
   reviewed_at: string | null
 }

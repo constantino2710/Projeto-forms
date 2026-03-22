@@ -24,6 +24,27 @@ const statusLabel: Record<Decision, string> = {
   em_ajustes: 'Em ajustes',
 }
 
+const decisionContent: Record<
+  Decision,
+  { headline: string; summary: string; nextStep: string }
+> = {
+  aprovado: {
+    headline: 'Seu projeto foi aprovado',
+    summary: 'Parabens! A avaliacao foi concluida com aprovacao.',
+    nextStep: 'Acesse os detalhes para acompanhar os proximos passos.',
+  },
+  reprovado: {
+    headline: 'Seu projeto foi recusado',
+    summary: 'A avaliacao foi concluida com recusado.',
+    nextStep: 'Acesse os detalhes para entender os motivos informados.',
+  },
+  em_ajustes: {
+    headline: 'Seu projeto precisa de ajustes',
+    summary: 'A avaliacao foi concluida com pedido de ajustes.',
+    nextStep: 'Acesse os detalhes para revisar o que precisa ser ajustado.',
+  },
+}
+
 const escapeHtml = (value: string) =>
   value
     .replaceAll('&', '&amp;')
@@ -63,6 +84,7 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const resendApiKey = Deno.env.get('RESEND_API_KEY')
     const resendFromEmail = Deno.env.get('RESEND_FROM_EMAIL')
+    const resendFromName = Deno.env.get('RESEND_FROM_NAME')?.trim()
 
     if (!supabaseUrl || !serviceRoleKey || !resendApiKey || !resendFromEmail) {
       return new Response(
@@ -97,6 +119,9 @@ Deno.serve(async (req) => {
     const safeProjectTitle = escapeHtml(projectTitle.trim())
     const safeStatusLabel = escapeHtml(statusLabel[decision])
     const safeProjectUrl = escapeHtml(projectUrl)
+    const safeHeadline = escapeHtml(decisionContent[decision].headline)
+    const safeSummary = escapeHtml(decisionContent[decision].summary)
+    const safeNextStep = escapeHtml(decisionContent[decision].nextStep)
 
     const messageSection = cleanMessage
       ? `
@@ -116,12 +141,17 @@ Deno.serve(async (req) => {
           </div>
           <div style="padding: 24px;">
             <p style="margin: 0 0 10px; font-size: 15px;">Ola, ${safeRecipientName}.</p>
+            <p style="margin: 0 0 10px; font-size: 16px; font-weight: 700;">${safeHeadline}</p>
             <p style="margin: 0 0 14px; font-size: 15px; line-height: 1.6;">
-              Seu projeto <strong>${safeProjectTitle}</strong> recebeu uma nova avaliacao.
+              ${safeSummary}
             </p>
             <div style="display: inline-block; margin: 0 0 16px; padding: 8px 12px; border-radius: 999px; background: #ecfeff; color: #155e75; font-size: 13px; font-weight: 700; border: 1px solid #a5f3fc;">
               Status: ${safeStatusLabel}
             </div>
+            <p style="margin: 0 0 10px; font-size: 14px; color: #334155;">
+              Projeto: <strong>${safeProjectTitle}</strong>
+            </p>
+            <p style="margin: 0 0 12px; font-size: 14px; color: #475569;">${safeNextStep}</p>
             ${messageSection}
             <a href="${safeProjectUrl}" style="display: inline-block; margin-top: 8px; padding: 12px 18px; border-radius: 10px; background: #2563eb; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 700;">
               Ver projeto
@@ -137,11 +167,18 @@ Deno.serve(async (req) => {
 
     const textLines = [
       `Ola, ${recipientName?.trim() || 'Professor(a)'}.`,
-      `Seu projeto "${projectTitle.trim()}" recebeu uma nova avaliacao.`,
+      decisionContent[decision].headline,
+      decisionContent[decision].summary,
+      `Projeto: "${projectTitle.trim()}".`,
       `Status: ${statusLabel[decision]}.`,
+      decisionContent[decision].nextStep,
       cleanMessage ? `Mensagem da avaliacao: ${cleanMessage}` : null,
       `Abrir projeto: ${projectUrl}`,
     ].filter(Boolean)
+
+    const fromAddress = resendFromName
+      ? `${resendFromName} <${resendFromEmail}>`
+      : resendFromEmail
 
     const resendResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -150,7 +187,7 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: resendFromEmail,
+        from: fromAddress,
         to: [recipientEmail],
         subject: `Atualizacao do projeto: ${projectTitle.trim()}`,
         html,

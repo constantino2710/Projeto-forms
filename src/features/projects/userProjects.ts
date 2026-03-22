@@ -1,4 +1,4 @@
-import { getStoredSessionToken } from '../../auth/appAuth'
+import { clearSessionToken, getStoredSessionToken } from '../../auth/appAuth'
 import { supabase } from '../../lib/supabase'
 
 export type UserProjectStatus =
@@ -61,11 +61,32 @@ type UpdateProjectInput = {
   description: string
 }
 
+const SESSION_TOKEN_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+const formatRpcErrorMessage = (error: unknown) => {
+  const rpcError = error as { message?: string; details?: string; hint?: string }
+  const message = (rpcError.message || 'Falha na operacao.').trim()
+  const details = (rpcError.details || '').trim()
+  const hint = (rpcError.hint || '').trim()
+  const suffix = [details, hint].filter(Boolean).join(' | ')
+  return suffix ? `${message} (${suffix})` : message
+}
+
+const shouldClearSession = (message: string) =>
+  /sessao|sessão|token|uuid|autenticad/i.test(message)
+
 const getTokenOrThrow = () => {
   const token = getStoredSessionToken()
   if (!token) {
     throw new Error('Sessao invalida. Faca login novamente.')
   }
+
+  if (!SESSION_TOKEN_PATTERN.test(token)) {
+    clearSessionToken()
+    throw new Error('Sessao invalida. Faca login novamente.')
+  }
+
   return token
 }
 
@@ -75,6 +96,7 @@ export const createUserProject = async (input: CreateProjectInput): Promise<Crea
   const { data, error } = await supabase.rpc('app_create_project_v2', {
     p_token: token,
     p_title: input.title,
+    p_type: input.type,
     p_thematic_area: input.thematicArea,
     p_course: input.course ?? null,
     p_period_start: input.periodStart,
@@ -82,10 +104,16 @@ export const createUserProject = async (input: CreateProjectInput): Promise<Crea
     p_target_audience: input.targetAudience,
     p_budget: input.budget,
     p_description: input.description,
+    p_codigo_disciplina: input.codigo_disciplina ?? null,
+    p_semestre_letivo: input.semestre_letivo ?? null,
   })
 
   if (error) {
-    throw new Error(error.message)
+    const message = formatRpcErrorMessage(error)
+    if (shouldClearSession(message)) {
+      clearSessionToken()
+    }
+    throw new Error(message)
   }
 
   return data as CreateProjectResult

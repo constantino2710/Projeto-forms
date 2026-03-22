@@ -47,16 +47,13 @@ export function UserProjectsPage() {
 
   const toggleStatus = (status: string) => {
     setSelectedStatuses((current) =>
-      current.includes(status)
-        ? current.filter((item) => item !== status)
-        : [...current, status],
+      current.includes(status) ? current.filter((item) => item !== status) : [...current, status],
     )
   }
 
   const filteredProjects = projects.filter((project) => {
     const matchesName = project.title.toLowerCase().includes(query.trim().toLowerCase())
-    const matchesStatus =
-      selectedStatuses.length === 0 ? true : selectedStatuses.includes(project.status)
+    const matchesStatus = selectedStatuses.length === 0 ? true : selectedStatuses.includes(project.status)
 
     return matchesName && matchesStatus
   })
@@ -73,8 +70,8 @@ export function UserProjectsPage() {
             type="button"
             variant="outline"
             size="sm"
-            className={viewMode === "list" ? "active" : ""}
-            onClick={() => handleSetViewMode("list")}
+            className={viewMode === 'list' ? 'active' : ''}
+            onClick={() => handleSetViewMode('list')}
           >
             <List size={14} />
             <span>Lista</span>
@@ -83,8 +80,8 @@ export function UserProjectsPage() {
             type="button"
             variant="outline"
             size="sm"
-            className={viewMode === "grid" ? "active" : ""}
-            onClick={() => handleSetViewMode("grid")}
+            className={viewMode === 'grid' ? 'active' : ''}
+            onClick={() => handleSetViewMode('grid')}
           >
             <Grid3X3 size={14} />
             <span>Grid</span>
@@ -119,11 +116,7 @@ export function UserProjectsPage() {
                 <button
                   key={status}
                   type="button"
-                  className={
-                    selectedStatuses.includes(status)
-                      ? "filter-tag filter-tag-active"
-                      : "filter-tag"
-                  }
+                  className={selectedStatuses.includes(status) ? 'filter-tag filter-tag-active' : 'filter-tag'}
                   onClick={() => toggleStatus(status)}
                 >
                   {projectStatusLabel[status]}
@@ -138,36 +131,22 @@ export function UserProjectsPage() {
       {error && <p className="error">{error}</p>}
 
       {!isLoading && filteredProjects.length === 0 && (
-        <p className="dashboard-note">
-          Voce ainda nao possui projetos cadastrados.
-        </p>
+        <p className="dashboard-note">Voce ainda nao possui projetos cadastrados.</p>
       )}
 
-      <div
-        className={
-          viewMode === "grid" ? "projects-list projects-grid" : "projects-list"
-        }
-      >
+      <div className={viewMode === 'grid' ? 'projects-list projects-grid' : 'projects-list'}>
         {filteredProjects.map((project) => (
-          <Link
-            key={project.id}
-            to={`/usuario/meus-projetos/${project.id}`}
-            className="project-card-link"
-          >
+          <Link key={project.id} to={`/usuario/meus-projetos/${project.id}`} className="project-card-link">
             <section className="project-card">
               <div className="project-card-top">
-                <div className="flex flex-col gap-1">
+                <div className="project-title-wrap">
                   <h2>{project.title}</h2>
                   <span
-                    className={`text-[10px] w-fit px-2 py-0.5 rounded font-bold uppercase tracking-wider ${
-                      project.tipo === "disciplina"
-                        ? "bg-purple-900/40 text-purple-300 border border-purple-700"
-                        : "bg-blue-900/40 text-blue-300 border border-blue-700"
+                    className={`project-type-badge ${
+                      project.tipo === 'disciplina' ? 'project-type-badge--disciplina' : 'project-type-badge--extensao'
                     }`}
                   >
-                    {project.tipo === "disciplina"
-                      ? "📚 Disciplina"
-                      : "💡 Extensão"}
+                    {project.tipo === 'disciplina' ? 'Disciplina Extensionista' : 'Projeto de Extensão'}
                   </span>
                 </div>
 
@@ -176,24 +155,14 @@ export function UserProjectsPage() {
                 </span>
               </div>
 
-              <p>Area: {project.thematic_area}</p>
-
-              {project.tipo === "disciplina" && (
-                <p className="text-blue-300 font-medium">
-                  Cód: {project.codigo_disciplina} | Semestre:{" "}
-                  {project.semestre_letivo}
-                </p>
-              )}
-
-              <p>Publico-alvo: {project.target_audience}</p>
-              <p>
+              <p className="project-card-meta">
                 Periodo: {project.period_start} ate {project.period_end}
               </p>
-              <p>Orcamento: R$ {Number(project.budget).toFixed(2)}</p>
+              <p className="project-card-meta">Orcamento: R$ {Number(project.budget).toFixed(2)}</p>
             </section>
           </Link>
         ))}
       </div>
     </article>
-  );
+  )
 }

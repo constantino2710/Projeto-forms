@@ -3,16 +3,22 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Textarea } from '../../components/ui/textarea'
-import { createUserProject } from '../../features/projects/userProjects'
 import { uploadProjectAttachment } from '../../features/projects/projectAttachments'
+import { createUserProject } from '../../features/projects/userProjects'
+
+const MIN_PROJECT_DATE = '2000-01-01'
+const MAX_PROJECT_DATE = '2100-12-31'
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
+const isIsoDate = (value: string) => ISO_DATE_PATTERN.test(value)
 
 export function UserNewProjectPage() {
   const navigate = useNavigate()
   const [title, setTitle] = useState('')
   const [thematicArea, setThematicArea] = useState('')
-  const [projectType, setProjectType] = useState<"extensao" | "disciplina">( "extensao",);
-  const [codigoDisciplina, setCodigoDisciplina] = useState("");
-  const [semestreLetivo, setSemestreLetivo] = useState("");
+  const [projectType, setProjectType] = useState<'extensao' | 'disciplina'>('extensao')
+  const [codigoDisciplina, setCodigoDisciplina] = useState('')
+  const [semestreLetivo, setSemestreLetivo] = useState('')
   const [course, setCourse] = useState('')
   const [periodStart, setPeriodStart] = useState('')
   const [periodEnd, setPeriodEnd] = useState('')
@@ -22,7 +28,6 @@ export function UserNewProjectPage() {
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState('')
-  const [error, setError] = useState('')
 
   const formatAttachmentSize = (size: number) => {
     if (size < 1024) {
@@ -51,8 +56,52 @@ export function UserNewProjectPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setMessage('')
-    setError('')
     setIsSubmitting(true)
+
+    if (!isIsoDate(periodStart) || !isIsoDate(periodEnd)) {
+      console.error('[UserNewProjectPage] Validacao falhou: formato de data invalido.', {
+        periodStart,
+        periodEnd,
+      })
+      setIsSubmitting(false)
+      return
+    }
+
+    if (periodStart < MIN_PROJECT_DATE || periodStart > MAX_PROJECT_DATE) {
+      console.error('[UserNewProjectPage] Validacao falhou: data inicial fora do intervalo permitido.', {
+        periodStart,
+        min: MIN_PROJECT_DATE,
+        max: MAX_PROJECT_DATE,
+      })
+      setIsSubmitting(false)
+      return
+    }
+
+    if (periodEnd < MIN_PROJECT_DATE || periodEnd > MAX_PROJECT_DATE) {
+      console.error('[UserNewProjectPage] Validacao falhou: data final fora do intervalo permitido.', {
+        periodEnd,
+        min: MIN_PROJECT_DATE,
+        max: MAX_PROJECT_DATE,
+      })
+      setIsSubmitting(false)
+      return
+    }
+
+    if (periodStart > periodEnd) {
+      console.error('[UserNewProjectPage] Validacao falhou: periodo inicial maior que periodo final.', {
+        periodStart,
+        periodEnd,
+      })
+      setIsSubmitting(false)
+      return
+    }
+
+    const parsedBudget = Number(budget)
+    if (!Number.isFinite(parsedBudget) || parsedBudget < 0) {
+      console.error('[UserNewProjectPage] Validacao falhou: orcamento invalido.', { budget })
+      setIsSubmitting(false)
+      return
+    }
 
     try {
       const project = await createUserProject({
@@ -62,11 +111,11 @@ export function UserNewProjectPage() {
         periodStart,
         periodEnd,
         targetAudience,
-        budget: Number(budget || 0),
+        budget: parsedBudget,
         description,
         type: projectType,
-        codigo_disciplina: codigoDisciplina,
-        semestre_letivo: semestreLetivo,
+        codigo_disciplina: projectType === 'disciplina' ? codigoDisciplina : null,
+        semestre_letivo: projectType === 'disciplina' ? semestreLetivo : null,
       })
 
       if (pendingFiles.length > 0) {
@@ -81,17 +130,14 @@ export function UserNewProjectPage() {
         }
 
         if (failedUploads.length > 0) {
-          throw new Error(
-            `Projeto criado, mas falhou o upload de: ${failedUploads.join(', ')}.`,
-          )
+          throw new Error(`Projeto criado, mas falhou o upload de: ${failedUploads.join(', ')}.`)
         }
       }
 
       setMessage('Projeto criado com sucesso.')
       navigate('/usuario/meus-projetos')
     } catch (err) {
-      const nextError = err instanceof Error ? err.message : 'Falha ao criar projeto.'
-      setError(nextError)
+      console.error('[UserNewProjectPage] Falha ao criar projeto:', err)
     } finally {
       setIsSubmitting(false)
     }
@@ -102,85 +148,65 @@ export function UserNewProjectPage() {
       <h1>Novo Projeto</h1>
       <p>Preencha os campos para criar um novo projeto.</p>
 
-        <div className="mb-6">
-  <div className="flex gap-2 p-1 bg-gray-900/50 border border-gray-800 rounded-lg w-fit">
-    <button
-      type="button"
-      onClick={() => setProjectType('extensao')}
-      className={`px-6 py-2 rounded-md transition-all duration-200 text-sm font-medium ${
-        projectType === 'extensao' 
-          ? 'bg-blue-600 text-white shadow-lg' 
-          : 'text-gray-400 hover:text-white hover:bg-gray-800'
-      }`}
-    >
-      Projeto de Extensão
-    </button>
-    
-    <button
-      type="button"
-      onClick={() => setProjectType('disciplina')}
-      className={`px-6 py-2 rounded-md transition-all duration-200 text-sm font-medium ${
-        projectType === 'disciplina' 
-          ? 'bg-blue-600 text-white shadow-lg' 
-          : 'text-gray-400 hover:text-white hover:bg-gray-800'
-      }`}
-    >
-      Disciplina Extensionista
-    </button>
-  </div>
-</div>
+      <div className="project-type-toggle">
+        <button
+          type="button"
+          onClick={() => setProjectType('extensao')}
+          className={`project-type-option ${projectType === 'extensao' ? 'active' : ''}`}
+        >
+          Projeto de Extensao
+        </button>
+        <button
+          type="button"
+          onClick={() => setProjectType('disciplina')}
+          className={`project-type-option ${projectType === 'disciplina' ? 'active' : ''}`}
+        >
+          Disciplina Extensionista
+        </button>
+      </div>
+
       <form onSubmit={handleSubmit} className="project-form">
         <label>
           Titulo
-          <Input
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            required
-          />
+          <Input value={title} onChange={(event) => setTitle(event.target.value)} required />
         </label>
 
         <label>
           Area tematica
-          <Input
-            value={thematicArea}
-            onChange={(event) => setThematicArea(event.target.value)}
-            required
-          />
+          <Input value={thematicArea} onChange={(event) => setThematicArea(event.target.value)} required />
         </label>
 
         <label>
           Curso
-          <Input
-            value={course}
-            onChange={(event) => setCourse(event.target.value)}
-          />
+          <Input value={course} onChange={(event) => setCourse(event.target.value)} />
         </label>
 
-{projectType === 'disciplina' && (
-  <div className="flex gap-4 mb-4">
-    <div className="flex-1">
-      <label className="block text-white font-medium mb-1">Código da Disciplina</label>
-      <input 
-        type="text"
-        placeholder="Ex: IF976" 
-        value={codigoDisciplina} 
-        onChange={(e) => setCodigoDisciplina(e.target.value)} 
-        className="w-full p-2 bg-transparent border border-gray-700 rounded text-white focus:outline-none focus:border-blue-500"
-      />
-    </div>
-    
-    <div className="flex-1">
-      <label className="block text-white font-medium mb-1">Semestre Letivo</label>
-      <input 
-        type="text"
-        placeholder="Ex: 2026.1" 
-        value={semestreLetivo} 
-        onChange={(e) => setSemestreLetivo(e.target.value)} 
-        className="w-full p-2 bg-transparent border border-gray-700 rounded text-white focus:outline-none focus:border-blue-500"
-      />
-    </div>
-  </div>
-)}
+        {projectType === 'disciplina' && (
+          <div className="project-grid-2">
+            <label>
+              Codigo da Disciplina
+              <Input
+                type="text"
+                placeholder="Ex: IF976"
+                value={codigoDisciplina}
+                onChange={(event) => setCodigoDisciplina(event.target.value)}
+                required
+              />
+            </label>
+
+            <label>
+              Semestre Letivo
+              <Input
+                type="text"
+                placeholder="Ex: 2026.1"
+                value={semestreLetivo}
+                onChange={(event) => setSemestreLetivo(event.target.value)}
+                required
+              />
+            </label>
+          </div>
+        )}
+
         <div className="project-grid-2">
           <label>
             Inicio
@@ -188,6 +214,8 @@ export function UserNewProjectPage() {
               type="date"
               value={periodStart}
               onChange={(event) => setPeriodStart(event.target.value)}
+              min={MIN_PROJECT_DATE}
+              max={periodEnd || MAX_PROJECT_DATE}
               required
             />
           </label>
@@ -197,6 +225,8 @@ export function UserNewProjectPage() {
               type="date"
               value={periodEnd}
               onChange={(event) => setPeriodEnd(event.target.value)}
+              min={periodStart || MIN_PROJECT_DATE}
+              max={MAX_PROJECT_DATE}
               required
             />
           </label>
@@ -204,11 +234,7 @@ export function UserNewProjectPage() {
 
         <label>
           Publico-alvo
-          <Input
-            value={targetAudience}
-            onChange={(event) => setTargetAudience(event.target.value)}
-            required
-          />
+          <Input value={targetAudience} onChange={(event) => setTargetAudience(event.target.value)} required />
         </label>
 
         <label>
@@ -236,26 +262,16 @@ export function UserNewProjectPage() {
 
         <label>
           Anexos
-          <Input
-            type="file"
-            multiple
-            onChange={handleFilesSelected}
-            disabled={isSubmitting}
-          />
+          <Input type="file" multiple onChange={handleFilesSelected} disabled={isSubmitting} />
         </label>
 
         {pendingFiles.length > 0 && (
           <ul className="attachments-list">
             {pendingFiles.map((file, index) => (
-              <li
-                key={`${file.name}-${file.size}-${index}`}
-                className="attachment-item"
-              >
+              <li key={`${file.name}-${file.size}-${index}`} className="attachment-item">
                 <div>
                   <p className="attachment-name">{file.name}</p>
-                  <p className="attachment-meta">
-                    {formatAttachmentSize(file.size)}
-                  </p>
+                  <p className="attachment-meta">{formatAttachmentSize(file.size)}</p>
                 </div>
                 <div className="attachment-actions">
                   <Button
@@ -274,12 +290,11 @@ export function UserNewProjectPage() {
         )}
 
         {message && <p className="success">{message}</p>}
-        {error && <p className="error">{error}</p>}
 
         <Button type="submit" className="full-width" disabled={isSubmitting}>
-          {isSubmitting ? "Salvando..." : "Criar projeto"}
+          {isSubmitting ? 'Salvando...' : 'Criar projeto'}
         </Button>
       </form>
     </article>
-  );
+  )
 }
