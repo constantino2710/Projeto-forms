@@ -12,6 +12,9 @@ export type UserProjectStatus =
 export type UserProject = {
   id: string
   title: string
+  tipo: 'extensao' | 'disciplina'
+  codigo_disciplina: string | null
+  semestre_letivo: string | null
   thematic_area: string
   course: string | null
   period_start: string
@@ -26,15 +29,18 @@ export type UserProject = {
 }
 
 type CreateProjectInput = {
-  title: string
-  thematicArea: string
-  course?: string
-  periodStart: string
-  periodEnd: string
-  targetAudience: string
-  budget: number
-  description: string
-}
+  title: string;
+  thematicArea: string;
+  course?: string;
+  periodStart: string;
+  periodEnd: string;
+  targetAudience: string;
+  budget: number;
+  description: string;
+  type: "extensao" | "disciplina";
+  codigo_disciplina?: string | null;
+  semestre_letivo?: string | null;
+};
 
 export type CreateProjectResult = {
   id: string
@@ -141,10 +147,11 @@ export const updateMyProjectStatus = async (
 export const updateMyProjectDetails = async (input: UpdateProjectInput) => {
   const token = getTokenOrThrow()
 
-  const { data, error } = await supabase.rpc('app_update_project_v2', {
+  const { data, error } = await supabase.rpc("app_update_project_v2", {
     p_token: token,
     p_project_id: input.projectId,
     p_title: input.title,
+    p_type: "extensao",
     p_thematic_area: input.thematicArea,
     p_course: input.course ?? null,
     p_period_start: input.periodStart,
@@ -152,7 +159,9 @@ export const updateMyProjectDetails = async (input: UpdateProjectInput) => {
     p_target_audience: input.targetAudience,
     p_budget: input.budget,
     p_description: input.description,
-  })
+    p_codigo_disciplina: (input as any).codigoDisciplina ?? null,
+    p_semestre_letivo: (input as any).semestreLetivo ?? null
+  });
 
   if (error) {
     throw new Error(error.message)

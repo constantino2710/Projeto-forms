@@ -10,6 +10,9 @@ export function UserNewProjectPage() {
   const navigate = useNavigate()
   const [title, setTitle] = useState('')
   const [thematicArea, setThematicArea] = useState('')
+  const [projectType, setProjectType] = useState<"extensao" | "disciplina">( "extensao",);
+  const [codigoDisciplina, setCodigoDisciplina] = useState("");
+  const [semestreLetivo, setSemestreLetivo] = useState("");
   const [course, setCourse] = useState('')
   const [periodStart, setPeriodStart] = useState('')
   const [periodEnd, setPeriodEnd] = useState('')
@@ -61,6 +64,9 @@ export function UserNewProjectPage() {
         targetAudience,
         budget: Number(budget || 0),
         description,
+        type: projectType,
+        codigo_disciplina: codigoDisciplina,
+        semestre_letivo: semestreLetivo,
       })
 
       if (pendingFiles.length > 0) {
@@ -96,10 +102,41 @@ export function UserNewProjectPage() {
       <h1>Novo Projeto</h1>
       <p>Preencha os campos para criar um novo projeto.</p>
 
+        <div className="mb-6">
+  <div className="flex gap-2 p-1 bg-gray-900/50 border border-gray-800 rounded-lg w-fit">
+    <button
+      type="button"
+      onClick={() => setProjectType('extensao')}
+      className={`px-6 py-2 rounded-md transition-all duration-200 text-sm font-medium ${
+        projectType === 'extensao' 
+          ? 'bg-blue-600 text-white shadow-lg' 
+          : 'text-gray-400 hover:text-white hover:bg-gray-800'
+      }`}
+    >
+      Projeto de Extensão
+    </button>
+    
+    <button
+      type="button"
+      onClick={() => setProjectType('disciplina')}
+      className={`px-6 py-2 rounded-md transition-all duration-200 text-sm font-medium ${
+        projectType === 'disciplina' 
+          ? 'bg-blue-600 text-white shadow-lg' 
+          : 'text-gray-400 hover:text-white hover:bg-gray-800'
+      }`}
+    >
+      Disciplina Extensionista
+    </button>
+  </div>
+</div>
       <form onSubmit={handleSubmit} className="project-form">
         <label>
           Titulo
-          <Input value={title} onChange={(event) => setTitle(event.target.value)} required />
+          <Input
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            required
+          />
         </label>
 
         <label>
@@ -113,9 +150,37 @@ export function UserNewProjectPage() {
 
         <label>
           Curso
-          <Input value={course} onChange={(event) => setCourse(event.target.value)} />
+          <Input
+            value={course}
+            onChange={(event) => setCourse(event.target.value)}
+          />
         </label>
 
+{projectType === 'disciplina' && (
+  <div className="flex gap-4 mb-4">
+    <div className="flex-1">
+      <label className="block text-white font-medium mb-1">Código da Disciplina</label>
+      <input 
+        type="text"
+        placeholder="Ex: IF976" 
+        value={codigoDisciplina} 
+        onChange={(e) => setCodigoDisciplina(e.target.value)} 
+        className="w-full p-2 bg-transparent border border-gray-700 rounded text-white focus:outline-none focus:border-blue-500"
+      />
+    </div>
+    
+    <div className="flex-1">
+      <label className="block text-white font-medium mb-1">Semestre Letivo</label>
+      <input 
+        type="text"
+        placeholder="Ex: 2026.1" 
+        value={semestreLetivo} 
+        onChange={(e) => setSemestreLetivo(e.target.value)} 
+        className="w-full p-2 bg-transparent border border-gray-700 rounded text-white focus:outline-none focus:border-blue-500"
+      />
+    </div>
+  </div>
+)}
         <div className="project-grid-2">
           <label>
             Inicio
@@ -182,10 +247,15 @@ export function UserNewProjectPage() {
         {pendingFiles.length > 0 && (
           <ul className="attachments-list">
             {pendingFiles.map((file, index) => (
-              <li key={`${file.name}-${file.size}-${index}`} className="attachment-item">
+              <li
+                key={`${file.name}-${file.size}-${index}`}
+                className="attachment-item"
+              >
                 <div>
                   <p className="attachment-name">{file.name}</p>
-                  <p className="attachment-meta">{formatAttachmentSize(file.size)}</p>
+                  <p className="attachment-meta">
+                    {formatAttachmentSize(file.size)}
+                  </p>
                 </div>
                 <div className="attachment-actions">
                   <Button
@@ -207,9 +277,9 @@ export function UserNewProjectPage() {
         {error && <p className="error">{error}</p>}
 
         <Button type="submit" className="full-width" disabled={isSubmitting}>
-          {isSubmitting ? 'Salvando...' : 'Criar projeto'}
+          {isSubmitting ? "Salvando..." : "Criar projeto"}
         </Button>
       </form>
     </article>
-  )
+  );
 }

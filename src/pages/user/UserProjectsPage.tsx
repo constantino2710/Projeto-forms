@@ -73,8 +73,8 @@ export function UserProjectsPage() {
             type="button"
             variant="outline"
             size="sm"
-            className={viewMode === 'list' ? 'active' : ''}
-            onClick={() => handleSetViewMode('list')}
+            className={viewMode === "list" ? "active" : ""}
+            onClick={() => handleSetViewMode("list")}
           >
             <List size={14} />
             <span>Lista</span>
@@ -83,8 +83,8 @@ export function UserProjectsPage() {
             type="button"
             variant="outline"
             size="sm"
-            className={viewMode === 'grid' ? 'active' : ''}
-            onClick={() => handleSetViewMode('grid')}
+            className={viewMode === "grid" ? "active" : ""}
+            onClick={() => handleSetViewMode("grid")}
           >
             <Grid3X3 size={14} />
             <span>Grid</span>
@@ -121,8 +121,8 @@ export function UserProjectsPage() {
                   type="button"
                   className={
                     selectedStatuses.includes(status)
-                      ? 'filter-tag filter-tag-active'
-                      : 'filter-tag'
+                      ? "filter-tag filter-tag-active"
+                      : "filter-tag"
                   }
                   onClick={() => toggleStatus(status)}
                 >
@@ -138,10 +138,16 @@ export function UserProjectsPage() {
       {error && <p className="error">{error}</p>}
 
       {!isLoading && filteredProjects.length === 0 && (
-        <p className="dashboard-note">Voce ainda nao possui projetos cadastrados.</p>
+        <p className="dashboard-note">
+          Voce ainda nao possui projetos cadastrados.
+        </p>
       )}
 
-      <div className={viewMode === 'grid' ? 'projects-list projects-grid' : 'projects-list'}>
+      <div
+        className={
+          viewMode === "grid" ? "projects-list projects-grid" : "projects-list"
+        }
+      >
         {filteredProjects.map((project) => (
           <Link
             key={project.id}
@@ -150,13 +156,35 @@ export function UserProjectsPage() {
           >
             <section className="project-card">
               <div className="project-card-top">
-                <h2>{project.title}</h2>
+                <div className="flex flex-col gap-1">
+                  <h2>{project.title}</h2>
+                  <span
+                    className={`text-[10px] w-fit px-2 py-0.5 rounded font-bold uppercase tracking-wider ${
+                      project.tipo === "disciplina"
+                        ? "bg-purple-900/40 text-purple-300 border border-purple-700"
+                        : "bg-blue-900/40 text-blue-300 border border-blue-700"
+                    }`}
+                  >
+                    {project.tipo === "disciplina"
+                      ? "📚 Disciplina"
+                      : "💡 Extensão"}
+                  </span>
+                </div>
+
                 <span className={`status-badge status-${project.status}`}>
                   {projectStatusLabel[project.status]}
                 </span>
               </div>
 
               <p>Area: {project.thematic_area}</p>
+
+              {project.tipo === "disciplina" && (
+                <p className="text-blue-300 font-medium">
+                  Cód: {project.codigo_disciplina} | Semestre:{" "}
+                  {project.semestre_letivo}
+                </p>
+              )}
+
               <p>Publico-alvo: {project.target_audience}</p>
               <p>
                 Periodo: {project.period_start} ate {project.period_end}
@@ -167,5 +195,5 @@ export function UserProjectsPage() {
         ))}
       </div>
     </article>
-  )
+  );
 }
