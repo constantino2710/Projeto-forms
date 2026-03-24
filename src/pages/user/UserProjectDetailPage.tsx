@@ -1,127 +1,137 @@
-import { ArrowLeft } from 'lucide-react'
-import { type ChangeEvent, type FormEvent, useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { Button } from '../../components/ui/button'
-import { Input } from '../../components/ui/input'
-import { Textarea } from '../../components/ui/textarea'
+import { ArrowLeft } from "lucide-react";
+import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Textarea } from "../../components/ui/textarea";
 import {
   deleteProjectAttachment,
   listProjectAttachments,
   type ProjectAttachment,
   uploadProjectAttachment,
-} from '../../features/projects/projectAttachments'
+} from "../../features/projects/projectAttachments";
 import {
   getMyProjectDetail,
   projectStatusLabel,
   updateMyProjectDetails,
   updateMyProjectStatus,
+  deleteMyProject,
   type UserProject,
-} from '../../features/projects/userProjects'
+} from "../../features/projects/userProjects";
 
 type EditFormState = {
-  title: string
-  thematicArea: string
-  course: string
-  periodStart: string
-  periodEnd: string
-  targetAudience: string
-  budget: string
-  description: string
-}
+  title: string;
+  thematicArea: string;
+  course: string;
+  periodStart: string;
+  periodEnd: string;
+  targetAudience: string;
+  budget: string;
+  description: string;
+};
 
 export function UserProjectDetailPage() {
-  const { projectId } = useParams<{ projectId: string }>()
-  const [project, setProject] = useState<UserProject | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState('')
-  const [isEditing, setIsEditing] = useState(false)
-  const [editForm, setEditForm] = useState<EditFormState | null>(null)
-  const [attachments, setAttachments] = useState<ProjectAttachment[]>([])
-  const [isAttachmentsLoading, setIsAttachmentsLoading] = useState(false)
-  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false)
-  const [attachmentError, setAttachmentError] = useState('')
-  const [deletingAttachmentId, setDeletingAttachmentId] = useState<string | null>(null)
+  const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
+  const [project, setProject] = useState<UserProject | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState<EditFormState | null>(null);
+  const [attachments, setAttachments] = useState<ProjectAttachment[]>([]);
+  const [isAttachmentsLoading, setIsAttachmentsLoading] = useState(false);
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
+  const [attachmentError, setAttachmentError] = useState("");
+  const [deletingAttachmentId, setDeletingAttachmentId] = useState<
+    string | null
+  >(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadProject = async () => {
     if (!projectId) {
-      setError('Projeto invalido.')
-      setIsLoading(false)
-      return
+      setError("Projeto invalido.");
+      setIsLoading(false);
+      return;
     }
 
-    setError('')
-    setIsLoading(true)
+    setError("");
+    setIsLoading(true);
 
     try {
-      const data = await getMyProjectDetail(projectId)
-      setProject(data)
+      const data = await getMyProjectDetail(projectId);
+      setProject(data);
     } catch (err) {
-      const nextError = err instanceof Error ? err.message : 'Falha ao carregar projeto.'
-      setError(nextError)
+      const nextError =
+        err instanceof Error ? err.message : "Falha ao carregar projeto.";
+      setError(nextError);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    loadProject()
-  }, [projectId])
+    loadProject();
+  }, [projectId]);
 
   const loadAttachments = async () => {
     if (!projectId) {
-      return
+      return;
     }
 
-    setAttachmentError('')
-    setIsAttachmentsLoading(true)
+    setAttachmentError("");
+    setIsAttachmentsLoading(true);
 
     try {
-      const data = await listProjectAttachments(projectId)
-      setAttachments(data)
+      const data = await listProjectAttachments(projectId);
+      setAttachments(data);
     } catch (err) {
-      const nextError = err instanceof Error ? err.message : 'Falha ao carregar anexos.'
-      setAttachmentError(nextError)
+      const nextError =
+        err instanceof Error ? err.message : "Falha ao carregar anexos.";
+      setAttachmentError(nextError);
     } finally {
-      setIsAttachmentsLoading(false)
+      setIsAttachmentsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    loadAttachments()
-  }, [projectId])
+    loadAttachments();
+  }, [projectId]);
 
   const startEdit = () => {
-    if (!project || (project.status !== 'rascunho' && project.status !== 'em_ajustes')) {
-      return
+    if (
+      !project ||
+      (project.status !== "rascunho" && project.status !== "em_ajustes")
+    ) {
+      return;
     }
 
-    setIsEditing(true)
+    setIsEditing(true);
     setEditForm({
       title: project.title,
       thematicArea: project.thematic_area,
-      course: project.course ?? '',
+      course: project.course ?? "",
       periodStart: project.period_start,
       periodEnd: project.period_end,
       targetAudience: project.target_audience,
       budget: String(project.budget),
-      description: project.description ?? '',
-    })
-  }
+      description: project.description ?? "",
+    });
+  };
 
   const cancelEdit = () => {
-    setIsEditing(false)
-    setEditForm(null)
-  }
+    setIsEditing(false);
+    setEditForm(null);
+  };
 
   const handleSaveEdit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+    event.preventDefault();
     if (!project || !editForm) {
-      return
+      return;
     }
 
-    setError('')
-    setIsSubmitting(true)
+    setError("");
+    setIsSubmitting(true);
 
     try {
       await updateMyProjectDetails({
@@ -134,93 +144,124 @@ export function UserProjectDetailPage() {
         targetAudience: editForm.targetAudience,
         budget: Number(editForm.budget || 0),
         description: editForm.description,
-      })
+      });
 
-      cancelEdit()
-      await loadProject()
+      cancelEdit();
+      await loadProject();
     } catch (err) {
-      const nextError = err instanceof Error ? err.message : 'Falha ao salvar alteracoes.'
-      setError(nextError)
+      const nextError =
+        err instanceof Error ? err.message : "Falha ao salvar alteracoes.";
+      setError(nextError);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleStatusToggle = async () => {
     if (
       !project ||
-      (project.status !== 'rascunho' &&
-        project.status !== 'submetido' &&
-        project.status !== 'em_ajustes')
+      (project.status !== "rascunho" &&
+        project.status !== "submetido" &&
+        project.status !== "em_ajustes")
     ) {
-      return
+      return;
     }
 
-    setError('')
-    setIsSubmitting(true)
+    setError("");
+    setIsSubmitting(true);
 
     try {
       const nextStatus =
-        project.status === 'submetido'
-          ? 'rascunho'
-          : 'submetido'
-      await updateMyProjectStatus(project.id, nextStatus)
-      await loadProject()
+        project.status === "submetido" ? "rascunho" : "submetido";
+      await updateMyProjectStatus(project.id, nextStatus);
+      await loadProject();
     } catch (err) {
-      const nextError = err instanceof Error ? err.message : 'Falha ao atualizar status.'
-      setError(nextError)
+      const nextError =
+        err instanceof Error ? err.message : "Falha ao atualizar status.";
+      setError(nextError);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
+
+  const handleDeleteProject = async () => {
+    if (!project || project.status !== "rascunho") {
+      return;
+    }
+
+    if (
+      !window.confirm(
+        "Tem certeza que deseja excluir este rascunho? Esta ação não pode ser desfeita.",
+      )
+    ) {
+      return;
+    }
+
+    setError("");
+    setIsDeleting(true);
+
+    try {
+      await deleteMyProject(project.id);
+      navigate("/usuario/meus-projetos");
+    } catch (err) {
+      const nextError =
+        err instanceof Error ? err.message : "Falha ao excluir rascunho.";
+      setError(nextError);
+      setIsDeleting(false);
+    }
+  };
 
   const formatAttachmentSize = (size: number) => {
     if (size < 1024) {
-      return `${size} B`
+      return `${size} B`;
     }
     if (size < 1024 * 1024) {
-      return `${(size / 1024).toFixed(1)} KB`
+      return `${(size / 1024).toFixed(1)} KB`;
     }
-    return `${(size / (1024 * 1024)).toFixed(1)} MB`
-  }
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+  };
 
-  const handleUploadAttachment = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+  const handleUploadAttachment = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
     if (!file || !projectId) {
-      return
+      return;
     }
 
-    setAttachmentError('')
-    setIsUploadingAttachment(true)
+    setAttachmentError("");
+    setIsUploadingAttachment(true);
     try {
-      await uploadProjectAttachment(projectId, file)
-      await loadAttachments()
+      await uploadProjectAttachment(projectId, file);
+      await loadAttachments();
     } catch (err) {
-      const nextError = err instanceof Error ? err.message : 'Falha ao enviar anexo.'
-      setAttachmentError(nextError)
+      const nextError =
+        err instanceof Error ? err.message : "Falha ao enviar anexo.";
+      setAttachmentError(nextError);
     } finally {
-      setIsUploadingAttachment(false)
-      event.target.value = ''
+      setIsUploadingAttachment(false);
+      event.target.value = "";
     }
-  }
+  };
 
   const handleDeleteAttachment = async (attachmentId: string) => {
     if (!projectId) {
-      return
+      return;
     }
 
-    setAttachmentError('')
-    setDeletingAttachmentId(attachmentId)
+    setAttachmentError("");
+    setDeletingAttachmentId(attachmentId);
     try {
-      await deleteProjectAttachment(projectId, attachmentId)
-      await loadAttachments()
+      await deleteProjectAttachment(projectId, attachmentId);
+      await loadAttachments();
     } catch (err) {
-      const nextError = err instanceof Error ? err.message : 'Falha ao excluir anexo.'
-      setAttachmentError(nextError)
+      const nextError =
+        err instanceof Error ? err.message : "Falha ao excluir anexo.";
+      setAttachmentError(nextError);
     } finally {
-      setDeletingAttachmentId(null)
+      setDeletingAttachmentId(null);
     }
-  }
+  };
 
   return (
     <article className="dashboard-panel">
@@ -244,32 +285,56 @@ export function UserProjectDetailPage() {
           {!isEditing ? (
             <>
               <p>Area: {project.thematic_area}</p>
-              <p>Curso: {project.course || '-'}</p>
+              <p>Curso: {project.course || "-"}</p>
               <p>
                 Periodo: {project.period_start} ate {project.period_end}
               </p>
               <p>Publico-alvo: {project.target_audience}</p>
               <p>Orcamento: R$ {Number(project.budget).toFixed(2)}</p>
               <p>Descricao: {project.description}</p>
-              {project.admin_message && <p>Mensagem da avaliacao: {project.admin_message}</p>}
+              {project.admin_message && (
+                <p>Mensagem da avaliacao: {project.admin_message}</p>
+              )}
 
               <div className="project-detail-actions">
-                {(project.status === 'rascunho' || project.status === 'em_ajustes') && (
-                  <Button type="button" variant="outline" size="sm" onClick={startEdit}>
+                {(project.status === "rascunho" ||
+                  project.status === "em_ajustes") && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={startEdit}
+                  >
                     Editar
                   </Button>
                 )}
-                {(project.status === 'rascunho' ||
-                  project.status === 'submetido' ||
-                  project.status === 'em_ajustes') && (
-                  <Button type="button" size="sm" onClick={handleStatusToggle} disabled={isSubmitting}>
+                {project.status === "rascunho" && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleDeleteProject}
+                    disabled={isDeleting || isSubmitting}
+                  >
+                    {isDeleting ? "Excluindo..." : "Excluir rascunho"}
+                  </Button>
+                )}
+                {(project.status === "rascunho" ||
+                  project.status === "submetido" ||
+                  project.status === "em_ajustes") && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleStatusToggle}
+                    disabled={isSubmitting || isDeleting}
+                  >
                     {isSubmitting
-                      ? 'Atualizando...'
-                      : project.status === 'submetido'
-                        ? 'Voltar para rascunho'
-                        : project.status === 'em_ajustes'
-                          ? 'Reenviar para avaliacao'
-                          : 'Submeter'}
+                      ? "Atualizando..."
+                      : project.status === "submetido"
+                        ? "Voltar para rascunho"
+                        : project.status === "em_ajustes"
+                          ? "Reenviar para avaliacao"
+                          : "Submeter"}
                   </Button>
                 )}
               </div>
@@ -287,7 +352,8 @@ export function UserProjectDetailPage() {
                 </div>
 
                 <p className="dashboard-note">
-                  Envie arquivos de apoio (PDF, imagens, DOC, XLS, PPT) ate 20 MB.
+                  Envie arquivos de apoio (PDF, imagens, DOC, XLS, PPT) ate 20
+                  MB.
                 </p>
 
                 {isAttachmentsLoading && (
@@ -304,10 +370,14 @@ export function UserProjectDetailPage() {
                     {attachments.map((attachment) => (
                       <li key={attachment.id} className="attachment-item">
                         <div>
-                          <p className="attachment-name">{attachment.file_name}</p>
+                          <p className="attachment-name">
+                            {attachment.file_name}
+                          </p>
                           <p className="attachment-meta">
-                            {formatAttachmentSize(attachment.size_bytes)} -{' '}
-                            {new Date(attachment.created_at).toLocaleString('pt-BR')}
+                            {formatAttachmentSize(attachment.size_bytes)} -{" "}
+                            {new Date(attachment.created_at).toLocaleString(
+                              "pt-BR",
+                            )}
                           </p>
                         </div>
                         <div className="attachment-actions">
@@ -325,10 +395,14 @@ export function UserProjectDetailPage() {
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDeleteAttachment(attachment.id)}
+                            onClick={() =>
+                              handleDeleteAttachment(attachment.id)
+                            }
                             disabled={deletingAttachmentId === attachment.id}
                           >
-                            {deletingAttachmentId === attachment.id ? 'Excluindo...' : 'Excluir'}
+                            {deletingAttachmentId === attachment.id
+                              ? "Excluindo..."
+                              : "Excluir"}
                           </Button>
                         </div>
                       </li>
@@ -342,9 +416,11 @@ export function UserProjectDetailPage() {
               <label>
                 Titulo
                 <Input
-                  value={editForm?.title ?? ''}
+                  value={editForm?.title ?? ""}
                   onChange={(event) =>
-                    setEditForm((prev) => (prev ? { ...prev, title: event.target.value } : prev))
+                    setEditForm((prev) =>
+                      prev ? { ...prev, title: event.target.value } : prev,
+                    )
                   }
                   required
                 />
@@ -353,10 +429,12 @@ export function UserProjectDetailPage() {
               <label>
                 Area tematica
                 <Input
-                  value={editForm?.thematicArea ?? ''}
+                  value={editForm?.thematicArea ?? ""}
                   onChange={(event) =>
                     setEditForm((prev) =>
-                      prev ? { ...prev, thematicArea: event.target.value } : prev,
+                      prev
+                        ? { ...prev, thematicArea: event.target.value }
+                        : prev,
                     )
                   }
                   required
@@ -366,9 +444,11 @@ export function UserProjectDetailPage() {
               <label>
                 Curso
                 <Input
-                  value={editForm?.course ?? ''}
+                  value={editForm?.course ?? ""}
                   onChange={(event) =>
-                    setEditForm((prev) => (prev ? { ...prev, course: event.target.value } : prev))
+                    setEditForm((prev) =>
+                      prev ? { ...prev, course: event.target.value } : prev,
+                    )
                   }
                 />
               </label>
@@ -378,10 +458,12 @@ export function UserProjectDetailPage() {
                   Inicio
                   <Input
                     type="date"
-                    value={editForm?.periodStart ?? ''}
+                    value={editForm?.periodStart ?? ""}
                     onChange={(event) =>
                       setEditForm((prev) =>
-                        prev ? { ...prev, periodStart: event.target.value } : prev,
+                        prev
+                          ? { ...prev, periodStart: event.target.value }
+                          : prev,
                       )
                     }
                     required
@@ -391,10 +473,12 @@ export function UserProjectDetailPage() {
                   Fim
                   <Input
                     type="date"
-                    value={editForm?.periodEnd ?? ''}
+                    value={editForm?.periodEnd ?? ""}
                     onChange={(event) =>
                       setEditForm((prev) =>
-                        prev ? { ...prev, periodEnd: event.target.value } : prev,
+                        prev
+                          ? { ...prev, periodEnd: event.target.value }
+                          : prev,
                       )
                     }
                     required
@@ -405,10 +489,12 @@ export function UserProjectDetailPage() {
               <label>
                 Publico-alvo
                 <Input
-                  value={editForm?.targetAudience ?? ''}
+                  value={editForm?.targetAudience ?? ""}
                   onChange={(event) =>
                     setEditForm((prev) =>
-                      prev ? { ...prev, targetAudience: event.target.value } : prev,
+                      prev
+                        ? { ...prev, targetAudience: event.target.value }
+                        : prev,
                     )
                   }
                   required
@@ -421,9 +507,11 @@ export function UserProjectDetailPage() {
                   type="number"
                   min={0}
                   step="0.01"
-                  value={editForm?.budget ?? ''}
+                  value={editForm?.budget ?? ""}
                   onChange={(event) =>
-                    setEditForm((prev) => (prev ? { ...prev, budget: event.target.value } : prev))
+                    setEditForm((prev) =>
+                      prev ? { ...prev, budget: event.target.value } : prev,
+                    )
                   }
                   required
                 />
@@ -432,10 +520,12 @@ export function UserProjectDetailPage() {
               <label>
                 Descricao
                 <Textarea
-                  value={editForm?.description ?? ''}
+                  value={editForm?.description ?? ""}
                   onChange={(event) =>
                     setEditForm((prev) =>
-                      prev ? { ...prev, description: event.target.value } : prev,
+                      prev
+                        ? { ...prev, description: event.target.value }
+                        : prev,
                     )
                   }
                   rows={6}
@@ -445,9 +535,14 @@ export function UserProjectDetailPage() {
 
               <div className="project-inline-actions">
                 <Button type="submit" size="sm" disabled={isSubmitting}>
-                  {isSubmitting ? 'Salvando...' : 'Salvar alteracoes'}
+                  {isSubmitting ? "Salvando..." : "Salvar alteracoes"}
                 </Button>
-                <Button type="button" variant="outline" size="sm" onClick={cancelEdit}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={cancelEdit}
+                >
                   Cancelar
                 </Button>
               </div>
@@ -456,5 +551,5 @@ export function UserProjectDetailPage() {
         </div>
       )}
     </article>
-  )
+  );
 }
