@@ -1,10 +1,8 @@
 alter table public.app_projects
   add column if not exists deleted_at timestamptz,
   add column if not exists deleted_by_app_user_id uuid references public.app_users (id);
-
 create index if not exists idx_app_projects_owner_deleted
   on public.app_projects (owner_app_user_id, deleted_at, created_at desc);
-
 create or replace function public.app_list_my_projects_v2(p_token uuid)
 returns table (
   id uuid,
@@ -55,7 +53,6 @@ begin
   order by p.created_at desc;
 end;
 $$;
-
 create or replace function public.app_get_my_project_detail_v2(
   p_token uuid,
   p_project_id text
@@ -127,7 +124,6 @@ begin
   );
 end;
 $$;
-
 create or replace function public.app_update_project_status(
   p_token uuid,
   p_project_id uuid,
@@ -173,7 +169,6 @@ begin
   );
 end;
 $$;
-
 create or replace function public.app_update_project_v2(
   p_token uuid,
   p_project_id uuid,
@@ -236,7 +231,6 @@ begin
   );
 end;
 $$;
-
 drop function if exists public.app_delete_project(uuid, uuid);
 create or replace function public.app_delete_project(
   p_token uuid,
@@ -279,7 +273,6 @@ begin
   );
 end;
 $$;
-
 create or replace function public.app_restore_project(
   p_token uuid,
   p_project_id uuid
@@ -320,6 +313,5 @@ begin
   );
 end;
 $$;
-
 grant execute on function public.app_delete_project(uuid, uuid) to anon, authenticated;
 grant execute on function public.app_restore_project(uuid, uuid) to anon, authenticated;

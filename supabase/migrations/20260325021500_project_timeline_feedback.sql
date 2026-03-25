@@ -3,31 +3,26 @@ alter table public.app_projects
   add column if not exists analysis_started_at timestamptz,
   add column if not exists approved_at timestamptz,
   add column if not exists rejected_at timestamptz;
-
 update public.app_projects
 set
   submitted_at = coalesce(submitted_at, created_at)
 where status in ('submetido', 'em_avaliacao', 'em_ajustes', 'aprovado', 'reprovado')
   and submitted_at is null;
-
 update public.app_projects
 set
   analysis_started_at = coalesce(analysis_started_at, reviewed_at, updated_at, submitted_at)
 where status in ('em_avaliacao', 'em_ajustes', 'aprovado', 'reprovado')
   and analysis_started_at is null;
-
 update public.app_projects
 set
   approved_at = coalesce(approved_at, reviewed_at, updated_at)
 where status = 'aprovado'
   and approved_at is null;
-
 update public.app_projects
 set
   rejected_at = coalesce(rejected_at, reviewed_at, updated_at)
 where status = 'reprovado'
   and rejected_at is null;
-
 create or replace function public.app_update_project_status(
   p_token uuid,
   p_project_id uuid,
@@ -97,7 +92,6 @@ begin
   );
 end;
 $$;
-
 create or replace function public.app_admin_get_project_detail_v2(
   p_token uuid,
   p_project_id text
@@ -176,7 +170,6 @@ begin
   );
 end;
 $$;
-
 create or replace function public.app_admin_decide_project(
   p_token uuid,
   p_project_id uuid,
@@ -260,7 +253,6 @@ begin
   );
 end;
 $$;
-
 create or replace function public.app_get_project_timeline(
   p_token uuid,
   p_project_id text
@@ -309,5 +301,4 @@ begin
   );
 end;
 $$;
-
 grant execute on function public.app_get_project_timeline(uuid, text) to anon, authenticated;
