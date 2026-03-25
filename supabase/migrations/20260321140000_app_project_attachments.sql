@@ -9,13 +9,10 @@ create table if not exists public.app_project_attachments (
   created_at timestamptz not null default now(),
   constraint app_project_attachments_size_positive check (size_bytes > 0)
 );
-
 create index if not exists idx_app_project_attachments_project
   on public.app_project_attachments (project_id, created_at desc);
-
 create index if not exists idx_app_project_attachments_owner
   on public.app_project_attachments (owner_app_user_id);
-
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
   'app-project-attachments',

@@ -1,11 +1,8 @@
 alter table public.app_projects
   add column if not exists admin_message text;
-
 alter table public.app_projects
   add column if not exists admin_message_updated_at timestamptz;
-
 drop function if exists public.app_admin_decide_project(uuid, uuid, public.project_status);
-
 create or replace function public.app_admin_decide_project(
   p_token uuid,
   p_project_id uuid,
@@ -80,11 +77,9 @@ begin
   );
 end;
 $$;
-
 grant execute on function public.app_admin_decide_project(
   uuid, uuid, public.project_status, text
 ) to anon, authenticated;
-
 create or replace function public.app_list_admin_project_history(
   p_token uuid
 )
@@ -126,7 +121,6 @@ begin
   order by coalesce(p.reviewed_at, p.updated_at) desc;
 end;
 $$;
-
 create or replace function public.app_update_project_status(
   p_token uuid,
   p_project_id uuid,
@@ -171,7 +165,6 @@ begin
   );
 end;
 $$;
-
 create or replace function public.app_update_project_v2(
   p_token uuid,
   p_project_id uuid,
@@ -227,7 +220,6 @@ begin
   );
 end;
 $$;
-
 create or replace function public.app_get_my_project_detail_v2(
   p_token uuid,
   p_project_id text

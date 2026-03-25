@@ -1,5 +1,4 @@
 create extension if not exists pgcrypto;
-
 create type public.user_role as enum ('admin', 'user');
 create type public.project_status as enum (
   'rascunho',
@@ -46,7 +45,6 @@ create type public.notification_status as enum (
   'falhou',
   'reenviado'
 );
-
 create table public.users (
   id uuid primary key references auth.users (id) on delete cascade,
   full_name text not null,
@@ -57,7 +55,6 @@ create table public.users (
   updated_at timestamptz not null default now(),
   constraint users_email_format check (position('@' in email) > 1)
 );
-
 create table public.projects (
   id uuid primary key default gen_random_uuid(),
   owner_user_id uuid not null references public.users (id) on delete restrict,
@@ -74,7 +71,6 @@ create table public.projects (
   constraint projects_period_check check (period_end >= period_start),
   constraint projects_budget_check check (budget >= 0)
 );
-
 create table public.project_team (
   id uuid primary key default gen_random_uuid(),
   project_id uuid not null references public.projects (id) on delete cascade,
@@ -87,7 +83,6 @@ create table public.project_team (
     workload_hours is null or workload_hours >= 0
   )
 );
-
 create table public.activities (
   id uuid primary key default gen_random_uuid(),
   project_id uuid not null references public.projects (id) on delete cascade,
@@ -100,7 +95,6 @@ create table public.activities (
   created_at timestamptz not null default now(),
   constraint activities_workload_check check (workload_hours > 0)
 );
-
 create table public.project_documents (
   id uuid primary key default gen_random_uuid(),
   project_id uuid not null references public.projects (id) on delete cascade,
@@ -114,7 +108,6 @@ create table public.project_documents (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-
 create table public.reviews (
   id uuid primary key default gen_random_uuid(),
   project_id uuid not null references public.projects (id) on delete cascade,
@@ -124,7 +117,6 @@ create table public.reviews (
   reviewed_at timestamptz not null default now(),
   created_at timestamptz not null default now()
 );
-
 create table public.audit_log (
   id bigint generated always as identity primary key,
   project_id uuid not null references public.projects (id) on delete cascade,
@@ -133,7 +125,6 @@ create table public.audit_log (
   description text,
   created_at timestamptz not null default now()
 );
-
 create table public.notifications (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.users (id) on delete cascade,
@@ -146,7 +137,6 @@ create table public.notifications (
   created_at timestamptz not null default now(),
   constraint notifications_attempts_check check (attempts >= 1)
 );
-
 create index idx_projects_owner_user_id on public.projects (owner_user_id);
 create index idx_projects_status on public.projects (status);
 create index idx_projects_thematic_area on public.projects (thematic_area);
@@ -162,7 +152,6 @@ create index idx_audit_log_actor_user_id on public.audit_log (actor_user_id);
 create index idx_notifications_user_id on public.notifications (user_id);
 create index idx_notifications_project_id on public.notifications (project_id);
 create index idx_notifications_status on public.notifications (status);
-
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
@@ -172,7 +161,6 @@ begin
   return new;
 end;
 $$;
-
 create or replace function public.current_user_role()
 returns public.user_role
 language sql
@@ -182,7 +170,6 @@ as $$
   from public.users
   where id = auth.uid()
 $$;
-
 create or replace function public.is_admin()
 returns boolean
 language sql
@@ -190,7 +177,6 @@ stable
 as $$
   select coalesce(public.current_user_role() = 'admin', false)
 $$;
-
 create or replace function public.handle_new_auth_user()
 returns trigger
 language plpgsql
@@ -209,7 +195,6 @@ begin
   return new;
 end;
 $$;
-
 create or replace function public.handle_project_audit_log()
 returns trigger
 language plpgsql
@@ -247,7 +232,6 @@ begin
   return new;
 end;
 $$;
-
 create or replace function public.handle_document_audit_log()
 returns trigger
 language plpgsql
@@ -278,37 +262,30 @@ begin
   return new;
 end;
 $$;
-
 create trigger trg_users_updated_at
 before update on public.users
 for each row
 execute function public.set_updated_at();
-
 create trigger trg_projects_updated_at
 before update on public.projects
 for each row
 execute function public.set_updated_at();
-
 create trigger trg_project_documents_updated_at
 before update on public.project_documents
 for each row
 execute function public.set_updated_at();
-
 create trigger on_auth_user_created
 after insert on auth.users
 for each row
 execute function public.handle_new_auth_user();
-
 create trigger trg_project_audit_log
 after insert or update on public.projects
 for each row
 execute function public.handle_project_audit_log();
-
 create trigger trg_document_audit_log
 after insert or update on public.project_documents
 for each row
 execute function public.handle_document_audit_log();
-
 alter table public.users enable row level security;
 alter table public.projects enable row level security;
 alter table public.project_team enable row level security;
@@ -317,51 +294,43 @@ alter table public.project_documents enable row level security;
 alter table public.reviews enable row level security;
 alter table public.audit_log enable row level security;
 alter table public.notifications enable row level security;
-
 create policy users_select_self_or_admin
 on public.users
 for select
 to authenticated
 using (id = auth.uid() or public.is_admin());
-
 create policy users_insert_self_or_admin
 on public.users
 for insert
 to authenticated
 with check (id = auth.uid() or public.is_admin());
-
 create policy users_update_self_or_admin
 on public.users
 for update
 to authenticated
 using (id = auth.uid() or public.is_admin())
 with check (id = auth.uid() or public.is_admin());
-
 create policy projects_select_owner_or_admin
 on public.projects
 for select
 to authenticated
 using (owner_user_id = auth.uid() or public.is_admin());
-
 create policy projects_insert_owner_or_admin
 on public.projects
 for insert
 to authenticated
 with check (owner_user_id = auth.uid() or public.is_admin());
-
 create policy projects_update_owner_or_admin
 on public.projects
 for update
 to authenticated
 using (owner_user_id = auth.uid() or public.is_admin())
 with check (owner_user_id = auth.uid() or public.is_admin());
-
 create policy projects_delete_owner_or_admin
 on public.projects
 for delete
 to authenticated
 using (owner_user_id = auth.uid() or public.is_admin());
-
 create policy project_team_manage_owner_or_admin
 on public.project_team
 for all
@@ -382,7 +351,6 @@ with check (
       and (p.owner_user_id = auth.uid() or public.is_admin())
   )
 );
-
 create policy activities_manage_owner_or_admin
 on public.activities
 for all
@@ -403,7 +371,6 @@ with check (
       and (p.owner_user_id = auth.uid() or public.is_admin())
   )
 );
-
 create policy documents_manage_owner_or_admin
 on public.project_documents
 for all
@@ -424,7 +391,6 @@ with check (
       and (p.owner_user_id = auth.uid() or public.is_admin())
   )
 );
-
 create policy reviews_select_owner_or_admin
 on public.reviews
 for select
@@ -438,14 +404,12 @@ using (
       and p.owner_user_id = auth.uid()
   )
 );
-
 create policy reviews_manage_admin_only
 on public.reviews
 for all
 to authenticated
 using (public.is_admin())
 with check (public.is_admin());
-
 create policy audit_log_select_owner_or_admin
 on public.audit_log
 for select
@@ -459,7 +423,6 @@ using (
       and p.owner_user_id = auth.uid()
   )
 );
-
 create policy audit_log_insert_owner_or_admin
 on public.audit_log
 for insert
@@ -476,13 +439,11 @@ with check (
     )
   )
 );
-
 create policy notifications_select_owner_or_admin
 on public.notifications
 for select
 to authenticated
 using (user_id = auth.uid() or public.is_admin());
-
 create policy notifications_manage_admin_only
 on public.notifications
 for all

@@ -12,7 +12,6 @@ create table public.app_users (
     or (role = 'user' and password_hash is null)
   )
 );
-
 create table public.app_sessions (
   token uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.app_users (id) on delete cascade,
@@ -20,10 +19,8 @@ create table public.app_sessions (
   last_seen_at timestamptz not null default now(),
   expires_at timestamptz not null default now() + interval '12 hours'
 );
-
 create index idx_app_sessions_user_id on public.app_sessions (user_id);
 create index idx_app_sessions_expires_at on public.app_sessions (expires_at);
-
 create or replace function public.app_login_user(p_username text)
 returns jsonb
 language plpgsql
@@ -59,7 +56,6 @@ begin
   );
 end;
 $$;
-
 create or replace function public.app_login_admin(p_username text, p_password text)
 returns jsonb
 language plpgsql
@@ -99,7 +95,6 @@ begin
   );
 end;
 $$;
-
 create or replace function public.app_validate_session(p_token uuid)
 returns jsonb
 language plpgsql
@@ -141,7 +136,6 @@ begin
   );
 end;
 $$;
-
 create or replace function public.app_logout(p_token uuid)
 returns void
 language plpgsql
@@ -152,15 +146,12 @@ begin
   delete from public.app_sessions where token = p_token;
 end;
 $$;
-
 grant execute on function public.app_login_user(text) to anon, authenticated;
 grant execute on function public.app_login_admin(text, text) to anon, authenticated;
 grant execute on function public.app_validate_session(uuid) to anon, authenticated;
 grant execute on function public.app_logout(uuid) to anon, authenticated;
-
 alter table public.app_users enable row level security;
 alter table public.app_sessions enable row level security;
-
 insert into public.app_users (username, display_name, role)
 values
   ('00000128457', 'Professor RA 00000128457', 'user'),
@@ -174,7 +165,6 @@ values
   ('00000486135', 'Professor RA 00000486135', 'user'),
   ('00000197546', 'Professor RA 00000197546', 'user')
 on conflict (username) do nothing;
-
 insert into public.app_users (username, display_name, role, password_hash)
 values (
   'admin',

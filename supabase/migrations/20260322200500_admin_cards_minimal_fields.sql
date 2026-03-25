@@ -1,5 +1,4 @@
 drop function if exists public.app_list_admin_projects(uuid);
-
 create or replace function public.app_list_admin_projects(p_token uuid)
 returns table (
   id uuid,
@@ -39,9 +38,7 @@ begin
   order by p.created_at desc;
 end;
 $$;
-
 drop function if exists public.app_list_admin_project_history(uuid);
-
 create or replace function public.app_list_admin_project_history(
   p_token uuid
 )
@@ -84,6 +81,5 @@ begin
   order by coalesce(p.reviewed_at, p.updated_at) desc;
 end;
 $$;
-
 grant execute on function public.app_list_admin_projects(uuid) to anon, authenticated;
 grant execute on function public.app_list_admin_project_history(uuid) to anon, authenticated;

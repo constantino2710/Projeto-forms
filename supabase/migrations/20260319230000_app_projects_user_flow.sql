@@ -14,16 +14,13 @@ create table public.app_projects (
   constraint app_projects_period_check check (period_end >= period_start),
   constraint app_projects_budget_check check (budget >= 0)
 );
-
 create index idx_app_projects_owner on public.app_projects (owner_app_user_id);
 create index idx_app_projects_status on public.app_projects (status);
 create index idx_app_projects_created_at on public.app_projects (created_at desc);
-
 create trigger trg_app_projects_updated_at
 before update on public.app_projects
 for each row
 execute function public.set_updated_at();
-
 create or replace function public.app_session_user(p_token uuid)
 returns public.app_users
 language plpgsql
@@ -53,7 +50,6 @@ begin
   return v_user;
 end;
 $$;
-
 create or replace function public.app_create_project(
   p_token uuid,
   p_title text,
@@ -109,7 +105,6 @@ begin
   );
 end;
 $$;
-
 create or replace function public.app_list_my_projects(p_token uuid)
 returns table (
   id uuid,
@@ -151,7 +146,6 @@ begin
   order by p.created_at desc;
 end;
 $$;
-
 create or replace function public.app_update_project_status(
   p_token uuid,
   p_project_id uuid,
@@ -195,7 +189,6 @@ begin
   );
 end;
 $$;
-
 grant execute on function public.app_session_user(uuid) to anon, authenticated;
 grant execute on function public.app_create_project(
   uuid, text, text, text, date, date, text, numeric

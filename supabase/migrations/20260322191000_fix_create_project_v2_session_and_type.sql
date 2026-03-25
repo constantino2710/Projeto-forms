@@ -12,7 +12,6 @@ drop function if exists public.app_create_project_v2(
   text,
   text
 );
-
 create or replace function public.app_create_project_v2(
   p_token uuid,
   p_title text,
@@ -80,7 +79,6 @@ begin
   );
 end;
 $$;
-
 grant execute on function public.app_create_project_v2(
   uuid, text, projeto_tipo, text, text, date, date, text, numeric, text, text, text
 ) to anon, authenticated;

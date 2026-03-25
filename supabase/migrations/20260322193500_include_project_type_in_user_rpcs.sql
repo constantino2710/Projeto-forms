@@ -1,5 +1,4 @@
 drop function if exists public.app_list_my_projects_v2(uuid);
-
 create or replace function public.app_list_my_projects_v2(p_token uuid)
 returns table (
   id uuid,
@@ -49,7 +48,6 @@ begin
   order by p.created_at desc;
 end;
 $$;
-
 create or replace function public.app_get_my_project_detail_v2(
   p_token uuid,
   p_project_id text

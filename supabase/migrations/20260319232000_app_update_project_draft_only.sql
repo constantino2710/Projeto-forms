@@ -51,7 +51,6 @@ begin
   );
 end;
 $$;
-
 grant execute on function public.app_update_project(
   uuid, uuid, text, text, text, date, date, text, numeric
 ) to anon, authenticated;

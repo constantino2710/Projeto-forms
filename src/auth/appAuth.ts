@@ -8,6 +8,7 @@ type LoginResponse = {
   user_id: string
   username: string
   display_name: string
+  avatar_url?: string | null
   role: 'admin' | 'user'
 }
 
@@ -25,7 +26,10 @@ const parseSession = (value: unknown): AuthSession => {
     throw new Error('Sessao invalida recebida do servidor.')
   }
 
-  return data
+  return {
+    ...data,
+    avatar_url: data.avatar_url ?? null,
+  }
 }
 
 export const getStoredSessionToken = () => localStorage.getItem(SESSION_TOKEN_KEY)
@@ -88,4 +92,23 @@ export const logoutSession = async () => {
   await supabase.rpc('app_logout', {
     p_token: token,
   })
+}
+
+export const updateMyAvatar = async (avatarUrl: string): Promise<string | null> => {
+  const token = getStoredSessionToken()
+  if (!token) {
+    throw new Error('Sessao invalida. Faca login novamente.')
+  }
+
+  const { data, error } = await supabase.rpc('app_update_my_avatar', {
+    p_token: token,
+    p_avatar_url: avatarUrl.trim() || null,
+  })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  const payload = data as { avatar_url?: string | null } | null
+  return payload?.avatar_url ?? null
 }

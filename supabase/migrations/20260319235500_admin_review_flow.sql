@@ -36,7 +36,6 @@ begin
   order by p.created_at desc;
 end;
 $$;
-
 create or replace function public.app_admin_get_project_detail(
   p_token uuid,
   p_project_id uuid
@@ -99,7 +98,6 @@ begin
   end if;
 end;
 $$;
-
 create or replace function public.app_admin_decide_project(
   p_token uuid,
   p_project_id uuid,
@@ -143,7 +141,6 @@ begin
   );
 end;
 $$;
-
 grant execute on function public.app_list_admin_projects(uuid) to anon, authenticated;
 grant execute on function public.app_admin_get_project_detail(uuid, uuid) to anon, authenticated;
 grant execute on function public.app_admin_decide_project(

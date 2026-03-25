@@ -1,6 +1,5 @@
 alter table public.app_projects
 add column if not exists description text not null default '';
-
 create or replace function public.app_create_project_v2(
   p_token uuid,
   p_title text,
@@ -59,7 +58,6 @@ begin
   );
 end;
 $$;
-
 create or replace function public.app_list_my_projects_v2(p_token uuid)
 returns table (
   id uuid,
@@ -103,7 +101,6 @@ begin
   order by p.created_at desc;
 end;
 $$;
-
 create or replace function public.app_update_project_v2(
   p_token uuid,
   p_project_id uuid,
@@ -159,7 +156,6 @@ begin
   );
 end;
 $$;
-
 create or replace function public.app_admin_get_project_detail_v2(
   p_token uuid,
   p_project_id text
@@ -235,13 +231,10 @@ begin
   );
 end;
 $$;
-
 grant execute on function public.app_create_project_v2(
   uuid, text, text, text, date, date, text, numeric, text
 ) to anon, authenticated;
-
 grant execute on function public.app_list_my_projects_v2(uuid) to anon, authenticated;
-
 grant execute on function public.app_update_project_v2(
   uuid, uuid, text, text, text, date, date, text, numeric, text
 ) to anon, authenticated;

@@ -1,12 +1,9 @@
 alter table public.app_projects
 add column if not exists reviewed_by_app_user_id uuid references public.app_users (id) on delete set null;
-
 alter table public.app_projects
 add column if not exists reviewed_at timestamptz;
-
 create index if not exists idx_app_projects_reviewed_by on public.app_projects (reviewed_by_app_user_id);
 create index if not exists idx_app_projects_reviewed_at on public.app_projects (reviewed_at desc);
-
 create or replace function public.app_admin_decide_project(
   p_token uuid,
   p_project_id uuid,
@@ -52,7 +49,6 @@ begin
   );
 end;
 $$;
-
 create or replace function public.app_list_admin_project_history(
   p_token uuid
 )
@@ -94,5 +90,4 @@ begin
   order by p.reviewed_at desc nulls last, p.updated_at desc;
 end;
 $$;
-
 grant execute on function public.app_list_admin_project_history(uuid) to anon, authenticated;

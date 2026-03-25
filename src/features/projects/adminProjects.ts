@@ -35,6 +35,7 @@ export type AdminProjectDetail = {
   id: string
   title: string
   professor: string
+  professor_avatar_url: string | null
   discipline: string
   course: string
   period_start: string

@@ -20,6 +20,7 @@ export type AuthSession = {
   user_id: string
   username: string
   display_name: string
+  avatar_url: string | null
   role: AuthRole
 }
 

@@ -71,5 +71,4 @@ begin
   );
 end;
 $$;
-
 grant execute on function public.app_admin_get_project_detail_v2(uuid, text) to anon, authenticated;

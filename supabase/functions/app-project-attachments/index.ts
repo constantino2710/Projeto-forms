@@ -83,11 +83,16 @@ Deno.serve(async (req) => {
 
     const { data: project, error: projectError } = await supabase
       .from('app_projects')
-      .select('id, owner_app_user_id, status')
+      .select('id, owner_app_user_id, status, deleted_at')
       .eq('id', projectId)
       .maybeSingle()
 
-    if (projectError || !project || project.owner_app_user_id !== sessionUser.id) {
+    if (
+      projectError ||
+      !project ||
+      project.owner_app_user_id !== sessionUser.id ||
+      project.deleted_at !== null
+    ) {
       return new Response(JSON.stringify({ error: 'Projeto nao encontrado para este usuario.' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
