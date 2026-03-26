@@ -121,6 +121,8 @@ export function AdminProjectDetailPage() {
       : project?.status === 'reprovado'
         ? timeline?.rejected_at ?? null
         : null
+  const professorAvatarUrl = project?.professor_avatar_url?.trim() || null
+  const professorInitial = project?.professor?.trim().charAt(0).toUpperCase() || '?'
 
   return (
     <article className="dashboard-panel dashboard-panel-flat">
@@ -225,6 +227,19 @@ export function AdminProjectDetailPage() {
             <span className={`status-badge status-${project.status} timeline-status-badge`}>
               {projectStatusLabel[project.status]}
             </span>
+            <div className="project-professor-chip">
+              <p className="project-professor-label">Atribuido por:</p>
+              <div className="project-professor-row">
+                <div className="project-professor-avatar" aria-hidden="true">
+                  {professorAvatarUrl ? (
+                    <img src={professorAvatarUrl} alt={`Foto de ${project.professor}`} />
+                  ) : (
+                    <span>{professorInitial}</span>
+                  )}
+                </div>
+                <p className="project-professor-name">{project.professor}</p>
+              </div>
+            </div>
             <h2>Linha do tempo</h2>
             {timelineSteps.map((step, index) => {
               const isLatest = step.date !== null && index === latestTimelineIndex
