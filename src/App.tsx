@@ -19,6 +19,7 @@ export type AuthSession = {
   user_id: string
   username: string
   display_name: string
+  email: string | null
   avatar_url: string | null
   role: AuthRole
 }
@@ -61,6 +62,10 @@ function App() {
     setSession(null)
   }
 
+  const handleSessionUpdate = (updates: Partial<AuthSession>) => {
+    setSession((current) => (current ? { ...current, ...updates } : current))
+  }
+
   if (isLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_18%_18%,hsl(var(--accent)/0.5)_0,transparent_38%),radial-gradient(circle_at_85%_82%,hsl(var(--secondary)/0.5)_0,transparent_34%)] px-4 py-5">
@@ -97,6 +102,7 @@ function App() {
                 <DashboardLayout
                   session={session}
                   onLogout={handleLogout}
+                  onSessionUpdate={handleSessionUpdate}
                   items={[
                     { label: 'Meus Projetos', to: '/usuario/meus-projetos', icon: FolderKanban },
                     { label: 'Novo Projeto', to: '/usuario/novo-projeto', icon: FilePlus2 },
@@ -121,6 +127,7 @@ function App() {
                 <DashboardLayout
                   session={session}
                   onLogout={handleLogout}
+                  onSessionUpdate={handleSessionUpdate}
                   items={[
                     { label: 'Projetos', to: '/admin/projetos', icon: LayoutList },
                     { label: 'Historico', to: '/admin/historico', icon: History },
