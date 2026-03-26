@@ -62,6 +62,27 @@
 * {
   box-sizing: border-box;
   border-color: hsl(var(--border));
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--primary) / 0.75) hsl(var(--muted) / 0.45);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: hsl(var(--muted) / 0.45);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.75);
+  border-radius: 999px;
+  border: 2px solid hsl(var(--muted) / 0.45);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary));
 }
 
 html,

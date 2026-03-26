@@ -22,23 +22,23 @@ export function AdminPage({ session, onLogout }: AdminPageProps) {
   }
 
   return (
-    <main className="auth-shell">
+    <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_18%_18%,hsl(var(--accent)/0.5)_0,transparent_38%),radial-gradient(circle_at_85%_82%,hsl(var(--secondary)/0.5)_0,transparent_34%)] px-4 py-5">
       <Card>
         <CardHeader>
-          <div className="top-actions">
+          <div className="mb-2.5 flex justify-end">
             <ThemeToggle />
           </div>
           <CardTitle>Painel do Admin</CardTitle>
           <CardDescription>Area exclusiva de administracao.</CardDescription>
         </CardHeader>
         <CardContent>
-          <ul className="page-lines">
-            <li>Bem-vindo, {session.display_name}.</li>
-            <li>Usuario: {session.username}</li>
-            <li>Perfil: {session.role}</li>
+          <ul className="m-0 flex list-none flex-col gap-2 p-0">
+            <li className="rounded-[calc(var(--radius)-4px)] border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.4)] px-3 py-2.5">Bem-vindo, {session.display_name}.</li>
+            <li className="rounded-[calc(var(--radius)-4px)] border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.4)] px-3 py-2.5">Usuario: {session.username}</li>
+            <li className="rounded-[calc(var(--radius)-4px)] border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.4)] px-3 py-2.5">Perfil: {session.role}</li>
           </ul>
-          <div className="page-actions">
-            <Button type="button" className="full-width" onClick={handleLogout}>
+          <div className="mt-3.5">
+            <Button type="button" className="w-full" onClick={handleLogout}>
               Sair
             </Button>
           </div>

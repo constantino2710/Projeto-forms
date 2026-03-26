@@ -3,6 +3,24 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { listAdminProjects, type AdminProjectCard } from '../../features/projects/adminProjects'
+import {
+  errorClassName,
+  noteClassName,
+  panelClassName,
+  projectCardClassName,
+  projectCardLinkClassName,
+  projectCardMetaClassName,
+  projectCardTopClassName,
+  projectTitleClassName,
+  projectTitleWrapClassName,
+  projectsGridClassName,
+  projectsHeaderClassName,
+  projectsListClassName,
+  projectTypeBadgeClassName,
+  statusBadgeClassName,
+  viewToggleActiveClassName,
+  viewToggleClassName,
+} from '../../features/projects/projectUi'
 import { projectStatusLabel } from '../../features/projects/userProjects'
 
 type ViewMode = 'list' | 'grid'
@@ -42,18 +60,18 @@ export function AdminProjectsPage() {
   }
 
   return (
-    <article className="dashboard-panel">
-      <div className="projects-header">
+    <article className={panelClassName}>
+      <div className={projectsHeaderClassName}>
         <div>
-          <h1>Projetos Submetidos</h1>
-          <p>Selecione um projeto para analisar e decidir.</p>
+          <h1 className="m-0 text-[1.4rem]">Projetos Submetidos</h1>
+          <p className="mt-2.5 text-[hsl(var(--muted-foreground))]">Selecione um projeto para analisar e decidir.</p>
         </div>
-        <div className="view-toggle">
+        <div className={viewToggleClassName}>
           <Button
             type="button"
             variant="outline"
             size="sm"
-            className={viewMode === 'list' ? 'active' : ''}
+            className={viewMode === 'list' ? viewToggleActiveClassName : ''}
             onClick={() => handleSetViewMode('list')}
           >
             <List size={14} />
@@ -63,7 +81,7 @@ export function AdminProjectsPage() {
             type="button"
             variant="outline"
             size="sm"
-            className={viewMode === 'grid' ? 'active' : ''}
+            className={viewMode === 'grid' ? viewToggleActiveClassName : ''}
             onClick={() => handleSetViewMode('grid')}
           >
             <Grid3X3 size={14} />
@@ -72,40 +90,32 @@ export function AdminProjectsPage() {
         </div>
       </div>
 
-      {isLoading && <p className="dashboard-note">Carregando projetos...</p>}
-      {error && <p className="error">{error}</p>}
+      {isLoading && <p className={noteClassName}>Carregando projetos...</p>}
+      {error && <p className={errorClassName}>{error}</p>}
 
       {!isLoading && projects.length === 0 && (
-        <p className="dashboard-note">Nenhum projeto submetido no momento.</p>
+        <p className={noteClassName}>Nenhum projeto submetido no momento.</p>
       )}
 
-      <div className={viewMode === 'grid' ? 'projects-list projects-grid' : 'projects-list'}>
+      <div className={viewMode === 'grid' ? projectsGridClassName : projectsListClassName}>
         {projects.map((project) => (
-          <Link
-            key={project.id}
-            to={`/admin/projetos/${project.id}`}
-            className="project-card-link"
-          >
-            <section className="project-card">
-              <div className="project-card-top">
-                <div className="project-title-wrap">
-                  <h2>{project.title}</h2>
-                  <span
-                    className={`project-type-badge ${
-                      project.tipo === 'disciplina' ? 'project-type-badge--disciplina' : 'project-type-badge--extensao'
-                    }`}
-                  >
-                    {project.tipo === 'disciplina' ? 'Disciplina Extensionista' : 'Projeto de Extensão'}
+          <Link key={project.id} to={`/admin/projetos/${project.id}`} className={projectCardLinkClassName}>
+            <section className={projectCardClassName}>
+              <div className={projectCardTopClassName}>
+                <div className={projectTitleWrapClassName}>
+                  <h2 className={projectTitleClassName}>{project.title}</h2>
+                  <span className={projectTypeBadgeClassName(project.tipo)}>
+                    {project.tipo === 'disciplina' ? 'Disciplina Extensionista' : 'Projeto de Extensao'}
                   </span>
                 </div>
-                <span className={`status-badge status-${project.status}`}>
+                <span className={statusBadgeClassName(project.status)}>
                   {projectStatusLabel[project.status]}
                 </span>
               </div>
-              <p className="project-card-meta">
+              <p className={projectCardMetaClassName}>
                 Periodo: {project.period_start} ate {project.period_end}
               </p>
-              <p className="project-card-meta">Orcamento: R$ {Number(project.budget).toFixed(2)}</p>
+              <p className={projectCardMetaClassName}>Orcamento: R$ {Number(project.budget).toFixed(2)}</p>
             </section>
           </Link>
         ))}

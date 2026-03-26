@@ -1,9 +1,28 @@
 import { Funnel, Grid3X3, List, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { cn } from '../../lib/utils'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { listMyProjects, projectStatusLabel, type UserProject } from '../../features/projects/userProjects'
+import {
+  errorClassName,
+  noteClassName,
+  panelClassName,
+  projectCardClassName,
+  projectCardLinkClassName,
+  projectCardMetaClassName,
+  projectCardTopClassName,
+  projectTitleClassName,
+  projectTitleWrapClassName,
+  projectsGridClassName,
+  projectsHeaderClassName,
+  projectsListClassName,
+  projectTypeBadgeClassName,
+  statusBadgeClassName,
+  viewToggleActiveClassName,
+  viewToggleClassName,
+} from '../../features/projects/projectUi'
 
 type ViewMode = 'list' | 'grid'
 const VIEW_MODE_KEY = 'user_projects_view_mode'
@@ -59,18 +78,18 @@ export function UserProjectsPage() {
   })
 
   return (
-    <article className="dashboard-panel">
-      <div className="projects-header">
+    <article className={panelClassName}>
+      <div className={projectsHeaderClassName}>
         <div>
-          <h1>Meus Projetos</h1>
-          <p>Clique em um projeto para abrir os detalhes.</p>
+          <h1 className="m-0 text-[1.4rem]">Meus Projetos</h1>
+          <p className="mt-2.5 text-[hsl(var(--muted-foreground))]">Clique em um projeto para abrir os detalhes.</p>
         </div>
-        <div className="view-toggle">
+        <div className={viewToggleClassName}>
           <Button
             type="button"
             variant="outline"
             size="sm"
-            className={viewMode === 'list' ? 'active' : ''}
+            className={viewMode === 'list' ? viewToggleActiveClassName : ''}
             onClick={() => handleSetViewMode('list')}
           >
             <List size={14} />
@@ -80,7 +99,7 @@ export function UserProjectsPage() {
             type="button"
             variant="outline"
             size="sm"
-            className={viewMode === 'grid' ? 'active' : ''}
+            className={viewMode === 'grid' ? viewToggleActiveClassName : ''}
             onClick={() => handleSetViewMode('grid')}
           >
             <Grid3X3 size={14} />
@@ -89,17 +108,18 @@ export function UserProjectsPage() {
         </div>
       </div>
 
-      <div className="projects-toolbar">
-        <div className="search-wrap">
-          <Search size={14} />
+      <div className="mt-3 flex flex-col items-stretch gap-2.5 md:flex-row md:items-center">
+        <div className="relative flex-1">
+          <Search size={14} className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-[hsl(var(--muted-foreground))]" />
           <Input
+            className="pl-8"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Pesquisar projeto por nome"
           />
         </div>
 
-        <div className="filter-wrap">
+        <div className="relative">
           <Button
             type="button"
             variant="outline"
@@ -111,12 +131,16 @@ export function UserProjectsPage() {
           </Button>
 
           {isFilterOpen && (
-            <div className="filter-popover">
+            <div className="absolute top-[calc(100%+8px)] right-0 z-40 flex min-w-[220px] flex-wrap gap-1.5 rounded-[calc(var(--radius)-2px)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-2 shadow-[0_12px_28px_hsl(var(--foreground)/0.12)] md:right-0 max-[900px]:left-0 max-[900px]:right-auto">
               {ALL_STATUSES.map((status) => (
                 <button
                   key={status}
                   type="button"
-                  className={selectedStatuses.includes(status) ? 'filter-tag filter-tag-active' : 'filter-tag'}
+                  className={cn(
+                    'cursor-pointer rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-[9px] py-[5px] text-[0.78rem] text-[hsl(var(--foreground))]',
+                    selectedStatuses.includes(status) &&
+                      'border-[hsl(var(--primary))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]',
+                  )}
                   onClick={() => toggleStatus(status)}
                 >
                   {projectStatusLabel[status]}
@@ -127,38 +151,34 @@ export function UserProjectsPage() {
         </div>
       </div>
 
-      {isLoading && <p className="dashboard-note">Carregando projetos...</p>}
-      {error && <p className="error">{error}</p>}
+      {isLoading && <p className={noteClassName}>Carregando projetos...</p>}
+      {error && <p className={errorClassName}>{error}</p>}
 
       {!isLoading && filteredProjects.length === 0 && (
-        <p className="dashboard-note">Voce ainda nao possui projetos cadastrados.</p>
+        <p className={noteClassName}>Voce ainda nao possui projetos cadastrados.</p>
       )}
 
-      <div className={viewMode === 'grid' ? 'projects-list projects-grid' : 'projects-list'}>
+      <div className={viewMode === 'grid' ? projectsGridClassName : projectsListClassName}>
         {filteredProjects.map((project) => (
-          <Link key={project.id} to={`/usuario/meus-projetos/${project.id}`} className="project-card-link">
-            <section className="project-card">
-              <div className="project-card-top">
-                <div className="project-title-wrap">
-                  <h2>{project.title}</h2>
-                  <span
-                    className={`project-type-badge ${
-                      project.tipo === 'disciplina' ? 'project-type-badge--disciplina' : 'project-type-badge--extensao'
-                    }`}
-                  >
-                    {project.tipo === 'disciplina' ? 'Disciplina Extensionista' : 'Projeto de Extensão'}
+          <Link key={project.id} to={`/usuario/meus-projetos/${project.id}`} className={projectCardLinkClassName}>
+            <section className={projectCardClassName}>
+              <div className={projectCardTopClassName}>
+                <div className={projectTitleWrapClassName}>
+                  <h2 className={projectTitleClassName}>{project.title}</h2>
+                  <span className={projectTypeBadgeClassName(project.tipo)}>
+                    {project.tipo === 'disciplina' ? 'Disciplina Extensionista' : 'Projeto de Extensao'}
                   </span>
                 </div>
 
-                <span className={`status-badge status-${project.status}`}>
+                <span className={statusBadgeClassName(project.status)}>
                   {projectStatusLabel[project.status]}
                 </span>
               </div>
 
-              <p className="project-card-meta">
+              <p className={projectCardMetaClassName}>
                 Periodo: {project.period_start} ate {project.period_end}
               </p>
-              <p className="project-card-meta">Orcamento: R$ {Number(project.budget).toFixed(2)}</p>
+              <p className={projectCardMetaClassName}>Orcamento: R$ {Number(project.budget).toFixed(2)}</p>
             </section>
           </Link>
         ))}

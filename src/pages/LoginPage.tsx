@@ -46,24 +46,24 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   }
 
   return (
-    <main className="auth-shell">
+    <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_18%_18%,hsl(var(--accent)/0.5)_0,transparent_38%),radial-gradient(circle_at_85%_82%,hsl(var(--secondary)/0.5)_0,transparent_34%)] px-4 py-5">
       <Card>
         <CardHeader>
-          <div className="top-actions">
+          <div className="mb-2.5 flex justify-end">
             <ThemeToggle />
           </div>
           <CardTitle>Login do Sistema</CardTitle>
-          <CardDescription className="hint">
+          <CardDescription className="m-0 text-[hsl(var(--muted-foreground))]">
             Acesso restrito para usuarios e administradores.
           </CardDescription>
         </CardHeader>
         <CardContent>
-        <div className="segmented">
+        <div className="my-[14px] grid grid-cols-2 gap-2">
           <Button
             type="button"
             variant="outline"
             size="sm"
-            className={mode === 'user' ? 'active' : ''}
+            className={mode === 'user' ? 'border-[hsl(var(--primary))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]' : ''}
             onClick={() => setMode('user')}
           >
             Usuario
@@ -72,15 +72,15 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             type="button"
             variant="outline"
             size="sm"
-            className={mode === 'admin' ? 'active' : ''}
+            className={mode === 'admin' ? 'border-[hsl(var(--primary))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]' : ''}
             onClick={() => setMode('admin')}
           >
             Admin
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="form">
-          <label>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-[14px]">
+          <label className="flex flex-col gap-1.5 text-[0.925rem] font-semibold">
             Nome de usuario
             <Input
               value={username}
@@ -91,7 +91,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           </label>
 
           {mode === 'admin' && (
-            <label>
+            <label className="flex flex-col gap-1.5 text-[0.925rem] font-semibold">
               Senha
               <Input
                 type="password"
@@ -103,9 +103,9 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             </label>
           )}
 
-          {error && <p className="error">{error}</p>}
+          {error && <p className="m-0 font-semibold text-[hsl(var(--destructive))]">{error}</p>}
 
-          <Button type="submit" className="full-width" disabled={isSubmitting}>
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? 'Entrando...' : 'Entrar'}
           </Button>
         </form>

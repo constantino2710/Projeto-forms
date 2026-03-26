@@ -1,9 +1,14 @@
 import { type ChangeEvent, type FormEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { cn } from '../../lib/utils'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Textarea } from '../../components/ui/textarea'
 import { uploadProjectAttachment } from '../../features/projects/projectAttachments'
+import {
+  panelClassName,
+  successClassName,
+} from '../../features/projects/projectUi'
 import { createUserProject } from '../../features/projects/userProjects'
 
 const MIN_PROJECT_DATE = '2000-01-01'
@@ -30,21 +35,14 @@ export function UserNewProjectPage() {
   const [message, setMessage] = useState('')
 
   const formatAttachmentSize = (size: number) => {
-    if (size < 1024) {
-      return `${size} B`
-    }
-    if (size < 1024 * 1024) {
-      return `${(size / 1024).toFixed(1)} KB`
-    }
+    if (size < 1024) return `${size} B`
+    if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`
     return `${(size / (1024 * 1024)).toFixed(1)} MB`
   }
 
   const handleFilesSelected = (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? [])
-    if (files.length === 0) {
-      return
-    }
-
+    if (files.length === 0) return
     setPendingFiles((prev) => [...prev, ...files])
     event.target.value = ''
   }
@@ -59,46 +57,27 @@ export function UserNewProjectPage() {
     setIsSubmitting(true)
 
     if (!isIsoDate(periodStart) || !isIsoDate(periodEnd)) {
-      console.error('[UserNewProjectPage] Validacao falhou: formato de data invalido.', {
-        periodStart,
-        periodEnd,
-      })
       setIsSubmitting(false)
       return
     }
 
     if (periodStart < MIN_PROJECT_DATE || periodStart > MAX_PROJECT_DATE) {
-      console.error('[UserNewProjectPage] Validacao falhou: data inicial fora do intervalo permitido.', {
-        periodStart,
-        min: MIN_PROJECT_DATE,
-        max: MAX_PROJECT_DATE,
-      })
       setIsSubmitting(false)
       return
     }
 
     if (periodEnd < MIN_PROJECT_DATE || periodEnd > MAX_PROJECT_DATE) {
-      console.error('[UserNewProjectPage] Validacao falhou: data final fora do intervalo permitido.', {
-        periodEnd,
-        min: MIN_PROJECT_DATE,
-        max: MAX_PROJECT_DATE,
-      })
       setIsSubmitting(false)
       return
     }
 
     if (periodStart > periodEnd) {
-      console.error('[UserNewProjectPage] Validacao falhou: periodo inicial maior que periodo final.', {
-        periodStart,
-        periodEnd,
-      })
       setIsSubmitting(false)
       return
     }
 
     const parsedBudget = Number(budget)
     if (!Number.isFinite(parsedBudget) || parsedBudget < 0) {
-      console.error('[UserNewProjectPage] Validacao falhou: orcamento invalido.', { budget })
       setIsSubmitting(false)
       return
     }
@@ -120,7 +99,6 @@ export function UserNewProjectPage() {
 
       if (pendingFiles.length > 0) {
         const failedUploads: string[] = []
-
         for (const file of pendingFiles) {
           try {
             await uploadProjectAttachment(project.id, file)
@@ -136,54 +114,62 @@ export function UserNewProjectPage() {
 
       setMessage('Projeto criado com sucesso.')
       navigate('/usuario/meus-projetos')
-    } catch (err) {
-      console.error('[UserNewProjectPage] Falha ao criar projeto:', err)
+    } catch {
+      // erro exibido no console pelos clients
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <article className="dashboard-panel">
-      <h1>Novo Projeto</h1>
-      <p>Preencha os campos para criar um novo projeto.</p>
+    <article className={panelClassName}>
+      <h1 className="m-0 text-[1.4rem]">Novo Projeto</h1>
+      <p className="mt-2.5 text-[hsl(var(--muted-foreground))]">Preencha os campos para criar um novo projeto.</p>
 
-      <div className="project-type-toggle">
+      <div className="mt-4 inline-flex gap-2 rounded-[calc(var(--radius)-2px)] border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] p-1.5">
         <button
           type="button"
           onClick={() => setProjectType('extensao')}
-          className={`project-type-option ${projectType === 'extensao' ? 'active' : ''}`}
+          className={cn(
+            'cursor-pointer rounded-[calc(var(--radius)-4px)] border border-transparent bg-transparent px-[0.9rem] py-[0.62rem] text-[0.86rem] leading-none font-bold text-[hsl(var(--muted-foreground))] transition-colors hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]',
+            projectType === 'extensao' &&
+              'border-[hsl(var(--primary))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]',
+          )}
         >
           Projeto de Extensao
         </button>
         <button
           type="button"
           onClick={() => setProjectType('disciplina')}
-          className={`project-type-option ${projectType === 'disciplina' ? 'active' : ''}`}
+          className={cn(
+            'cursor-pointer rounded-[calc(var(--radius)-4px)] border border-transparent bg-transparent px-[0.9rem] py-[0.62rem] text-[0.86rem] leading-none font-bold text-[hsl(var(--muted-foreground))] transition-colors hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]',
+            projectType === 'disciplina' &&
+              'border-[hsl(var(--primary))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]',
+          )}
         >
           Disciplina Extensionista
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="project-form">
-        <label>
+      <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3">
+        <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
           Titulo
           <Input value={title} onChange={(event) => setTitle(event.target.value)} required />
         </label>
 
-        <label>
+        <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
           Area tematica
           <Input value={thematicArea} onChange={(event) => setThematicArea(event.target.value)} required />
         </label>
 
-        <label>
+        <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
           Curso
           <Input value={course} onChange={(event) => setCourse(event.target.value)} />
         </label>
 
         {projectType === 'disciplina' && (
-          <div className="project-grid-2">
-            <label>
+          <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
+            <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
               Codigo da Disciplina
               <Input
                 type="text"
@@ -194,7 +180,7 @@ export function UserNewProjectPage() {
               />
             </label>
 
-            <label>
+            <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
               Semestre Letivo
               <Input
                 type="text"
@@ -207,8 +193,8 @@ export function UserNewProjectPage() {
           </div>
         )}
 
-        <div className="project-grid-2">
-          <label>
+        <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
+          <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
             Inicio
             <Input
               type="date"
@@ -219,7 +205,7 @@ export function UserNewProjectPage() {
               required
             />
           </label>
-          <label>
+          <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
             Fim
             <Input
               type="date"
@@ -232,12 +218,12 @@ export function UserNewProjectPage() {
           </label>
         </div>
 
-        <label>
+        <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
           Publico-alvo
           <Input value={targetAudience} onChange={(event) => setTargetAudience(event.target.value)} required />
         </label>
 
-        <label>
+        <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
           Orcamento
           <Input
             type="number"
@@ -249,7 +235,7 @@ export function UserNewProjectPage() {
           />
         </label>
 
-        <label>
+        <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
           Descricao
           <Textarea
             value={description}
@@ -260,20 +246,23 @@ export function UserNewProjectPage() {
           />
         </label>
 
-        <label>
+        <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
           Anexos
           <Input type="file" multiple onChange={handleFilesSelected} disabled={isSubmitting} />
         </label>
 
         {pendingFiles.length > 0 && (
-          <ul className="attachments-list">
+          <ul className="m-0 flex list-none flex-col gap-2 p-0">
             {pendingFiles.map((file, index) => (
-              <li key={`${file.name}-${file.size}-${index}`} className="attachment-item">
+              <li
+                key={`${file.name}-${file.size}-${index}`}
+                className="flex items-center justify-between gap-2.5 rounded-[calc(var(--radius)-4px)] border border-[hsl(var(--border))] p-2.5 max-[900px]:flex-col max-[900px]:items-start"
+              >
                 <div>
-                  <p className="attachment-name">{file.name}</p>
-                  <p className="attachment-meta">{formatAttachmentSize(file.size)}</p>
+                  <p className="m-0 font-semibold text-[hsl(var(--foreground))]">{file.name}</p>
+                  <p className="mt-1 text-[0.8rem] text-[hsl(var(--muted-foreground))]">{formatAttachmentSize(file.size)}</p>
                 </div>
-                <div className="attachment-actions">
+                <div className="flex items-center gap-2 max-[900px]:w-full max-[900px]:justify-between">
                   <Button
                     type="button"
                     variant="outline"
@@ -289,9 +278,9 @@ export function UserNewProjectPage() {
           </ul>
         )}
 
-        {message && <p className="success">{message}</p>}
+        {message && <p className={successClassName}>{message}</p>}
 
-        <Button type="submit" className="full-width" disabled={isSubmitting}>
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? 'Salvando...' : 'Criar projeto'}
         </Button>
       </form>
