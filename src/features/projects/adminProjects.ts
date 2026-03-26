@@ -18,6 +18,8 @@ export type AdminProjectCard = {
   budget: number
   status: AdminProjectStatus
   created_at: string
+  professor: string
+  professor_avatar_url: string | null
 }
 
 export type AdminProjectHistoryCard = {

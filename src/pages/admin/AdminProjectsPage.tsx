@@ -1,4 +1,4 @@
-import { Grid3X3, List } from 'lucide-react'
+import { Grid3X3, List, UserRound } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
@@ -116,6 +116,20 @@ export function AdminProjectsPage() {
                 Periodo: {project.period_start} ate {project.period_end}
               </p>
               <p className={projectCardMetaClassName}>Orcamento: R$ {Number(project.budget).toFixed(2)}</p>
+              <div className="mt-2.5 flex items-center gap-2">
+                <div className="grid h-8 w-8 place-items-center overflow-hidden rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]">
+                  {project.professor_avatar_url ? (
+                    <img
+                      src={project.professor_avatar_url}
+                      alt={`Foto de ${project.professor}`}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <UserRound size={16} />
+                  )}
+                </div>
+                <p className="m-0 text-sm font-medium text-[hsl(var(--foreground))]">{project.professor}</p>
+              </div>
             </section>
           </Link>
         ))}
