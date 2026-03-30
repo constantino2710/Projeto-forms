@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { cn } from '../../lib/utils'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
-import { listMyProjects, projectStatusLabel, type UserProject } from '../../features/projects/userProjects'
+import { listMyProjectsPage, projectStatusLabel, type UserProject, type UserProjectStatus } from '../../features/projects/userProjects'
 import {
   errorClassName,
   noteClassName,
@@ -26,27 +26,45 @@ import {
 
 type ViewMode = 'list' | 'grid'
 const VIEW_MODE_KEY = 'user_projects_view_mode'
-const ALL_STATUSES = ['rascunho', 'submetido', 'em_avaliacao', 'aprovado', 'reprovado'] as const
+const PAGE_SIZE = 6
+const ALL_STATUSES: UserProjectStatus[] = ['rascunho', 'submetido', 'em_avaliacao', 'em_ajustes', 'aprovado', 'reprovado']
 
 export function UserProjectsPage() {
   const [projects, setProjects] = useState<UserProject[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [query, setQuery] = useState('')
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
+  const [debouncedQuery, setDebouncedQuery] = useState('')
+  const [selectedStatuses, setSelectedStatuses] = useState<UserProjectStatus[]>([])
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [page, setPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const stored = localStorage.getItem(VIEW_MODE_KEY)
     return stored === 'grid' ? 'grid' : 'list'
   })
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedQuery(query.trim())
+    }, 300)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [query])
 
   const loadProjects = async () => {
     setError('')
     setIsLoading(true)
 
     try {
-      const data = await listMyProjects()
-      setProjects(data)
+      const result = await listMyProjectsPage({
+        limit: PAGE_SIZE,
+        offset: (page - 1) * PAGE_SIZE,
+        query: debouncedQuery,
+        statuses: selectedStatuses,
+      })
+      setProjects(result.items)
+      setTotalCount(result.total)
     } catch (err) {
       const nextError = err instanceof Error ? err.message : 'Falha ao carregar projetos.'
       setError(nextError)
@@ -57,25 +75,21 @@ export function UserProjectsPage() {
 
   useEffect(() => {
     loadProjects()
-  }, [])
+  }, [page, debouncedQuery, selectedStatuses])
 
   const handleSetViewMode = (nextMode: ViewMode) => {
     setViewMode(nextMode)
     localStorage.setItem(VIEW_MODE_KEY, nextMode)
   }
 
-  const toggleStatus = (status: string) => {
+  const toggleStatus = (status: UserProjectStatus) => {
+    setPage(1)
     setSelectedStatuses((current) =>
       current.includes(status) ? current.filter((item) => item !== status) : [...current, status],
     )
   }
 
-  const filteredProjects = projects.filter((project) => {
-    const matchesName = project.title.toLowerCase().includes(query.trim().toLowerCase())
-    const matchesStatus = selectedStatuses.length === 0 ? true : selectedStatuses.includes(project.status)
-
-    return matchesName && matchesStatus
-  })
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
   return (
     <article className={panelClassName}>
@@ -114,7 +128,10 @@ export function UserProjectsPage() {
           <Input
             className="pl-8"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => {
+              setQuery(event.target.value)
+              setPage(1)
+            }}
             placeholder="Pesquisar projeto por nome"
           />
         </div>
@@ -154,12 +171,12 @@ export function UserProjectsPage() {
       {isLoading && <p className={noteClassName}>Carregando projetos...</p>}
       {error && <p className={errorClassName}>{error}</p>}
 
-      {!isLoading && filteredProjects.length === 0 && (
+      {!isLoading && projects.length === 0 && (
         <p className={noteClassName}>Voce ainda nao possui projetos cadastrados.</p>
       )}
 
       <div className={viewMode === 'grid' ? projectsGridClassName : projectsListClassName}>
-        {filteredProjects.map((project) => (
+        {projects.map((project) => (
           <Link key={project.id} to={`/usuario/meus-projetos/${project.id}`} className={projectCardLinkClassName}>
             <section className={projectCardClassName}>
               <div className={projectCardTopClassName}>
@@ -183,6 +200,32 @@ export function UserProjectsPage() {
           </Link>
         ))}
       </div>
+
+      {!isLoading && totalCount > 0 && (
+        <div className="mt-4 flex items-center justify-end gap-2.5">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={page <= 1}
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+          >
+            Anterior
+          </Button>
+          <p className="m-0 text-[0.86rem] text-[hsl(var(--muted-foreground))]">
+            Pagina {page} de {totalPages}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={page >= totalPages}
+            onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+          >
+            Proxima
+          </Button>
+        </div>
+      )}
     </article>
   )
 }

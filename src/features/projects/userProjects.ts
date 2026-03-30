@@ -69,6 +69,18 @@ export type ProjectCatalogOptions = {
   schools: string[];
 };
 
+export type ListMyProjectsParams = {
+  limit?: number;
+  offset?: number;
+  query?: string;
+  statuses?: UserProjectStatus[];
+};
+
+export type PaginatedUserProjects = {
+  items: UserProject[];
+  total: number;
+};
+
 const CATALOG_CACHE_KEY = "app_project_catalog_options_v1";
 const CATALOG_CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -137,18 +149,34 @@ export const createUserProject = async (
   return data as CreateProjectResult;
 };
 
-export const listMyProjects = async (): Promise<UserProject[]> => {
+export const listMyProjectsPage = async (
+  params: ListMyProjectsParams = {},
+): Promise<PaginatedUserProjects> => {
   const token = getTokenOrThrow();
 
   const { data, error } = await supabase.rpc("app_list_my_projects_v2", {
     p_token: token,
+    p_limit: params.limit ?? 6,
+    p_offset: params.offset ?? 0,
+    p_query: params.query?.trim() || null,
+    p_statuses: params.statuses?.length ? params.statuses : null,
   });
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return (data ?? []) as UserProject[];
+  const rows = (data ?? []) as (UserProject & { total_count?: number })[];
+
+  return {
+    items: rows,
+    total: Number(rows[0]?.total_count ?? 0),
+  };
+};
+
+export const listMyProjects = async (): Promise<UserProject[]> => {
+  const result = await listMyProjectsPage({ limit: 200, offset: 0 });
+  return result.items;
 };
 
 export const getMyProjectDetail = async (

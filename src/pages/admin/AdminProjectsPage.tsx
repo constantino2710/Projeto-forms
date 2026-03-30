@@ -1,8 +1,8 @@
 import { Grid3X3, List, UserRound } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
-import { listAdminProjects, type AdminProjectCard } from '../../features/projects/adminProjects'
+import { listAdminProjectsPage, type AdminProjectCard } from '../../features/projects/adminProjects'
 import {
   errorClassName,
   noteClassName,
@@ -21,17 +21,23 @@ import {
   viewToggleActiveClassName,
   viewToggleClassName,
 } from '../../features/projects/projectUi'
-import { projectStatusLabel } from '../../features/projects/userProjects'
+import { listProjectCatalogOptions, projectStatusLabel } from '../../features/projects/userProjects'
 
 type ViewMode = 'list' | 'grid'
 const VIEW_MODE_KEY = 'admin_projects_view_mode'
+const PAGE_SIZE = 6
 
 export function AdminProjectsPage() {
   const [projects, setProjects] = useState<AdminProjectCard[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [isCatalogLoading, setIsCatalogLoading] = useState(true)
+  const [courseOptions, setCourseOptions] = useState<string[]>([])
+  const [schoolOptions, setSchoolOptions] = useState<string[]>([])
   const [courseFilter, setCourseFilter] = useState('all')
   const [schoolFilter, setSchoolFilter] = useState('all')
+  const [page, setPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const stored = localStorage.getItem(VIEW_MODE_KEY)
     return stored === 'grid' ? 'grid' : 'list'
@@ -42,8 +48,14 @@ export function AdminProjectsPage() {
     setIsLoading(true)
 
     try {
-      const data = await listAdminProjects()
-      setProjects(data)
+      const result = await listAdminProjectsPage({
+        limit: PAGE_SIZE,
+        offset: (page - 1) * PAGE_SIZE,
+        course: courseFilter === 'all' ? null : courseFilter,
+        school: schoolFilter === 'all' ? null : schoolFilter,
+      })
+      setProjects(result.items)
+      setTotalCount(result.total)
     } catch (err) {
       const nextError = err instanceof Error ? err.message : 'Falha ao carregar projetos.'
       setError(nextError)
@@ -54,6 +66,21 @@ export function AdminProjectsPage() {
 
   useEffect(() => {
     loadProjects()
+  }, [page, courseFilter, schoolFilter])
+
+  useEffect(() => {
+    const loadCatalog = async () => {
+      setIsCatalogLoading(true)
+      try {
+        const data = await listProjectCatalogOptions()
+        setCourseOptions(data.courses)
+        setSchoolOptions(data.schools)
+      } finally {
+        setIsCatalogLoading(false)
+      }
+    }
+
+    loadCatalog()
   }, [])
 
   const handleSetViewMode = (nextMode: ViewMode) => {
@@ -61,31 +88,7 @@ export function AdminProjectsPage() {
     localStorage.setItem(VIEW_MODE_KEY, nextMode)
   }
 
-  const courseOptions = useMemo(
-    () =>
-      Array.from(new Set(projects.map((project) => project.course).filter((value): value is string => Boolean(value)))).sort((a, b) =>
-        a.localeCompare(b, 'pt-BR'),
-      ),
-    [projects],
-  )
-
-  const schoolOptions = useMemo(
-    () =>
-      Array.from(new Set(projects.map((project) => project.school).filter((value): value is string => Boolean(value)))).sort((a, b) =>
-        a.localeCompare(b, 'pt-BR'),
-      ),
-    [projects],
-  )
-
-  const filteredProjects = useMemo(
-    () =>
-      projects.filter((project) => {
-        const matchesCourse = courseFilter === 'all' ? true : (project.course ?? '') === courseFilter
-        const matchesSchool = schoolFilter === 'all' ? true : (project.school ?? '') === schoolFilter
-        return matchesCourse && matchesSchool
-      }),
-    [projects, courseFilter, schoolFilter],
-  )
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
   return (
     <article className={panelClassName}>
@@ -123,8 +126,12 @@ export function AdminProjectsPage() {
           Filtrar por curso
           <select
             value={courseFilter}
-            onChange={(event) => setCourseFilter(event.target.value)}
+            onChange={(event) => {
+              setCourseFilter(event.target.value)
+              setPage(1)
+            }}
             className="w-full min-h-10 rounded-[calc(var(--radius)-2px)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-[0.75rem] py-[0.5rem] text-[0.9rem] text-[hsl(var(--foreground))] focus:border-[hsl(var(--ring))] focus:outline-none"
+            disabled={isCatalogLoading}
           >
             <option value="all">Todos os cursos</option>
             {courseOptions.map((option) => (
@@ -139,8 +146,12 @@ export function AdminProjectsPage() {
           Filtrar por escola
           <select
             value={schoolFilter}
-            onChange={(event) => setSchoolFilter(event.target.value)}
+            onChange={(event) => {
+              setSchoolFilter(event.target.value)
+              setPage(1)
+            }}
             className="w-full min-h-10 rounded-[calc(var(--radius)-2px)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-[0.75rem] py-[0.5rem] text-[0.9rem] text-[hsl(var(--foreground))] focus:border-[hsl(var(--ring))] focus:outline-none"
+            disabled={isCatalogLoading}
           >
             <option value="all">Todas as escolas</option>
             {schoolOptions.map((option) => (
@@ -155,12 +166,12 @@ export function AdminProjectsPage() {
       {isLoading && <p className={noteClassName}>Carregando projetos...</p>}
       {error && <p className={errorClassName}>{error}</p>}
 
-      {!isLoading && filteredProjects.length === 0 && (
+      {!isLoading && projects.length === 0 && (
         <p className={noteClassName}>Nenhum projeto submetido no momento.</p>
       )}
 
       <div className={viewMode === 'grid' ? projectsGridClassName : projectsListClassName}>
-        {filteredProjects.map((project) => (
+        {projects.map((project) => (
           <Link key={project.id} to={`/admin/projetos/${project.id}`} className={projectCardLinkClassName}>
             <section className={projectCardClassName}>
               <div className={projectCardTopClassName}>
@@ -198,6 +209,32 @@ export function AdminProjectsPage() {
           </Link>
         ))}
       </div>
+
+      {!isLoading && totalCount > 0 && (
+        <div className="mt-4 flex items-center justify-end gap-2.5">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={page <= 1}
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+          >
+            Anterior
+          </Button>
+          <p className="m-0 text-[0.86rem] text-[hsl(var(--muted-foreground))]">
+            Pagina {page} de {totalPages}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={page >= totalPages}
+            onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+          >
+            Proxima
+          </Button>
+        </div>
+      )}
     </article>
   )
 }

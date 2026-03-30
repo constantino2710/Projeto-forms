@@ -65,6 +65,23 @@ export type AdminProjectDecisionResult = {
   admin_message: string | null
 }
 
+export type ListAdminProjectsParams = {
+  limit?: number
+  offset?: number
+  course?: string | null
+  school?: string | null
+}
+
+export type PaginatedAdminProjects = {
+  items: AdminProjectCard[]
+  total: number
+}
+
+export type PaginatedAdminProjectHistory = {
+  items: AdminProjectHistoryCard[]
+  total: number
+}
+
 const getTokenOrThrow = () => {
   const token = getStoredSessionToken()
   if (!token) {
@@ -73,32 +90,64 @@ const getTokenOrThrow = () => {
   return token
 }
 
-export const listAdminProjects = async (): Promise<AdminProjectCard[]> => {
+export const listAdminProjectsPage = async (
+  params: ListAdminProjectsParams = {},
+): Promise<PaginatedAdminProjects> => {
   const token = getTokenOrThrow()
 
   const { data, error } = await supabase.rpc('app_list_admin_projects', {
     p_token: token,
+    p_limit: params.limit ?? 6,
+    p_offset: params.offset ?? 0,
+    p_course: params.course?.trim() || null,
+    p_school: params.school?.trim() || null,
   })
 
   if (error) {
     throw new Error(error.message)
   }
 
-  return (data ?? []) as AdminProjectCard[]
+  const rows = (data ?? []) as (AdminProjectCard & { total_count?: number })[]
+
+  return {
+    items: rows,
+    total: Number(rows[0]?.total_count ?? 0),
+  }
 }
 
-export const listAdminProjectHistory = async (): Promise<AdminProjectHistoryCard[]> => {
+export const listAdminProjects = async (): Promise<AdminProjectCard[]> => {
+  const result = await listAdminProjectsPage({ limit: 200, offset: 0 })
+  return result.items
+}
+
+export const listAdminProjectHistoryPage = async (
+  params: ListAdminProjectsParams = {},
+): Promise<PaginatedAdminProjectHistory> => {
   const token = getTokenOrThrow()
 
   const { data, error } = await supabase.rpc('app_list_admin_project_history', {
     p_token: token,
+    p_limit: params.limit ?? 6,
+    p_offset: params.offset ?? 0,
+    p_course: params.course?.trim() || null,
+    p_school: params.school?.trim() || null,
   })
 
   if (error) {
     throw new Error(error.message)
   }
 
-  return (data ?? []) as AdminProjectHistoryCard[]
+  const rows = (data ?? []) as (AdminProjectHistoryCard & { total_count?: number })[]
+
+  return {
+    items: rows,
+    total: Number(rows[0]?.total_count ?? 0),
+  }
+}
+
+export const listAdminProjectHistory = async (): Promise<AdminProjectHistoryCard[]> => {
+  const result = await listAdminProjectHistoryPage({ limit: 200, offset: 0 })
+  return result.items
 }
 
 export const getAdminProjectDetail = async (projectId: string): Promise<AdminProjectDetail> => {
