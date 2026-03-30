@@ -75,8 +75,10 @@ export function UserProjectDetailPage() {
     setIsLoading(true)
 
     try {
-      const data = await getMyProjectDetail(projectId)
-      const timelineData = await getProjectTimeline(projectId)
+      const [data, timelineData] = await Promise.all([
+        getMyProjectDetail(projectId),
+        getProjectTimeline(projectId),
+      ])
       setProject(data)
       setTimeline(timelineData)
     } catch (err) {

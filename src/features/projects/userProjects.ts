@@ -69,6 +69,9 @@ export type ProjectCatalogOptions = {
   schools: string[];
 };
 
+const CATALOG_CACHE_KEY = "app_project_catalog_options_v1";
+const CATALOG_CACHE_TTL_MS = 5 * 60 * 1000;
+
 const SESSION_TOKEN_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -217,6 +220,25 @@ export const updateMyProjectDetails = async (input: UpdateProjectInput) => {
 };
 
 export const listProjectCatalogOptions = async (): Promise<ProjectCatalogOptions> => {
+  try {
+    const cachedRaw = localStorage.getItem(CATALOG_CACHE_KEY);
+    if (cachedRaw) {
+      const cached = JSON.parse(cachedRaw) as {
+        timestamp?: number;
+        value?: Partial<ProjectCatalogOptions>;
+      };
+      const age = Date.now() - Number(cached.timestamp ?? 0);
+      if (age >= 0 && age < CATALOG_CACHE_TTL_MS && cached.value) {
+        return {
+          courses: Array.isArray(cached.value.courses) ? cached.value.courses : [],
+          schools: Array.isArray(cached.value.schools) ? cached.value.schools : [],
+        };
+      }
+    }
+  } catch {
+    // segue fluxo sem cache se falhar parse/acesso
+  }
+
   const token = getTokenOrThrow();
 
   const { data, error } = await supabase.rpc("app_list_project_catalog_options", {
@@ -228,11 +250,21 @@ export const listProjectCatalogOptions = async (): Promise<ProjectCatalogOptions
   }
 
   const result = (data ?? {}) as Partial<ProjectCatalogOptions>;
-
-  return {
+  const normalized = {
     courses: Array.isArray(result.courses) ? result.courses : [],
     schools: Array.isArray(result.schools) ? result.schools : [],
   };
+
+  try {
+    localStorage.setItem(
+      CATALOG_CACHE_KEY,
+      JSON.stringify({ timestamp: Date.now(), value: normalized }),
+    );
+  } catch {
+    // sem impacto funcional se localStorage falhar
+  }
+
+  return normalized;
 };
 
 export const projectStatusLabel: Record<UserProjectStatus, string> = {

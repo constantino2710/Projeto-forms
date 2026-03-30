@@ -42,8 +42,10 @@ export function AdminProjectDetailPage() {
       setError('')
       setIsLoading(true)
       try {
-        const data = await getAdminProjectDetail(projectId)
-        const timelineData = await getProjectTimeline(projectId)
+        const [data, timelineData] = await Promise.all([
+          getAdminProjectDetail(projectId),
+          getProjectTimeline(projectId),
+        ])
         setProject(data)
         setTimeline(timelineData)
       } catch (err) {
