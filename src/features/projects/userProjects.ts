@@ -17,6 +17,7 @@ export type UserProject = {
   semestre_letivo: string | null;
   thematic_area: string;
   course: string | null;
+  school: string | null;
   period_start: string;
   period_end: string;
   target_audience: string;
@@ -32,6 +33,7 @@ type CreateProjectInput = {
   title: string;
   thematicArea: string;
   course?: string;
+  school?: string;
   periodStart: string;
   periodEnd: string;
   targetAudience: string;
@@ -54,11 +56,17 @@ type UpdateProjectInput = {
   title: string;
   thematicArea: string;
   course?: string | null;
+  school?: string | null;
   periodStart: string;
   periodEnd: string;
   targetAudience: string;
   budget: number;
   description: string;
+};
+
+export type ProjectCatalogOptions = {
+  courses: string[];
+  schools: string[];
 };
 
 const SESSION_TOKEN_PATTERN =
@@ -105,6 +113,7 @@ export const createUserProject = async (
     p_type: input.type,
     p_thematic_area: input.thematicArea,
     p_course: input.course ?? null,
+    p_school: input.school ?? null,
     p_period_start: input.periodStart,
     p_period_end: input.periodEnd,
     p_target_audience: input.targetAudience,
@@ -190,6 +199,7 @@ export const updateMyProjectDetails = async (input: UpdateProjectInput) => {
     p_type: "extensao",
     p_thematic_area: input.thematicArea,
     p_course: input.course ?? null,
+    p_school: input.school ?? null,
     p_period_start: input.periodStart,
     p_period_end: input.periodEnd,
     p_target_audience: input.targetAudience,
@@ -204,6 +214,25 @@ export const updateMyProjectDetails = async (input: UpdateProjectInput) => {
   }
 
   return data;
+};
+
+export const listProjectCatalogOptions = async (): Promise<ProjectCatalogOptions> => {
+  const token = getTokenOrThrow();
+
+  const { data, error } = await supabase.rpc("app_list_project_catalog_options", {
+    p_token: token,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const result = (data ?? {}) as Partial<ProjectCatalogOptions>;
+
+  return {
+    courses: Array.isArray(result.courses) ? result.courses : [],
+    schools: Array.isArray(result.schools) ? result.schools : [],
+  };
 };
 
 export const projectStatusLabel: Record<UserProjectStatus, string> = {

@@ -156,6 +156,10 @@ export function AdminProjectDetailPage() {
                   <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.course}</p>
                 </div>
                 <div className="min-w-0">
+                  <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Escola</p>
+                  <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.school}</p>
+                </div>
+                <div className="min-w-0">
                   <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Periodo</p>
                   <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.period_start} ate {project.period_end}</p>
                 </div>

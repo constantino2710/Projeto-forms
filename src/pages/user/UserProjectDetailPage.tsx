@@ -12,6 +12,7 @@ import {
 } from '../../features/projects/projectAttachments'
 import {
   getMyProjectDetail,
+  listProjectCatalogOptions,
   projectStatusLabel,
   updateMyProjectDetails,
   updateMyProjectStatus,
@@ -35,6 +36,7 @@ type EditFormState = {
   title: string
   thematicArea: string
   course: string
+  school: string
   periodStart: string
   periodEnd: string
   targetAudience: string
@@ -59,6 +61,8 @@ export function UserProjectDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [timeline, setTimeline] = useState<ProjectTimeline | null>(null)
+  const [courseOptions, setCourseOptions] = useState<string[]>([])
+  const [schoolOptions, setSchoolOptions] = useState<string[]>([])
 
   const loadProject = async () => {
     if (!projectId) {
@@ -86,6 +90,21 @@ export function UserProjectDetailPage() {
   useEffect(() => {
     loadProject()
   }, [projectId])
+
+  useEffect(() => {
+    const loadCatalog = async () => {
+      try {
+        const options = await listProjectCatalogOptions()
+        setCourseOptions(options.courses)
+        setSchoolOptions(options.schools)
+      } catch {
+        setCourseOptions([])
+        setSchoolOptions([])
+      }
+    }
+
+    loadCatalog()
+  }, [])
 
   const loadAttachments = async () => {
     if (!projectId) {
@@ -120,6 +139,7 @@ export function UserProjectDetailPage() {
       title: project.title,
       thematicArea: project.thematic_area,
       course: project.course ?? '',
+      school: project.school ?? '',
       periodStart: project.period_start,
       periodEnd: project.period_end,
       targetAudience: project.target_audience,
@@ -146,6 +166,7 @@ export function UserProjectDetailPage() {
         title: editForm.title,
         thematicArea: editForm.thematicArea,
         course: editForm.course,
+        school: editForm.school,
         periodStart: editForm.periodStart,
         periodEnd: editForm.periodEnd,
         targetAudience: editForm.targetAudience,
@@ -305,6 +326,10 @@ export function UserProjectDetailPage() {
                       <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.course || '-'}</p>
                     </div>
                     <div className="min-w-0">
+                      <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Escola</p>
+                      <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.school || '-'}</p>
+                    </div>
+                    <div className="min-w-0">
                       <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Periodo</p>
                       <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.period_start} ate {project.period_end}</p>
                     </div>
@@ -451,12 +476,40 @@ export function UserProjectDetailPage() {
 
                   <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
                     Curso
-                    <Input
+                    <select
                       value={editForm?.course ?? ''}
                       onChange={(event) =>
                         setEditForm((prev) => (prev ? { ...prev, course: event.target.value } : prev))
                       }
-                    />
+                      className="w-full min-h-11 rounded-[calc(var(--radius)-2px)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-[0.8rem] py-[0.65rem] text-[0.95rem] text-[hsl(var(--foreground))] transition-[border-color,box-shadow] focus:border-[hsl(var(--ring))] focus:shadow-[0_0_0_2px_hsl(var(--ring)/0.15)] focus:outline-none"
+                      required
+                    >
+                      <option value="">Selecione um curso</option>
+                      {courseOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+                    Escola
+                    <select
+                      value={editForm?.school ?? ''}
+                      onChange={(event) =>
+                        setEditForm((prev) => (prev ? { ...prev, school: event.target.value } : prev))
+                      }
+                      className="w-full min-h-11 rounded-[calc(var(--radius)-2px)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-[0.8rem] py-[0.65rem] text-[0.95rem] text-[hsl(var(--foreground))] transition-[border-color,box-shadow] focus:border-[hsl(var(--ring))] focus:shadow-[0_0_0_2px_hsl(var(--ring)/0.15)] focus:outline-none"
+                      required
+                    >
+                      <option value="">Selecione uma escola</option>
+                      {schoolOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
                   </label>
 
                   <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">

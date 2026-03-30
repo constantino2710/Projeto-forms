@@ -1,4 +1,4 @@
-import { type ChangeEvent, type FormEvent, useState } from 'react'
+import { type ChangeEvent, type FormEvent, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { cn } from '../../lib/utils'
 import { Button } from '../../components/ui/button'
@@ -9,11 +9,13 @@ import {
   panelClassName,
   successClassName,
 } from '../../features/projects/projectUi'
-import { createUserProject } from '../../features/projects/userProjects'
+import { createUserProject, listProjectCatalogOptions } from '../../features/projects/userProjects'
 
 const MIN_PROJECT_DATE = '2000-01-01'
 const MAX_PROJECT_DATE = '2100-12-31'
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+const selectClassName =
+  'w-full min-h-11 rounded-[calc(var(--radius)-2px)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-[0.8rem] py-[0.65rem] text-[0.95rem] text-[hsl(var(--foreground))] transition-[border-color,box-shadow] focus:border-[hsl(var(--ring))] focus:shadow-[0_0_0_2px_hsl(var(--ring)/0.15)] focus:outline-none'
 
 const isIsoDate = (value: string) => ISO_DATE_PATTERN.test(value)
 
@@ -25,6 +27,11 @@ export function UserNewProjectPage() {
   const [codigoDisciplina, setCodigoDisciplina] = useState('')
   const [semestreLetivo, setSemestreLetivo] = useState('')
   const [course, setCourse] = useState('')
+  const [school, setSchool] = useState('')
+  const [courseOptions, setCourseOptions] = useState<string[]>([])
+  const [schoolOptions, setSchoolOptions] = useState<string[]>([])
+  const [isCatalogLoading, setIsCatalogLoading] = useState(true)
+  const [catalogError, setCatalogError] = useState('')
   const [periodStart, setPeriodStart] = useState('')
   const [periodEnd, setPeriodEnd] = useState('')
   const [targetAudience, setTargetAudience] = useState('')
@@ -33,6 +40,26 @@ export function UserNewProjectPage() {
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    const loadCatalog = async () => {
+      setCatalogError('')
+      setIsCatalogLoading(true)
+
+      try {
+        const options = await listProjectCatalogOptions()
+        setCourseOptions(options.courses)
+        setSchoolOptions(options.schools)
+      } catch (err) {
+        const nextError = err instanceof Error ? err.message : 'Falha ao carregar cursos e escolas.'
+        setCatalogError(nextError)
+      } finally {
+        setIsCatalogLoading(false)
+      }
+    }
+
+    loadCatalog()
+  }, [])
 
   const formatAttachmentSize = (size: number) => {
     if (size < 1024) return `${size} B`
@@ -87,6 +114,7 @@ export function UserNewProjectPage() {
         title,
         thematicArea,
         course,
+        school,
         periodStart,
         periodEnd,
         targetAudience,
@@ -131,7 +159,7 @@ export function UserNewProjectPage() {
           type="button"
           onClick={() => setProjectType('extensao')}
           className={cn(
-            'cursor-pointer rounded-[calc(var(--radius)-4px)] border border-transparent bg-transparent px-[0.9rem] py-[0.62rem] text-[0.86rem] leading-none font-bold text-[hsl(var(--muted-foreground))] transition-colors hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]',
+            'cursor-pointer rounded-[calc(var(--radius)-4px)] border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-[0.9rem] py-[0.62rem] text-[0.86rem] leading-none font-bold text-[hsl(var(--foreground))] transition-colors hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]',
             projectType === 'extensao' &&
               'border-[hsl(var(--primary))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]',
           )}
@@ -142,7 +170,7 @@ export function UserNewProjectPage() {
           type="button"
           onClick={() => setProjectType('disciplina')}
           className={cn(
-            'cursor-pointer rounded-[calc(var(--radius)-4px)] border border-transparent bg-transparent px-[0.9rem] py-[0.62rem] text-[0.86rem] leading-none font-bold text-[hsl(var(--muted-foreground))] transition-colors hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]',
+            'cursor-pointer rounded-[calc(var(--radius)-4px)] border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-[0.9rem] py-[0.62rem] text-[0.86rem] leading-none font-bold text-[hsl(var(--foreground))] transition-colors hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]',
             projectType === 'disciplina' &&
               'border-[hsl(var(--primary))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]',
           )}
@@ -164,8 +192,41 @@ export function UserNewProjectPage() {
 
         <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
           Curso
-          <Input value={course} onChange={(event) => setCourse(event.target.value)} />
+          <select
+            value={course}
+            onChange={(event) => setCourse(event.target.value)}
+            className={selectClassName}
+            required
+            disabled={isCatalogLoading}
+          >
+            <option value="">Selecione um curso</option>
+            {courseOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
         </label>
+
+        <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+          Escola
+          <select
+            value={school}
+            onChange={(event) => setSchool(event.target.value)}
+            className={selectClassName}
+            required
+            disabled={isCatalogLoading}
+          >
+            <option value="">Selecione uma escola</option>
+            {schoolOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {catalogError && <p className="m-0 text-[0.88rem] text-[hsl(var(--destructive))]">{catalogError}</p>}
 
         {projectType === 'disciplina' && (
           <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">

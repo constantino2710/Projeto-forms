@@ -13,6 +13,8 @@ export type AdminProjectCard = {
   id: string
   title: string
   tipo: 'extensao' | 'disciplina'
+  course: string | null
+  school: string | null
   period_start: string
   period_end: string
   budget: number
@@ -26,6 +28,8 @@ export type AdminProjectHistoryCard = {
   id: string
   title: string
   tipo: 'extensao' | 'disciplina'
+  course: string | null
+  school: string | null
   period_start: string
   period_end: string
   budget: number
@@ -40,6 +44,7 @@ export type AdminProjectDetail = {
   professor_avatar_url: string | null
   discipline: string
   course: string
+  school: string
   period_start: string
   period_end: string
   target_audience: string
