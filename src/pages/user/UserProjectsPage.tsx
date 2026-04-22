@@ -1,70 +1,33 @@
 import { Funnel, Grid3X3, List, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { cn } from '../../lib/utils'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
-import { listMyProjectsPage, projectStatusLabel, type UserProject, type UserProjectStatus } from '../../features/projects/userProjects'
-import {
-  errorClassName,
-  noteClassName,
-  panelClassName,
-  projectCardClassName,
-  projectCardLinkClassName,
-  projectCardMetaClassName,
-  projectCardTopClassName,
-  projectTitleClassName,
-  projectTitleWrapClassName,
-  projectsGridClassName,
-  projectsHeaderClassName,
-  projectsListClassName,
-  projectTypeBadgeClassName,
-  statusBadgeClassName,
-  viewToggleActiveClassName,
-  viewToggleClassName,
-} from '../../features/projects/projectUi'
+import { listMyProjects, projectStatusLabel, type UserProject } from '../../features/projects/userProjects'
 
 type ViewMode = 'list' | 'grid'
 const VIEW_MODE_KEY = 'user_projects_view_mode'
-const PAGE_SIZE = 6
-const ALL_STATUSES: UserProjectStatus[] = ['rascunho', 'submetido', 'em_avaliacao', 'em_ajustes', 'aprovado', 'reprovado']
+const ALL_STATUSES = ['rascunho', 'submetido', 'em_avaliacao', 'aprovado', 'reprovado'] as const
 
 export function UserProjectsPage() {
   const [projects, setProjects] = useState<UserProject[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [query, setQuery] = useState('')
-  const [debouncedQuery, setDebouncedQuery] = useState('')
-  const [selectedStatuses, setSelectedStatuses] = useState<UserProjectStatus[]>([])
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
   const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [page, setPage] = useState(1)
-  const [totalCount, setTotalCount] = useState(0)
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const stored = localStorage.getItem(VIEW_MODE_KEY)
     return stored === 'grid' ? 'grid' : 'list'
   })
-
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      setDebouncedQuery(query.trim())
-    }, 300)
-
-    return () => window.clearTimeout(timeoutId)
-  }, [query])
 
   const loadProjects = async () => {
     setError('')
     setIsLoading(true)
 
     try {
-      const result = await listMyProjectsPage({
-        limit: PAGE_SIZE,
-        offset: (page - 1) * PAGE_SIZE,
-        query: debouncedQuery,
-        statuses: selectedStatuses,
-      })
-      setProjects(result.items)
-      setTotalCount(result.total)
+      const data = await listMyProjects()
+      setProjects(data)
     } catch (err) {
       const nextError = err instanceof Error ? err.message : 'Falha ao carregar projetos.'
       setError(nextError)
@@ -75,35 +38,39 @@ export function UserProjectsPage() {
 
   useEffect(() => {
     loadProjects()
-  }, [page, debouncedQuery, selectedStatuses])
+  }, [])
 
   const handleSetViewMode = (nextMode: ViewMode) => {
     setViewMode(nextMode)
     localStorage.setItem(VIEW_MODE_KEY, nextMode)
   }
 
-  const toggleStatus = (status: UserProjectStatus) => {
-    setPage(1)
+  const toggleStatus = (status: string) => {
     setSelectedStatuses((current) =>
       current.includes(status) ? current.filter((item) => item !== status) : [...current, status],
     )
   }
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+  const filteredProjects = projects.filter((project) => {
+    const matchesName = project.title.toLowerCase().includes(query.trim().toLowerCase())
+    const matchesStatus = selectedStatuses.length === 0 ? true : selectedStatuses.includes(project.status)
+
+    return matchesName && matchesStatus
+  })
 
   return (
-    <article className={panelClassName}>
-      <div className={projectsHeaderClassName}>
+    <article className="dashboard-panel">
+      <div className="projects-header">
         <div>
-          <h1 className="m-0 text-[1.4rem]">Meus Projetos</h1>
-          <p className="mt-2.5 text-[hsl(var(--muted-foreground))]">Clique em um projeto para abrir os detalhes.</p>
+          <h1>Meus Projetos</h1>
+          <p>Clique em um projeto para abrir os detalhes.</p>
         </div>
-        <div className={viewToggleClassName}>
+        <div className="view-toggle">
           <Button
             type="button"
             variant="outline"
             size="sm"
-            className={viewMode === 'list' ? viewToggleActiveClassName : ''}
+            className={viewMode === 'list' ? 'active' : ''}
             onClick={() => handleSetViewMode('list')}
           >
             <List size={14} />
@@ -113,7 +80,7 @@ export function UserProjectsPage() {
             type="button"
             variant="outline"
             size="sm"
-            className={viewMode === 'grid' ? viewToggleActiveClassName : ''}
+            className={viewMode === 'grid' ? 'active' : ''}
             onClick={() => handleSetViewMode('grid')}
           >
             <Grid3X3 size={14} />
@@ -122,21 +89,17 @@ export function UserProjectsPage() {
         </div>
       </div>
 
-      <div className="mt-3 flex flex-col items-stretch gap-2.5 md:flex-row md:items-center">
-        <div className="relative flex-1">
-          <Search size={14} className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-[hsl(var(--muted-foreground))]" />
+      <div className="projects-toolbar">
+        <div className="search-wrap">
+          <Search size={14} />
           <Input
-            className="pl-8"
             value={query}
-            onChange={(event) => {
-              setQuery(event.target.value)
-              setPage(1)
-            }}
+            onChange={(event) => setQuery(event.target.value)}
             placeholder="Pesquisar projeto por nome"
           />
         </div>
 
-        <div className="relative">
+        <div className="filter-wrap">
           <Button
             type="button"
             variant="outline"
@@ -148,16 +111,12 @@ export function UserProjectsPage() {
           </Button>
 
           {isFilterOpen && (
-            <div className="absolute top-[calc(100%+8px)] right-0 z-40 flex min-w-[220px] flex-wrap gap-1.5 rounded-[calc(var(--radius)-2px)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-2 shadow-[0_12px_28px_hsl(var(--foreground)/0.12)] md:right-0 max-[900px]:left-0 max-[900px]:right-auto">
+            <div className="filter-popover">
               {ALL_STATUSES.map((status) => (
                 <button
                   key={status}
                   type="button"
-                  className={cn(
-                    'cursor-pointer rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-[9px] py-[5px] text-[0.78rem] text-[hsl(var(--foreground))]',
-                    selectedStatuses.includes(status) &&
-                      'border-[hsl(var(--primary))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]',
-                  )}
+                  className={selectedStatuses.includes(status) ? 'filter-tag filter-tag-active' : 'filter-tag'}
                   onClick={() => toggleStatus(status)}
                 >
                   {projectStatusLabel[status]}
@@ -168,64 +127,42 @@ export function UserProjectsPage() {
         </div>
       </div>
 
-      {isLoading && <p className={noteClassName}>Carregando projetos...</p>}
-      {error && <p className={errorClassName}>{error}</p>}
+      {isLoading && <p className="dashboard-note">Carregando projetos...</p>}
+      {error && <p className="error">{error}</p>}
 
-      {!isLoading && projects.length === 0 && (
-        <p className={noteClassName}>Voce ainda nao possui projetos cadastrados.</p>
+      {!isLoading && filteredProjects.length === 0 && (
+        <p className="dashboard-note">Voce ainda nao possui projetos cadastrados.</p>
       )}
 
-      <div className={viewMode === 'grid' ? projectsGridClassName : projectsListClassName}>
-        {projects.map((project) => (
-          <Link key={project.id} to={`/usuario/meus-projetos/${project.id}`} className={projectCardLinkClassName}>
-            <section className={projectCardClassName}>
-              <div className={projectCardTopClassName}>
-                <div className={projectTitleWrapClassName}>
-                  <h2 className={projectTitleClassName}>{project.title}</h2>
-                  <span className={projectTypeBadgeClassName(project.tipo)}>
-                    {project.tipo === 'disciplina' ? 'Disciplina Extensionista' : 'Projeto de Extensao'}
+      <div className={viewMode === 'grid' ? 'projects-list projects-grid' : 'projects-list'}>
+        {filteredProjects.map((project) => (
+          <Link key={project.id} to={`/usuario/meus-projetos/${project.id}`} className="project-card-link">
+            <section className="project-card">
+              <div className="project-card-top">
+                <div className="project-title-wrap">
+                  <h2>{project.title}</h2>
+                  <span
+                    className={`project-type-badge ${
+                      project.tipo === 'disciplina' ? 'project-type-badge--disciplina' : 'project-type-badge--extensao'
+                    }`}
+                  >
+                    {project.tipo === 'disciplina' ? 'Disciplina Extensionista' : 'Projeto de Extensão'}
                   </span>
                 </div>
 
-                <span className={statusBadgeClassName(project.status)}>
+                <span className={`status-badge status-${project.status}`}>
                   {projectStatusLabel[project.status]}
                 </span>
               </div>
 
-              <p className={projectCardMetaClassName}>
+              <p className="project-card-meta">
                 Periodo: {project.period_start} ate {project.period_end}
               </p>
-              <p className={projectCardMetaClassName}>Orcamento: R$ {Number(project.budget).toFixed(2)}</p>
+              <p className="project-card-meta">Orcamento: R$ {Number(project.budget).toFixed(2)}</p>
             </section>
           </Link>
         ))}
       </div>
-
-      {!isLoading && totalCount > 0 && (
-        <div className="mt-4 flex items-center justify-end gap-2.5">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={page <= 1}
-            onClick={() => setPage((current) => Math.max(1, current - 1))}
-          >
-            Anterior
-          </Button>
-          <p className="m-0 text-[0.86rem] text-[hsl(var(--muted-foreground))]">
-            Pagina {page} de {totalPages}
-          </p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={page >= totalPages}
-            onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-          >
-            Proxima
-          </Button>
-        </div>
-      )}
     </article>
   )
 }

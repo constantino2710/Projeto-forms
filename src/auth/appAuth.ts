@@ -9,7 +9,6 @@ type LoginResponse = {
   user_id: string
   username: string
   display_name: string
-  email?: string | null
   avatar_url?: string | null
   role: 'admin' | 'user'
 }
@@ -30,7 +29,6 @@ const parseSession = (value: unknown): AuthSession => {
 
   return {
     ...data,
-    email: data.email ?? null,
     avatar_url: data.avatar_url ?? null,
   }
 }
@@ -146,47 +144,4 @@ export const updateMyAvatar = async (avatarUrl: string): Promise<string | null> 
 
   const payload = data as { avatar_url?: string | null } | null
   return payload?.avatar_url ?? null
-}
-
-type UpdateMyProfileInput = {
-  displayName: string
-  email: string
-  avatarUrl: string
-}
-
-type UpdateMyProfileResponse = {
-  display_name: string
-  email: string | null
-  avatar_url: string | null
-}
-
-export const updateMyProfile = async (
-  payload: UpdateMyProfileInput,
-): Promise<UpdateMyProfileResponse> => {
-  const token = getStoredSessionToken()
-  if (!token) {
-    throw new Error('Sessao invalida. Faca login novamente.')
-  }
-
-  const { data, error } = await supabase.rpc('app_update_my_profile', {
-    p_token: token,
-    p_display_name: payload.displayName.trim(),
-    p_email: payload.email.trim(),
-    p_avatar_url: payload.avatarUrl.trim() || null,
-  })
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  const response = data as UpdateMyProfileResponse | null
-  if (!response) {
-    throw new Error('Resposta invalida do servidor ao atualizar perfil.')
-  }
-
-  return {
-    display_name: response.display_name,
-    email: response.email ?? null,
-    avatar_url: response.avatar_url ?? null,
-  }
 }

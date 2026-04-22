@@ -1,27 +1,20 @@
-import { type ChangeEvent, type FormEvent, useEffect, useState } from 'react'
+import { type ChangeEvent, type FormEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ExtensionProjectFields } from '../../components/projects/ExtensionProjectFields'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Textarea } from '../../components/ui/textarea'
+import { uploadProjectAttachment } from '../../features/projects/projectAttachments'
 import {
   createEmptyExtensionPlan,
   isExtensionPlanComplete,
   type ExtensionPlanData,
 } from '../../features/projects/extensionPlan'
-import { uploadProjectAttachment } from '../../features/projects/projectAttachments'
-import { panelClassName, successClassName } from '../../features/projects/projectUi'
-import {
-  createUserProject,
-  listProjectCatalogOptions,
-} from '../../features/projects/userProjects'
-import { cn } from '../../lib/utils'
+import { createUserProject } from '../../features/projects/userProjects'
 
 const MIN_PROJECT_DATE = '2000-01-01'
 const MAX_PROJECT_DATE = '2100-12-31'
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
-const selectClassName =
-  'w-full min-h-11 rounded-[calc(var(--radius)-2px)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-[0.8rem] py-[0.65rem] text-[0.95rem] text-[hsl(var(--foreground))] transition-[border-color,box-shadow] focus:border-[hsl(var(--ring))] focus:shadow-[0_0_0_2px_hsl(var(--ring)/0.15)] focus:outline-none'
 
 const isIsoDate = (value: string) => ISO_DATE_PATTERN.test(value)
 
@@ -31,7 +24,6 @@ type DisciplineFormData = {
   codigoDisciplina: string
   semestreLetivo: string
   course: string
-  school: string
   periodStart: string
   periodEnd: string
   targetAudience: string
@@ -45,7 +37,6 @@ const createEmptyDisciplineForm = (): DisciplineFormData => ({
   codigoDisciplina: '',
   semestreLetivo: '',
   course: '',
-  school: '',
   periodStart: '',
   periodEnd: '',
   targetAudience: '',
@@ -56,51 +47,29 @@ const createEmptyDisciplineForm = (): DisciplineFormData => ({
 export function UserNewProjectPage() {
   const navigate = useNavigate()
   const [projectType, setProjectType] = useState<'extensao' | 'disciplina'>('extensao')
-  const [extensionForm, setExtensionForm] = useState<ExtensionPlanData>(() =>
-    createEmptyExtensionPlan(),
-  )
-  const [disciplineForm, setDisciplineForm] = useState<DisciplineFormData>(() =>
-    createEmptyDisciplineForm(),
-  )
-  const [courseOptions, setCourseOptions] = useState<string[]>([])
-  const [schoolOptions, setSchoolOptions] = useState<string[]>([])
-  const [isCatalogLoading, setIsCatalogLoading] = useState(true)
-  const [catalogError, setCatalogError] = useState('')
+  const [extensionForm, setExtensionForm] = useState<ExtensionPlanData>(() => createEmptyExtensionPlan())
+  const [disciplineForm, setDisciplineForm] = useState<DisciplineFormData>(() => createEmptyDisciplineForm())
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
 
-  useEffect(() => {
-    const loadCatalog = async () => {
-      setCatalogError('')
-      setIsCatalogLoading(true)
-
-      try {
-        const options = await listProjectCatalogOptions()
-        setCourseOptions(options.courses)
-        setSchoolOptions(options.schools)
-      } catch (err) {
-        const nextError =
-          err instanceof Error ? err.message : 'Falha ao carregar cursos e escolas.'
-        setCatalogError(nextError)
-      } finally {
-        setIsCatalogLoading(false)
-      }
-    }
-
-    loadCatalog()
-  }, [])
-
   const formatAttachmentSize = (size: number) => {
-    if (size < 1024) return `${size} B`
-    if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`
+    if (size < 1024) {
+      return `${size} B`
+    }
+    if (size < 1024 * 1024) {
+      return `${(size / 1024).toFixed(1)} KB`
+    }
     return `${(size / (1024 * 1024)).toFixed(1)} MB`
   }
 
   const handleFilesSelected = (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? [])
-    if (files.length === 0) return
+    if (files.length === 0) {
+      return
+    }
+
     setPendingFiles((prev) => [...prev, ...files])
     event.target.value = ''
   }
@@ -135,10 +104,8 @@ export function UserNewProjectPage() {
     setError('')
     setIsSubmitting(true)
 
-    const activePeriodStart =
-      projectType === 'extensao' ? extensionForm.periodStart : disciplineForm.periodStart
-    const activePeriodEnd =
-      projectType === 'extensao' ? extensionForm.periodEnd : disciplineForm.periodEnd
+    const activePeriodStart = projectType === 'extensao' ? extensionForm.periodStart : disciplineForm.periodStart
+    const activePeriodEnd = projectType === 'extensao' ? extensionForm.periodEnd : disciplineForm.periodEnd
     const dateError = validateDates(activePeriodStart, activePeriodEnd)
 
     if (dateError) {
@@ -167,7 +134,6 @@ export function UserNewProjectPage() {
               title: extensionForm.title,
               thematicArea: extensionForm.unicapProgram,
               course: null,
-              school: null,
               periodStart: extensionForm.periodStart,
               periodEnd: extensionForm.periodEnd,
               targetAudience: extensionForm.targetAudience,
@@ -180,7 +146,6 @@ export function UserNewProjectPage() {
               title: disciplineForm.title,
               thematicArea: disciplineForm.thematicArea,
               course: disciplineForm.course,
-              school: disciplineForm.school,
               periodStart: disciplineForm.periodStart,
               periodEnd: disciplineForm.periodEnd,
               targetAudience: disciplineForm.targetAudience,
@@ -217,58 +182,42 @@ export function UserNewProjectPage() {
   }
 
   return (
-    <article className={panelClassName}>
-      <h1 className="m-0 text-[1.4rem]">Novo Projeto</h1>
-      <p className="mt-2.5 text-[hsl(var(--muted-foreground))]">
-        Escolha o tipo e preencha o formulario correspondente.
-      </p>
+    <article className="dashboard-panel">
+      <h1>Novo Projeto</h1>
+      <p>Escolha o tipo e preencha o formulario correspondente.</p>
 
-      <div className="mt-4 inline-flex gap-2 rounded-[calc(var(--radius)-2px)] border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] p-1.5">
+      <div className="project-type-toggle">
         <button
           type="button"
           onClick={() => setProjectType('extensao')}
-          className={cn(
-            'cursor-pointer rounded-[calc(var(--radius)-4px)] border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-[0.9rem] py-[0.62rem] text-[0.86rem] leading-none font-bold text-[hsl(var(--foreground))] transition-colors hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]',
-            projectType === 'extensao' &&
-              'border-[hsl(var(--primary))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]',
-          )}
+          className={`project-type-option ${projectType === 'extensao' ? 'active' : ''}`}
         >
           Projeto de Extensao
         </button>
         <button
           type="button"
           onClick={() => setProjectType('disciplina')}
-          className={cn(
-            'cursor-pointer rounded-[calc(var(--radius)-4px)] border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-[0.9rem] py-[0.62rem] text-[0.86rem] leading-none font-bold text-[hsl(var(--foreground))] transition-colors hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]',
-            projectType === 'disciplina' &&
-              'border-[hsl(var(--primary))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]',
-          )}
+          className={`project-type-option ${projectType === 'disciplina' ? 'active' : ''}`}
         >
           Disciplina Extensionista
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3">
+      <form onSubmit={handleSubmit} className="project-form">
         {projectType === 'extensao' ? (
-          <ExtensionProjectFields
-            form={extensionForm}
-            onChange={setExtensionForm}
-            disabled={isSubmitting}
-          />
+          <ExtensionProjectFields form={extensionForm} onChange={setExtensionForm} disabled={isSubmitting} />
         ) : (
           <>
-            <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+            <label>
               Titulo
               <Input
                 value={disciplineForm.title}
-                onChange={(event) =>
-                  setDisciplineForm((prev) => ({ ...prev, title: event.target.value }))
-                }
+                onChange={(event) => setDisciplineForm((prev) => ({ ...prev, title: event.target.value }))}
                 required
               />
             </label>
 
-            <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+            <label>
               Area tematica
               <Input
                 value={disciplineForm.thematicArea}
@@ -279,82 +228,44 @@ export function UserNewProjectPage() {
               />
             </label>
 
-            <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
-              <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+            <div className="project-grid-2">
+              <label>
                 Codigo da Disciplina
                 <Input
                   type="text"
                   placeholder="Ex: IF976"
                   value={disciplineForm.codigoDisciplina}
                   onChange={(event) =>
-                    setDisciplineForm((prev) => ({
-                      ...prev,
-                      codigoDisciplina: event.target.value,
-                    }))
+                    setDisciplineForm((prev) => ({ ...prev, codigoDisciplina: event.target.value }))
                   }
                   required
                 />
               </label>
 
-              <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+              <label>
                 Semestre Letivo
                 <Input
                   type="text"
                   placeholder="Ex: 2026.1"
                   value={disciplineForm.semestreLetivo}
                   onChange={(event) =>
-                    setDisciplineForm((prev) => ({
-                      ...prev,
-                      semestreLetivo: event.target.value,
-                    }))
+                    setDisciplineForm((prev) => ({ ...prev, semestreLetivo: event.target.value }))
                   }
                   required
                 />
               </label>
             </div>
 
-            <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+            <label>
               Curso
-              <select
+              <Input
                 value={disciplineForm.course}
-                onChange={(event) =>
-                  setDisciplineForm((prev) => ({ ...prev, course: event.target.value }))
-                }
-                className={selectClassName}
-                required
-                disabled={isCatalogLoading}
-              >
-                <option value="">Selecione um curso</option>
-                {courseOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
+                onChange={(event) => setDisciplineForm((prev) => ({ ...prev, course: event.target.value }))}
+              />
             </label>
 
-            <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
-              Escola
-              <select
-                value={disciplineForm.school}
-                onChange={(event) =>
-                  setDisciplineForm((prev) => ({ ...prev, school: event.target.value }))
-                }
-                className={selectClassName}
-                required
-                disabled={isCatalogLoading}
-              >
-                <option value="">Selecione uma escola</option>
-                {schoolOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
-              <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+            <div className="project-grid-2">
+              <label>
                 Inicio
                 <Input
                   type="date"
@@ -367,7 +278,7 @@ export function UserNewProjectPage() {
                   required
                 />
               </label>
-              <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+              <label>
                 Fim
                 <Input
                   type="date"
@@ -382,35 +293,30 @@ export function UserNewProjectPage() {
               </label>
             </div>
 
-            <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+            <label>
               Publico-alvo
               <Input
                 value={disciplineForm.targetAudience}
                 onChange={(event) =>
-                  setDisciplineForm((prev) => ({
-                    ...prev,
-                    targetAudience: event.target.value,
-                  }))
+                  setDisciplineForm((prev) => ({ ...prev, targetAudience: event.target.value }))
                 }
                 required
               />
             </label>
 
-            <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+            <label>
               Orcamento
               <Input
                 type="number"
                 min={0}
                 step="0.01"
                 value={disciplineForm.budget}
-                onChange={(event) =>
-                  setDisciplineForm((prev) => ({ ...prev, budget: event.target.value }))
-                }
+                onChange={(event) => setDisciplineForm((prev) => ({ ...prev, budget: event.target.value }))}
                 required
               />
             </label>
 
-            <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+            <label>
               Descricao
               <Textarea
                 value={disciplineForm.description}
@@ -425,46 +331,39 @@ export function UserNewProjectPage() {
           </>
         )}
 
-        {catalogError && (
-          <p className="m-0 text-[0.88rem] text-[hsl(var(--destructive))]">{catalogError}</p>
-        )}
-
-        <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+        <label>
           Anexos
           <Input type="file" multiple onChange={handleFilesSelected} disabled={isSubmitting} />
         </label>
 
         {pendingFiles.length > 0 && (
-          <ul className="mt-0 mb-0 flex list-none flex-col gap-2 p-0">
+          <ul className="attachments-list">
             {pendingFiles.map((file, index) => (
-              <li
-                key={`${file.name}-${file.size}-${index}`}
-                className="flex items-center justify-between gap-2.5 rounded-[calc(var(--radius)-4px)] border border-[hsl(var(--border))] p-2.5 max-[900px]:flex-col max-[900px]:items-start"
-              >
+              <li key={`${file.name}-${file.size}-${index}`} className="attachment-item">
                 <div>
-                  <p className="m-0 font-semibold text-[hsl(var(--foreground))]">{file.name}</p>
-                  <p className="mt-1 text-[0.8rem] text-[hsl(var(--muted-foreground))]">
-                    {formatAttachmentSize(file.size)}
-                  </p>
+                  <p className="attachment-name">{file.name}</p>
+                  <p className="attachment-meta">{formatAttachmentSize(file.size)}</p>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => removePendingFile(index)}
-                  disabled={isSubmitting}
-                >
-                  Remover
-                </Button>
+                <div className="attachment-actions">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => removePendingFile(index)}
+                    disabled={isSubmitting}
+                  >
+                    Remover
+                  </Button>
+                </div>
               </li>
             ))}
           </ul>
         )}
 
-        {error && <p className="m-0 font-semibold text-[hsl(var(--destructive))]">{error}</p>}
-        {message && <p className={successClassName}>{message}</p>}
+        {error && <p className="error">{error}</p>}
+        {message && <p className="success">{message}</p>}
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
+        <Button type="submit" className="full-width" disabled={isSubmitting}>
           {isSubmitting ? 'Salvando...' : 'Criar projeto'}
         </Button>
       </form>

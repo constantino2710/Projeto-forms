@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FilePlus2, FolderKanban, History, LayoutList } from 'lucide-react'
 import { Navigate, Route, Routes } from 'react-router-dom'
+import './App.css'
 import { clearSessionToken, getStoredSessionToken, validateSession } from './auth/appAuth'
 import { DashboardLayout } from './components/layout/DashboardLayout'
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card'
@@ -19,7 +20,6 @@ export type AuthSession = {
   user_id: string
   username: string
   display_name: string
-  email: string | null
   avatar_url: string | null
   role: AuthRole
 }
@@ -62,19 +62,15 @@ function App() {
     setSession(null)
   }
 
-  const handleSessionUpdate = (updates: Partial<AuthSession>) => {
-    setSession((current) => (current ? { ...current, ...updates } : current))
-  }
-
   if (isLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_18%_18%,hsl(var(--accent)/0.5)_0,transparent_38%),radial-gradient(circle_at_85%_82%,hsl(var(--secondary)/0.5)_0,transparent_34%)] px-4 py-5">
+      <main className="auth-shell">
         <Card>
           <CardHeader>
             <CardTitle>Carregando...</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="m-0 text-[hsl(var(--muted-foreground))]">Validando sessao.</p>
+            <p className="hint">Validando sessao.</p>
           </CardContent>
         </Card>
       </main>
@@ -102,7 +98,6 @@ function App() {
                 <DashboardLayout
                   session={session}
                   onLogout={handleLogout}
-                  onSessionUpdate={handleSessionUpdate}
                   items={[
                     { label: 'Meus Projetos', to: '/usuario/meus-projetos', icon: FolderKanban },
                     { label: 'Novo Projeto', to: '/usuario/novo-projeto', icon: FilePlus2 },
@@ -127,7 +122,6 @@ function App() {
                 <DashboardLayout
                   session={session}
                   onLogout={handleLogout}
-                  onSessionUpdate={handleSessionUpdate}
                   items={[
                     { label: 'Projetos', to: '/admin/projetos', icon: LayoutList },
                     { label: 'Historico', to: '/admin/historico', icon: History },

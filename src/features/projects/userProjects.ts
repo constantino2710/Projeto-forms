@@ -18,7 +18,6 @@ export type UserProject = {
   semestre_letivo: string | null;
   thematic_area: string;
   course: string | null;
-  school: string | null;
   period_start: string;
   period_end: string;
   target_audience: string;
@@ -35,7 +34,6 @@ type CreateProjectInput = {
   title: string;
   thematicArea: string;
   course?: string | null;
-  school?: string | null;
   periodStart: string;
   periodEnd: string;
   targetAudience: string;
@@ -59,7 +57,6 @@ type UpdateProjectInput = {
   title: string;
   thematicArea: string;
   course?: string | null;
-  school?: string | null;
   periodStart: string;
   periodEnd: string;
   targetAudience: string;
@@ -70,26 +67,6 @@ type UpdateProjectInput = {
   semestreLetivo?: string | null;
   extensionForm?: ExtensionPlanData | null;
 };
-
-export type ProjectCatalogOptions = {
-  courses: string[];
-  schools: string[];
-};
-
-export type ListMyProjectsParams = {
-  limit?: number;
-  offset?: number;
-  query?: string;
-  statuses?: UserProjectStatus[];
-};
-
-export type PaginatedUserProjects = {
-  items: UserProject[];
-  total: number;
-};
-
-const CATALOG_CACHE_KEY = "app_project_catalog_options_v1";
-const CATALOG_CACHE_TTL_MS = 5 * 60 * 1000;
 
 const SESSION_TOKEN_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -135,7 +112,6 @@ export const createUserProject = async (
     p_type: input.type,
     p_thematic_area: input.thematicArea,
     p_course: input.course ?? null,
-    p_school: input.school ?? null,
     p_period_start: input.periodStart,
     p_period_end: input.periodEnd,
     p_target_audience: input.targetAudience,
@@ -157,34 +133,18 @@ export const createUserProject = async (
   return data as CreateProjectResult;
 };
 
-export const listMyProjectsPage = async (
-  params: ListMyProjectsParams = {},
-): Promise<PaginatedUserProjects> => {
+export const listMyProjects = async (): Promise<UserProject[]> => {
   const token = getTokenOrThrow();
 
   const { data, error } = await supabase.rpc("app_list_my_projects_v2", {
     p_token: token,
-    p_limit: params.limit ?? 6,
-    p_offset: params.offset ?? 0,
-    p_query: params.query?.trim() || null,
-    p_statuses: params.statuses?.length ? params.statuses : null,
   });
 
   if (error) {
     throw new Error(error.message);
   }
 
-  const rows = (data ?? []) as (UserProject & { total_count?: number })[];
-
-  return {
-    items: rows,
-    total: Number(rows[0]?.total_count ?? 0),
-  };
-};
-
-export const listMyProjects = async (): Promise<UserProject[]> => {
-  const result = await listMyProjectsPage({ limit: 200, offset: 0 });
-  return result.items;
+  return (data ?? []) as UserProject[];
 };
 
 export const getMyProjectDetail = async (
@@ -238,7 +198,6 @@ export const updateMyProjectDetails = async (input: UpdateProjectInput) => {
     p_type: input.type ?? "extensao",
     p_thematic_area: input.thematicArea,
     p_course: input.course ?? null,
-    p_school: input.school ?? null,
     p_period_start: input.periodStart,
     p_period_end: input.periodEnd,
     p_target_audience: input.targetAudience,
@@ -254,54 +213,6 @@ export const updateMyProjectDetails = async (input: UpdateProjectInput) => {
   }
 
   return data;
-};
-
-export const listProjectCatalogOptions = async (): Promise<ProjectCatalogOptions> => {
-  try {
-    const cachedRaw = localStorage.getItem(CATALOG_CACHE_KEY);
-    if (cachedRaw) {
-      const cached = JSON.parse(cachedRaw) as {
-        timestamp?: number;
-        value?: Partial<ProjectCatalogOptions>;
-      };
-      const age = Date.now() - Number(cached.timestamp ?? 0);
-      if (age >= 0 && age < CATALOG_CACHE_TTL_MS && cached.value) {
-        return {
-          courses: Array.isArray(cached.value.courses) ? cached.value.courses : [],
-          schools: Array.isArray(cached.value.schools) ? cached.value.schools : [],
-        };
-      }
-    }
-  } catch {
-    // segue fluxo sem cache se falhar parse/acesso
-  }
-
-  const token = getTokenOrThrow();
-
-  const { data, error } = await supabase.rpc("app_list_project_catalog_options", {
-    p_token: token,
-  });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  const result = (data ?? {}) as Partial<ProjectCatalogOptions>;
-  const normalized = {
-    courses: Array.isArray(result.courses) ? result.courses : [],
-    schools: Array.isArray(result.schools) ? result.schools : [],
-  };
-
-  try {
-    localStorage.setItem(
-      CATALOG_CACHE_KEY,
-      JSON.stringify({ timestamp: Date.now(), value: normalized }),
-    );
-  } catch {
-    // sem impacto funcional se localStorage falhar
-  }
-
-  return normalized;
 };
 
 export const projectStatusLabel: Record<UserProjectStatus, string> = {
