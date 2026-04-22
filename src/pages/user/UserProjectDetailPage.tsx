@@ -1,9 +1,16 @@
 import { ArrowLeft, Trash2 } from 'lucide-react'
 import { type ChangeEvent, type FormEvent, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ExtensionProjectFields } from '../../components/projects/ExtensionProjectFields'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Textarea } from '../../components/ui/textarea'
+import {
+  ACKNOWLEDGEMENT_OPTIONS,
+  createExtensionPlanFromProject,
+  isExtensionPlanComplete,
+  type ExtensionPlanData,
+} from '../../features/projects/extensionPlan'
 import {
   deleteProjectAttachment,
   listProjectAttachments,
@@ -11,12 +18,12 @@ import {
   uploadProjectAttachment,
 } from '../../features/projects/projectAttachments'
 import {
+  deleteMyProject,
   getMyProjectDetail,
   listProjectCatalogOptions,
   projectStatusLabel,
   updateMyProjectDetails,
   updateMyProjectStatus,
-  deleteMyProject,
   type UserProject,
 } from '../../features/projects/userProjects'
 import {
@@ -32,7 +39,11 @@ import {
   statusBadgeClassName,
 } from '../../features/projects/projectUi'
 
+const selectClassName =
+  'w-full min-h-11 rounded-[calc(var(--radius)-2px)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-[0.8rem] py-[0.65rem] text-[0.95rem] text-[hsl(var(--foreground))] transition-[border-color,box-shadow] focus:border-[hsl(var(--ring))] focus:shadow-[0_0_0_2px_hsl(var(--ring)/0.15)] focus:outline-none'
+
 type EditFormState = {
+  type: 'extensao' | 'disciplina'
   title: string
   thematicArea: string
   course: string
@@ -42,6 +53,9 @@ type EditFormState = {
   targetAudience: string
   budget: string
   description: string
+  codigoDisciplina: string
+  semestreLetivo: string
+  extensionForm: ExtensionPlanData
 }
 
 export function UserProjectDetailPage() {
@@ -109,9 +123,7 @@ export function UserProjectDetailPage() {
   }, [])
 
   const loadAttachments = async () => {
-    if (!projectId) {
-      return
-    }
+    if (!projectId) return
 
     setAttachmentError('')
     setIsAttachmentsLoading(true)
@@ -138,6 +150,7 @@ export function UserProjectDetailPage() {
 
     setIsEditing(true)
     setEditForm({
+      type: project.tipo,
       title: project.title,
       thematicArea: project.thematic_area,
       course: project.course ?? '',
@@ -147,6 +160,9 @@ export function UserProjectDetailPage() {
       targetAudience: project.target_audience,
       budget: String(project.budget),
       description: project.description ?? '',
+      codigoDisciplina: project.codigo_disciplina ?? '',
+      semestreLetivo: project.semestre_letivo ?? '',
+      extensionForm: createExtensionPlanFromProject(project),
     })
   }
 
@@ -162,18 +178,43 @@ export function UserProjectDetailPage() {
     setError('')
     setIsSubmitting(true)
 
+    if (editForm.type === 'extensao' && !isExtensionPlanComplete(editForm.extensionForm)) {
+      setError('Marque todos os itens de confirmacao da conclusao para continuar.')
+      setIsSubmitting(false)
+      return
+    }
+
     try {
       await updateMyProjectDetails({
         projectId: project.id,
-        title: editForm.title,
-        thematicArea: editForm.thematicArea,
-        course: editForm.course,
-        school: editForm.school,
-        periodStart: editForm.periodStart,
-        periodEnd: editForm.periodEnd,
-        targetAudience: editForm.targetAudience,
-        budget: Number(editForm.budget || 0),
-        description: editForm.description,
+        title: editForm.type === 'extensao' ? editForm.extensionForm.title : editForm.title,
+        thematicArea:
+          editForm.type === 'extensao'
+            ? editForm.extensionForm.unicapProgram
+            : editForm.thematicArea,
+        course: editForm.type === 'extensao' ? null : editForm.course,
+        school: editForm.type === 'extensao' ? null : editForm.school,
+        periodStart:
+          editForm.type === 'extensao'
+            ? editForm.extensionForm.periodStart
+            : editForm.periodStart,
+        periodEnd:
+          editForm.type === 'extensao'
+            ? editForm.extensionForm.periodEnd
+            : editForm.periodEnd,
+        targetAudience:
+          editForm.type === 'extensao'
+            ? editForm.extensionForm.targetAudience
+            : editForm.targetAudience,
+        budget: editForm.type === 'extensao' ? 0 : Number(editForm.budget || 0),
+        description:
+          editForm.type === 'extensao'
+            ? editForm.extensionForm.projectSummary
+            : editForm.description,
+        type: editForm.type,
+        codigoDisciplina: editForm.type === 'disciplina' ? editForm.codigoDisciplina : null,
+        semestreLetivo: editForm.type === 'disciplina' ? editForm.semestreLetivo : null,
+        extensionForm: editForm.type === 'extensao' ? editForm.extensionForm : null,
       })
 
       cancelEdit()
@@ -298,6 +339,204 @@ export function UserProjectDetailPage() {
     }
   }
 
+  const renderExtensionSummary = (extensionForm: ExtensionPlanData) => (
+    <div className="project-sections-stack">
+      <section className="project-info-section">
+        <h3>Identificacao da Iniciativa Extensionista</h3>
+        <div className="project-info-grid">
+          <div className="project-info-item">
+            <p className="project-info-label">Titulo da Iniciativa</p>
+            <p className="project-info-value">{extensionForm.title}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">Carga horaria total</p>
+            <p className="project-info-value">{extensionForm.totalWorkload}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">Programa Unicap</p>
+            <p className="project-info-value">{extensionForm.unicapProgram}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">Periodo</p>
+            <p className="project-info-value">
+              {extensionForm.periodStart} ate {extensionForm.periodEnd}
+            </p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">Curso ou programa vinculado</p>
+            <p className="project-info-value">{extensionForm.linkedCourse}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">Curso</p>
+            <p className="project-info-value">{extensionForm.courseName}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">E-mail da Coordenacao</p>
+            <p className="project-info-value">{extensionForm.coordinationEmail}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="project-info-section">
+        <h3>Docentes</h3>
+        <div className="project-info-grid">
+          <div className="project-info-item">
+            <p className="project-info-label">Nome do docente coordenador</p>
+            <p className="project-info-value">{extensionForm.coordinatorName}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">E-mail do docente coordenador</p>
+            <p className="project-info-value">{extensionForm.coordinatorEmail}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">CPF do docente coordenador</p>
+            <p className="project-info-value">{extensionForm.coordinatorCpf}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">Telefone (WhatsApp)</p>
+            <p className="project-info-value">{extensionForm.coordinatorPhone}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">Carga Horaria Semanal - Coordenador</p>
+            <p className="project-info-value">{extensionForm.coordinatorWeeklyHours}</p>
+          </div>
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Forma de participacao do Coordenador</p>
+            <p className="project-info-value">{extensionForm.coordinatorParticipation}</p>
+          </div>
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Outros docentes colaboradores voluntarios</p>
+            <p className="project-info-value">{extensionForm.otherVolunteerTeachers || '-'}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="project-info-section">
+        <h3>Estudantes voluntarios</h3>
+        <div className="project-info-grid">
+          <div className="project-info-item">
+            <p className="project-info-label">Carga Horaria Semanal - Estudantes</p>
+            <p className="project-info-value">{extensionForm.studentWeeklyHours}</p>
+          </div>
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Estudantes participantes</p>
+            <p className="project-info-value">{extensionForm.studentParticipants}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="project-info-section">
+        <h3>Eixo Aprendizagem</h3>
+        <div className="project-info-grid">
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Objetivos de Aprendizagem</p>
+            <p className="project-info-value">
+              {extensionForm.learningObjectives.filter(Boolean).join(' | ')}
+            </p>
+          </div>
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Competencias Transversais</p>
+            <p className="project-info-value">
+              {extensionForm.transversalCompetencies.filter(Boolean).join(' | ')}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="project-info-section">
+        <h3>Eixo Servico</h3>
+        <div className="project-info-grid">
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Servico a ser oferecido</p>
+            <p className="project-info-value">{extensionForm.serviceOffered}</p>
+          </div>
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Atividades</p>
+            <p className="project-info-value">
+              {extensionForm.activities.filter(Boolean).join(' | ')}
+            </p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">Local de realizacao</p>
+            <p className="project-info-value">{extensionForm.executionLocation}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">Publico que sera atendido</p>
+            <p className="project-info-value">{extensionForm.targetAudience}</p>
+          </div>
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Procedimentos Metodologicos</p>
+            <p className="project-info-value">{extensionForm.methodologicalProcedures}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="project-info-section">
+        <h3>Eixo Impacto</h3>
+        <div className="project-info-grid">
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Problema ou Necessidade a ser respondido</p>
+            <p className="project-info-value">{extensionForm.problemStatement}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">ODS Impactado</p>
+            <p className="project-info-value">{extensionForm.sustainableDevelopmentGoal}</p>
+          </div>
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Metas</p>
+            <p className="project-info-value">{extensionForm.goals.filter(Boolean).join(' | ')}</p>
+          </div>
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Estrategias de Divulgacao</p>
+            <p className="project-info-value">{extensionForm.disseminationStrategies}</p>
+          </div>
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Resumo do projeto</p>
+            <p className="project-info-value">{extensionForm.projectSummary}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="project-info-section">
+        <h3>Eixo Reflexao e Avaliacao</h3>
+        <div className="project-info-grid">
+          <div className="project-info-item">
+            <p className="project-info-label">Estrategias de Reflexao</p>
+            <p className="project-info-value">{extensionForm.reflectionStrategies}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">Estrategias de Avaliacao</p>
+            <p className="project-info-value">{extensionForm.evaluationStrategies}</p>
+          </div>
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Feedback do Publico Parceiro</p>
+            <p className="project-info-value">{extensionForm.partnerFeedback}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="project-info-section">
+        <h3>Conclusao</h3>
+        <div className="project-info-grid">
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Informacoes Adicionais</p>
+            <p className="project-info-value">{extensionForm.additionalInformation || '-'}</p>
+          </div>
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Compreendi que...</p>
+            <p className="project-info-value">
+              {ACKNOWLEDGEMENT_OPTIONS.filter((item) =>
+                extensionForm.acknowledgements.includes(item.id),
+              )
+                .map((item) => item.label)
+                .join(' | ')}
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+
   return (
     <article className={`${panelClassName} ${panelFlatClassName}`}>
       <Link to="/usuario/meus-projetos" className={backLinkClassName}>
@@ -318,41 +557,93 @@ export function UserProjectDetailPage() {
 
               {!isEditing ? (
                 <>
-                  <section className="grid grid-cols-1 gap-y-2.5 gap-x-3 md:grid-cols-2">
-                    <div className="min-w-0">
-                      <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Area</p>
-                      <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.thematic_area}</p>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Curso</p>
-                      <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.course || '-'}</p>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Escola</p>
-                      <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.school || '-'}</p>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Periodo</p>
-                      <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.period_start} ate {project.period_end}</p>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Publico-alvo</p>
-                      <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.target_audience}</p>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Orcamento</p>
-                      <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">R$ {Number(project.budget).toFixed(2)}</p>
-                    </div>
-                    <div className="col-span-full min-w-0">
-                      <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Descricao</p>
-                      <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.description}</p>
-                    </div>
-                  </section>
+                  {project.tipo === 'extensao' ? (
+                    renderExtensionSummary(createExtensionPlanFromProject(project))
+                  ) : (
+                    <section className="grid grid-cols-1 gap-y-2.5 gap-x-3 md:grid-cols-2">
+                      <div className="min-w-0">
+                        <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">
+                          Area
+                        </p>
+                        <p className="mt-1 text-[0.98rem] break-words text-[hsl(var(--foreground))]">
+                          {project.thematic_area}
+                        </p>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">
+                          Curso
+                        </p>
+                        <p className="mt-1 text-[0.98rem] break-words text-[hsl(var(--foreground))]">
+                          {project.course || '-'}
+                        </p>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">
+                          Escola
+                        </p>
+                        <p className="mt-1 text-[0.98rem] break-words text-[hsl(var(--foreground))]">
+                          {project.school || '-'}
+                        </p>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">
+                          Codigo da disciplina
+                        </p>
+                        <p className="mt-1 text-[0.98rem] break-words text-[hsl(var(--foreground))]">
+                          {project.codigo_disciplina || '-'}
+                        </p>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">
+                          Semestre letivo
+                        </p>
+                        <p className="mt-1 text-[0.98rem] break-words text-[hsl(var(--foreground))]">
+                          {project.semestre_letivo || '-'}
+                        </p>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">
+                          Periodo
+                        </p>
+                        <p className="mt-1 text-[0.98rem] break-words text-[hsl(var(--foreground))]">
+                          {project.period_start} ate {project.period_end}
+                        </p>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">
+                          Publico-alvo
+                        </p>
+                        <p className="mt-1 text-[0.98rem] break-words text-[hsl(var(--foreground))]">
+                          {project.target_audience}
+                        </p>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">
+                          Orcamento
+                        </p>
+                        <p className="mt-1 text-[0.98rem] break-words text-[hsl(var(--foreground))]">
+                          R$ {Number(project.budget).toFixed(2)}
+                        </p>
+                      </div>
+                      <div className="col-span-full min-w-0">
+                        <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">
+                          Descricao
+                        </p>
+                        <p className="mt-1 text-[0.98rem] break-words text-[hsl(var(--foreground))]">
+                          {project.description}
+                        </p>
+                      </div>
+                    </section>
+                  )}
 
                   {project.admin_message && (
                     <div className="rounded-[calc(var(--radius)-3px)] border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.35)] p-2.5">
-                      <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Mensagem da avaliacao</p>
-                      <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.admin_message}</p>
+                      <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">
+                        Mensagem da avaliacao
+                      </p>
+                      <p className="mt-1 text-[0.98rem] break-words text-[hsl(var(--foreground))]">
+                        {project.admin_message}
+                      </p>
                     </div>
                   )}
 
@@ -363,8 +654,15 @@ export function UserProjectDetailPage() {
                           Editar
                         </Button>
                       )}
-                      {(project.status === 'rascunho' || project.status === 'submetido' || project.status === 'em_ajustes') && (
-                        <Button type="button" size="sm" onClick={handleStatusToggle} disabled={isSubmitting || isDeleting}>
+                      {(project.status === 'rascunho' ||
+                        project.status === 'submetido' ||
+                        project.status === 'em_ajustes') && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={handleStatusToggle}
+                          disabled={isSubmitting || isDeleting}
+                        >
                           {isSubmitting
                             ? 'Atualizando...'
                             : project.status === 'submetido'
@@ -403,9 +701,13 @@ export function UserProjectDetailPage() {
                       </label>
                     </div>
 
-                    <p className={noteClassName}>Envie arquivos de apoio (PDF, imagens, DOC, XLS, PPT) ate 20 MB.</p>
+                    <p className={noteClassName}>
+                      Envie arquivos de apoio (PDF, imagens, DOC, XLS, PPT) ate 20 MB.
+                    </p>
 
-                    {isAttachmentsLoading && <p className={noteClassName}>Carregando anexos...</p>}
+                    {isAttachmentsLoading && (
+                      <p className={noteClassName}>Carregando anexos...</p>
+                    )}
                     {attachmentError && <p className={errorClassName}>{attachmentError}</p>}
 
                     {!isAttachmentsLoading && attachments.length === 0 && (
@@ -420,9 +722,12 @@ export function UserProjectDetailPage() {
                             className="flex items-center justify-between gap-2.5 rounded-[calc(var(--radius)-4px)] border border-[hsl(var(--border))] p-2.5 max-[900px]:flex-col max-[900px]:items-start"
                           >
                             <div>
-                              <p className="m-0 font-semibold text-[hsl(var(--foreground))]">{attachment.file_name}</p>
+                              <p className="m-0 font-semibold text-[hsl(var(--foreground))]">
+                                {attachment.file_name}
+                              </p>
                               <p className="mt-1 text-[0.8rem] text-[hsl(var(--muted-foreground))]">
-                                {formatAttachmentSize(attachment.size_bytes)} - {new Date(attachment.created_at).toLocaleString('pt-BR')}
+                                {formatAttachmentSize(attachment.size_bytes)} -{' '}
+                                {new Date(attachment.created_at).toLocaleString('pt-BR')}
                               </p>
                             </div>
                             <div className="flex items-center gap-2 max-[900px]:w-full max-[900px]:justify-between">
@@ -454,127 +759,189 @@ export function UserProjectDetailPage() {
                 </>
               ) : (
                 <form className="mt-4 flex flex-col gap-3" onSubmit={handleSaveEdit}>
-                  <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
-                    Titulo
-                    <Input
-                      value={editForm?.title ?? ''}
-                      onChange={(event) =>
-                        setEditForm((prev) => (prev ? { ...prev, title: event.target.value } : prev))
+                  {editForm?.type === 'extensao' ? (
+                    <ExtensionProjectFields
+                      form={editForm.extensionForm}
+                      onChange={(nextForm) =>
+                        setEditForm((prev) =>
+                          prev ? { ...prev, extensionForm: nextForm } : prev,
+                        )
                       }
-                      required
+                      disabled={isSubmitting}
                     />
-                  </label>
+                  ) : (
+                    <>
+                      <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+                        Titulo
+                        <Input
+                          value={editForm?.title ?? ''}
+                          onChange={(event) =>
+                            setEditForm((prev) =>
+                              prev ? { ...prev, title: event.target.value } : prev,
+                            )
+                          }
+                          required
+                        />
+                      </label>
 
-                  <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
-                    Area tematica
-                    <Input
-                      value={editForm?.thematicArea ?? ''}
-                      onChange={(event) =>
-                        setEditForm((prev) => (prev ? { ...prev, thematicArea: event.target.value } : prev))
-                      }
-                      required
-                    />
-                  </label>
+                      <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+                        Area tematica
+                        <Input
+                          value={editForm?.thematicArea ?? ''}
+                          onChange={(event) =>
+                            setEditForm((prev) =>
+                              prev ? { ...prev, thematicArea: event.target.value } : prev,
+                            )
+                          }
+                          required
+                        />
+                      </label>
 
-                  <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
-                    Curso
-                    <select
-                      value={editForm?.course ?? ''}
-                      onChange={(event) =>
-                        setEditForm((prev) => (prev ? { ...prev, course: event.target.value } : prev))
-                      }
-                      className="w-full min-h-11 rounded-[calc(var(--radius)-2px)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-[0.8rem] py-[0.65rem] text-[0.95rem] text-[hsl(var(--foreground))] transition-[border-color,box-shadow] focus:border-[hsl(var(--ring))] focus:shadow-[0_0_0_2px_hsl(var(--ring)/0.15)] focus:outline-none"
-                      required
-                    >
-                      <option value="">Selecione um curso</option>
-                      {courseOptions.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                      <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
+                        <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+                          Codigo da Disciplina
+                          <Input
+                            value={editForm?.codigoDisciplina ?? ''}
+                            onChange={(event) =>
+                              setEditForm((prev) =>
+                                prev
+                                  ? { ...prev, codigoDisciplina: event.target.value }
+                                  : prev,
+                              )
+                            }
+                            required
+                          />
+                        </label>
 
-                  <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
-                    Escola
-                    <select
-                      value={editForm?.school ?? ''}
-                      onChange={(event) =>
-                        setEditForm((prev) => (prev ? { ...prev, school: event.target.value } : prev))
-                      }
-                      className="w-full min-h-11 rounded-[calc(var(--radius)-2px)] border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-[0.8rem] py-[0.65rem] text-[0.95rem] text-[hsl(var(--foreground))] transition-[border-color,box-shadow] focus:border-[hsl(var(--ring))] focus:shadow-[0_0_0_2px_hsl(var(--ring)/0.15)] focus:outline-none"
-                      required
-                    >
-                      <option value="">Selecione uma escola</option>
-                      {schoolOptions.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                        <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+                          Semestre Letivo
+                          <Input
+                            value={editForm?.semestreLetivo ?? ''}
+                            onChange={(event) =>
+                              setEditForm((prev) =>
+                                prev ? { ...prev, semestreLetivo: event.target.value } : prev,
+                              )
+                            }
+                            required
+                          />
+                        </label>
+                      </div>
 
-                  <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
-                    <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
-                      Inicio
-                      <Input
-                        type="date"
-                        value={editForm?.periodStart ?? ''}
-                        onChange={(event) =>
-                          setEditForm((prev) => (prev ? { ...prev, periodStart: event.target.value } : prev))
-                        }
-                        required
-                      />
-                    </label>
-                    <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
-                      Fim
-                      <Input
-                        type="date"
-                        value={editForm?.periodEnd ?? ''}
-                        onChange={(event) =>
-                          setEditForm((prev) => (prev ? { ...prev, periodEnd: event.target.value } : prev))
-                        }
-                        required
-                      />
-                    </label>
-                  </div>
+                      <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+                        Curso
+                        <select
+                          value={editForm?.course ?? ''}
+                          onChange={(event) =>
+                            setEditForm((prev) =>
+                              prev ? { ...prev, course: event.target.value } : prev,
+                            )
+                          }
+                          className={selectClassName}
+                          required
+                        >
+                          <option value="">Selecione um curso</option>
+                          {courseOptions.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
 
-                  <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
-                    Publico-alvo
-                    <Input
-                      value={editForm?.targetAudience ?? ''}
-                      onChange={(event) =>
-                        setEditForm((prev) => (prev ? { ...prev, targetAudience: event.target.value } : prev))
-                      }
-                      required
-                    />
-                  </label>
+                      <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+                        Escola
+                        <select
+                          value={editForm?.school ?? ''}
+                          onChange={(event) =>
+                            setEditForm((prev) =>
+                              prev ? { ...prev, school: event.target.value } : prev,
+                            )
+                          }
+                          className={selectClassName}
+                          required
+                        >
+                          <option value="">Selecione uma escola</option>
+                          {schoolOptions.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
 
-                  <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
-                    Orcamento
-                    <Input
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      value={editForm?.budget ?? ''}
-                      onChange={(event) =>
-                        setEditForm((prev) => (prev ? { ...prev, budget: event.target.value } : prev))
-                      }
-                      required
-                    />
-                  </label>
+                      <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
+                        <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+                          Inicio
+                          <Input
+                            type="date"
+                            value={editForm?.periodStart ?? ''}
+                            onChange={(event) =>
+                              setEditForm((prev) =>
+                                prev ? { ...prev, periodStart: event.target.value } : prev,
+                              )
+                            }
+                            required
+                          />
+                        </label>
+                        <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+                          Fim
+                          <Input
+                            type="date"
+                            value={editForm?.periodEnd ?? ''}
+                            onChange={(event) =>
+                              setEditForm((prev) =>
+                                prev ? { ...prev, periodEnd: event.target.value } : prev,
+                              )
+                            }
+                            required
+                          />
+                        </label>
+                      </div>
 
-                  <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
-                    Descricao
-                    <Textarea
-                      value={editForm?.description ?? ''}
-                      onChange={(event) =>
-                        setEditForm((prev) => (prev ? { ...prev, description: event.target.value } : prev))
-                      }
-                      rows={6}
-                      required
-                    />
-                  </label>
+                      <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+                        Publico-alvo
+                        <Input
+                          value={editForm?.targetAudience ?? ''}
+                          onChange={(event) =>
+                            setEditForm((prev) =>
+                              prev ? { ...prev, targetAudience: event.target.value } : prev,
+                            )
+                          }
+                          required
+                        />
+                      </label>
+
+                      <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+                        Orcamento
+                        <Input
+                          type="number"
+                          min={0}
+                          step="0.01"
+                          value={editForm?.budget ?? ''}
+                          onChange={(event) =>
+                            setEditForm((prev) =>
+                              prev ? { ...prev, budget: event.target.value } : prev,
+                            )
+                          }
+                          required
+                        />
+                      </label>
+
+                      <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
+                        Descricao
+                        <Textarea
+                          value={editForm?.description ?? ''}
+                          onChange={(event) =>
+                            setEditForm((prev) =>
+                              prev ? { ...prev, description: event.target.value } : prev,
+                            )
+                          }
+                          rows={6}
+                          required
+                        />
+                      </label>
+                    </>
+                  )}
 
                   <div className="flex gap-2">
                     <Button type="submit" size="sm" disabled={isSubmitting}>
@@ -631,9 +998,15 @@ export function UserProjectDetailPage() {
             aria-labelledby="delete-draft-title"
             onClick={(event) => event.stopPropagation()}
           >
-            <h2 id="delete-draft-title" className="m-0 text-[1.15rem] text-[hsl(0_0%_98%)]">Excluir rascunho?</h2>
+            <h2
+              id="delete-draft-title"
+              className="m-0 text-[1.15rem] text-[hsl(0_0%_98%)]"
+            >
+              Excluir rascunho?
+            </h2>
             <p className="mt-2.5 text-[hsl(0_0%_74%)]">
-              Este rascunho vai sumir da sua lista, mas os dados ficam salvos para recuperacao depois.
+              Este rascunho vai sumir da sua lista, mas os dados ficam salvos para
+              recuperacao depois.
             </p>
             <div className="mt-4 flex justify-end gap-2">
               <Button

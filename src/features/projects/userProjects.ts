@@ -1,5 +1,6 @@
 import { clearSessionToken, getStoredSessionToken } from "../../auth/appAuth";
 import { supabase } from "../../lib/supabase";
+import type { ExtensionPlanData } from "./extensionPlan";
 
 export type UserProjectStatus =
   | "rascunho"
@@ -23,6 +24,7 @@ export type UserProject = {
   target_audience: string;
   budget: number;
   description: string;
+  extension_form?: ExtensionPlanData | null;
   status: UserProjectStatus;
   admin_message: string | null;
   created_at: string;
@@ -32,8 +34,8 @@ export type UserProject = {
 type CreateProjectInput = {
   title: string;
   thematicArea: string;
-  course?: string;
-  school?: string;
+  course?: string | null;
+  school?: string | null;
   periodStart: string;
   periodEnd: string;
   targetAudience: string;
@@ -42,6 +44,7 @@ type CreateProjectInput = {
   type: "extensao" | "disciplina";
   codigo_disciplina?: string | null;
   semestre_letivo?: string | null;
+  extensionForm?: ExtensionPlanData | null;
 };
 
 export type CreateProjectResult = {
@@ -62,6 +65,10 @@ type UpdateProjectInput = {
   targetAudience: string;
   budget: number;
   description: string;
+  type?: "extensao" | "disciplina";
+  codigoDisciplina?: string | null;
+  semestreLetivo?: string | null;
+  extensionForm?: ExtensionPlanData | null;
 };
 
 export type ProjectCatalogOptions = {
@@ -136,6 +143,7 @@ export const createUserProject = async (
     p_description: input.description,
     p_codigo_disciplina: input.codigo_disciplina ?? null,
     p_semestre_letivo: input.semestre_letivo ?? null,
+    p_extension_form: input.extensionForm ?? null,
   });
 
   if (error) {
@@ -227,7 +235,7 @@ export const updateMyProjectDetails = async (input: UpdateProjectInput) => {
     p_token: token,
     p_project_id: input.projectId,
     p_title: input.title,
-    p_type: "extensao",
+    p_type: input.type ?? "extensao",
     p_thematic_area: input.thematicArea,
     p_course: input.course ?? null,
     p_school: input.school ?? null,
@@ -236,8 +244,9 @@ export const updateMyProjectDetails = async (input: UpdateProjectInput) => {
     p_target_audience: input.targetAudience,
     p_budget: input.budget,
     p_description: input.description,
-    p_codigo_disciplina: (input as any).codigoDisciplina ?? null,
-    p_semestre_letivo: (input as any).semestreLetivo ?? null,
+    p_codigo_disciplina: input.codigoDisciplina ?? null,
+    p_semestre_letivo: input.semestreLetivo ?? null,
+    p_extension_form: input.extensionForm ?? null,
   });
 
   if (error) {

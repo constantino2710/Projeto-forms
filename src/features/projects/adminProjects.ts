@@ -1,5 +1,6 @@
 import { getStoredSessionToken } from '../../auth/appAuth'
 import { supabase } from '../../lib/supabase'
+import type { ExtensionPlanData } from './extensionPlan'
 
 export type AdminProjectStatus =
   | 'rascunho'
@@ -40,6 +41,7 @@ export type AdminProjectHistoryCard = {
 export type AdminProjectDetail = {
   id: string
   title: string
+  tipo: 'extensao' | 'disciplina'
   professor: string
   professor_avatar_url: string | null
   discipline: string
@@ -50,6 +52,7 @@ export type AdminProjectDetail = {
   target_audience: string
   budget: number
   description: string
+  extension_form?: ExtensionPlanData | null
   status: AdminProjectStatus
   created_at: string
   updated_at: string

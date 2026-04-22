@@ -2,6 +2,7 @@ import type { AuthSession } from '../App'
 import { supabase } from '../lib/supabase'
 
 const SESSION_TOKEN_KEY = 'extensao_session_token'
+const USERNAME_DIGITS_LENGTH = 11
 
 type LoginResponse = {
   token: string
@@ -40,13 +41,45 @@ export const clearSessionToken = () => {
   localStorage.removeItem(SESSION_TOKEN_KEY)
 }
 
+const normalizeUserUsername = (username: string) => username.replace(/\D/g, '')
+
+const mapAuthErrorMessage = (message: string) => {
+  if (message.includes('Usuario nao encontrado')) {
+    return 'RA nao encontrado. Informe um RA cadastrado com 11 digitos.'
+  }
+
+  if (message.includes('Admin nao encontrado')) {
+    return 'Admin nao encontrado.'
+  }
+
+  if (message.includes('Senha invalida')) {
+    return 'Senha invalida.'
+  }
+
+  if (
+    message.includes('Failed to fetch') ||
+    message.includes('Load failed') ||
+    message.includes('NetworkError')
+  ) {
+    return 'Falha ao conectar com o Supabase. Verifique a configuracao do projeto e tente novamente.'
+  }
+
+  return message
+}
+
 export const loginUser = async (username: string): Promise<AuthSession> => {
+  const normalizedUsername = normalizeUserUsername(username)
+
+  if (normalizedUsername.length !== USERNAME_DIGITS_LENGTH) {
+    throw new Error('Informe um RA valido com 11 digitos.')
+  }
+
   const { data, error } = await supabase.rpc('app_login_user', {
-    p_username: username.trim(),
+    p_username: normalizedUsername,
   })
 
   if (error) {
-    throw new Error(error.message)
+    throw new Error(mapAuthErrorMessage(error.message))
   }
 
   const session = parseSession(data)
@@ -61,7 +94,7 @@ export const loginAdmin = async (username: string, password: string): Promise<Au
   })
 
   if (error) {
-    throw new Error(error.message)
+    throw new Error(mapAuthErrorMessage(error.message))
   }
 
   const session = parseSession(data)
@@ -75,7 +108,7 @@ export const validateSession = async (token: string): Promise<AuthSession | null
   })
 
   if (error) {
-    throw new Error(error.message)
+    throw new Error(mapAuthErrorMessage(error.message))
   }
 
   if (!data) {
@@ -108,7 +141,7 @@ export const updateMyAvatar = async (avatarUrl: string): Promise<string | null> 
   })
 
   if (error) {
-    throw new Error(error.message)
+    throw new Error(mapAuthErrorMessage(error.message))
   }
 
   const payload = data as { avatar_url?: string | null } | null

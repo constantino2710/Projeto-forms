@@ -3,6 +3,11 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Textarea } from '../../components/ui/textarea'
+import {
+  ACKNOWLEDGEMENT_OPTIONS,
+  createExtensionPlanFromProject,
+  type ExtensionPlanData,
+} from '../../features/projects/extensionPlan'
 import { sendProjectStatusEmail } from '../../features/notifications/projectEmails'
 import { getProjectTimeline, type ProjectTimeline } from '../../features/projects/projectTimeline'
 import {
@@ -112,13 +117,136 @@ export function AdminProjectDetailPage() {
     },
   ]
 
-  const latestTimelineIndex = timelineSteps.reduce((latest, step, index) => (step.date ? index : latest), -1)
+  const latestTimelineIndex = timelineSteps.reduce(
+    (latest, step, index) => (step.date ? index : latest),
+    -1,
+  )
   const approvalStatusLabel =
     project?.status === 'aprovado' ? 'Aprovado' : project?.status === 'reprovado' ? 'Recusado' : 'Pendente'
   const approvalStatusDate =
-    project?.status === 'aprovado' ? timeline?.approved_at ?? null : project?.status === 'reprovado' ? timeline?.rejected_at ?? null : null
+    project?.status === 'aprovado'
+      ? timeline?.approved_at ?? null
+      : project?.status === 'reprovado'
+        ? timeline?.rejected_at ?? null
+        : null
   const professorAvatarUrl = project?.professor_avatar_url?.trim() || null
   const professorInitial = project?.professor?.trim().charAt(0).toUpperCase() || '?'
+
+  const renderExtensionSummary = (extensionForm: ExtensionPlanData) => (
+    <div className="project-sections-stack">
+      <section className="project-info-section">
+        <h3>Identificacao da Iniciativa Extensionista</h3>
+        <div className="project-info-grid">
+          <div className="project-info-item">
+            <p className="project-info-label">Titulo da Iniciativa</p>
+            <p className="project-info-value">{extensionForm.title}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">Carga horaria total</p>
+            <p className="project-info-value">{extensionForm.totalWorkload}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">Programa Unicap</p>
+            <p className="project-info-value">{extensionForm.unicapProgram}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">Periodo</p>
+            <p className="project-info-value">
+              {extensionForm.periodStart} ate {extensionForm.periodEnd}
+            </p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">Curso ou programa vinculado</p>
+            <p className="project-info-value">{extensionForm.linkedCourse}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">Curso</p>
+            <p className="project-info-value">{extensionForm.courseName}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="project-info-section">
+        <h3>Docentes</h3>
+        <div className="project-info-grid">
+          <div className="project-info-item">
+            <p className="project-info-label">Professor</p>
+            <p className="project-info-value">{project?.professor}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">Nome do docente coordenador</p>
+            <p className="project-info-value">{extensionForm.coordinatorName}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">E-mail do docente coordenador</p>
+            <p className="project-info-value">{extensionForm.coordinatorEmail}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">CPF do docente coordenador</p>
+            <p className="project-info-value">{extensionForm.coordinatorCpf}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">Telefone (WhatsApp)</p>
+            <p className="project-info-value">{extensionForm.coordinatorPhone}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">Participacao do Coordenador</p>
+            <p className="project-info-value">{extensionForm.coordinatorParticipation}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="project-info-section">
+        <h3>Conteudo do Plano</h3>
+        <div className="project-info-grid">
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Objetivos de Aprendizagem</p>
+            <p className="project-info-value">
+              {extensionForm.learningObjectives.filter(Boolean).join(' | ')}
+            </p>
+          </div>
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Servico a ser oferecido</p>
+            <p className="project-info-value">{extensionForm.serviceOffered}</p>
+          </div>
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Atividades</p>
+            <p className="project-info-value">{extensionForm.activities.filter(Boolean).join(' | ')}</p>
+          </div>
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Problema ou Necessidade</p>
+            <p className="project-info-value">{extensionForm.problemStatement}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">ODS Impactado</p>
+            <p className="project-info-value">{extensionForm.sustainableDevelopmentGoal}</p>
+          </div>
+          <div className="project-info-item">
+            <p className="project-info-label">Publico atendido</p>
+            <p className="project-info-value">{extensionForm.targetAudience}</p>
+          </div>
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Resumo</p>
+            <p className="project-info-value">{extensionForm.projectSummary}</p>
+          </div>
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Informacoes adicionais</p>
+            <p className="project-info-value">{extensionForm.additionalInformation || '-'}</p>
+          </div>
+          <div className="project-info-item project-info-item-full">
+            <p className="project-info-label">Confirmacoes marcadas</p>
+            <p className="project-info-value">
+              {ACKNOWLEDGEMENT_OPTIONS.filter((item) =>
+                extensionForm.acknowledgements.includes(item.id),
+              )
+                .map((item) => item.label)
+                .join(' | ')}
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
 
   return (
     <article className={`${panelClassName} ${panelFlatClassName}`}>
@@ -139,45 +267,87 @@ export function AdminProjectDetailPage() {
               </div>
 
               <div className="mt-3 rounded-[calc(var(--radius)-3px)] border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.35)] px-2.5 py-2">
-                <p className="m-0 text-[0.72rem] uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Status de aprovacao</p>
-                <p className="mt-1 text-[0.95rem] font-bold text-[hsl(var(--foreground))]">{approvalStatusLabel}</p>
-                <p className="mt-1 text-[0.82rem] text-[hsl(var(--muted-foreground))]">{formatTimelineDate(approvalStatusDate)}</p>
+                <p className="m-0 text-[0.72rem] uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">
+                  Status de aprovacao
+                </p>
+                <p className="mt-1 text-[0.95rem] font-bold text-[hsl(var(--foreground))]">
+                  {approvalStatusLabel}
+                </p>
+                <p className="mt-1 text-[0.82rem] text-[hsl(var(--muted-foreground))]">
+                  {formatTimelineDate(approvalStatusDate)}
+                </p>
               </div>
 
-              <section className="grid grid-cols-1 gap-y-2.5 gap-x-3 md:grid-cols-2">
-                <div className="min-w-0">
-                  <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Professor</p>
-                  <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.professor}</p>
-                </div>
-                <div className="min-w-0">
-                  <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Disciplina</p>
-                  <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.discipline}</p>
-                </div>
-                <div className="min-w-0">
-                  <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Curso</p>
-                  <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.course}</p>
-                </div>
-                <div className="min-w-0">
-                  <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Escola</p>
-                  <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.school}</p>
-                </div>
-                <div className="min-w-0">
-                  <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Periodo</p>
-                  <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.period_start} ate {project.period_end}</p>
-                </div>
-                <div className="min-w-0">
-                  <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Publico-alvo</p>
-                  <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.target_audience}</p>
-                </div>
-                <div className="min-w-0">
-                  <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Orcamento</p>
-                  <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">R$ {Number(project.budget).toFixed(2)}</p>
-                </div>
-                <div className="col-span-full min-w-0">
-                  <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">Descricao</p>
-                  <p className="mt-1 text-[0.98rem] text-[hsl(var(--foreground))] break-words">{project.description}</p>
-                </div>
-              </section>
+              {project.tipo === 'extensao' ? (
+                renderExtensionSummary(createExtensionPlanFromProject(project))
+              ) : (
+                <section className="grid grid-cols-1 gap-y-2.5 gap-x-3 md:grid-cols-2">
+                  <div className="min-w-0">
+                    <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">
+                      Professor
+                    </p>
+                    <p className="mt-1 break-words text-[0.98rem] text-[hsl(var(--foreground))]">
+                      {project.professor}
+                    </p>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">
+                      Disciplina
+                    </p>
+                    <p className="mt-1 break-words text-[0.98rem] text-[hsl(var(--foreground))]">
+                      {project.discipline}
+                    </p>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">
+                      Curso
+                    </p>
+                    <p className="mt-1 break-words text-[0.98rem] text-[hsl(var(--foreground))]">
+                      {project.course}
+                    </p>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">
+                      Escola
+                    </p>
+                    <p className="mt-1 break-words text-[0.98rem] text-[hsl(var(--foreground))]">
+                      {project.school}
+                    </p>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">
+                      Periodo
+                    </p>
+                    <p className="mt-1 break-words text-[0.98rem] text-[hsl(var(--foreground))]">
+                      {project.period_start} ate {project.period_end}
+                    </p>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">
+                      Publico-alvo
+                    </p>
+                    <p className="mt-1 break-words text-[0.98rem] text-[hsl(var(--foreground))]">
+                      {project.target_audience}
+                    </p>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">
+                      Orcamento
+                    </p>
+                    <p className="mt-1 break-words text-[0.98rem] text-[hsl(var(--foreground))]">
+                      R$ {Number(project.budget).toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="col-span-full min-w-0">
+                    <p className="m-0 text-[0.74rem] font-bold uppercase tracking-[0.04em] text-[hsl(var(--muted-foreground))]">
+                      Descricao
+                    </p>
+                    <p className="mt-1 break-words text-[0.98rem] text-[hsl(var(--foreground))]">
+                      {project.description}
+                    </p>
+                  </div>
+                </section>
+              )}
 
               <label className="flex flex-col gap-1.5 text-[0.9rem] font-semibold">
                 Mensagem ao professor
@@ -191,13 +361,30 @@ export function AdminProjectDetailPage() {
               </label>
 
               <div className="mt-3.5 flex gap-2.5">
-                <Button type="button" size="sm" onClick={() => handleDecision('aprovado')} disabled={isDeciding}>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => handleDecision('aprovado')}
+                  disabled={isDeciding}
+                >
                   {isDeciding ? 'Processando...' : 'Aprovar'}
                 </Button>
-                <Button type="button" variant="outline" size="sm" onClick={() => handleDecision('em_ajustes')} disabled={isDeciding}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDecision('em_ajustes')}
+                  disabled={isDeciding}
+                >
                   {isDeciding ? 'Processando...' : 'Solicitar ajustes'}
                 </Button>
-                <Button type="button" variant="destructive" size="sm" onClick={() => handleDecision('reprovado')} disabled={isDeciding}>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDecision('reprovado')}
+                  disabled={isDeciding}
+                >
                   {isDeciding ? 'Processando...' : 'Recusar'}
                 </Button>
               </div>
@@ -209,12 +396,27 @@ export function AdminProjectDetailPage() {
               {projectStatusLabel[project.status]}
             </span>
             <div className="my-3 flex flex-col items-start gap-2 rounded-[calc(var(--radius)-3px)] border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.35)] p-2.5 text-left">
-              <p className="m-0 text-[0.72rem] uppercase tracking-[0.03em] text-[hsl(var(--muted-foreground))]">Atribuido por:</p>
+              <p className="m-0 text-[0.72rem] uppercase tracking-[0.03em] text-[hsl(var(--muted-foreground))]">
+                Atribuido por:
+              </p>
               <div className="flex min-h-[34px] w-full items-center justify-start gap-2.5">
-                <div className="grid h-[34px] w-[34px] place-items-center overflow-hidden rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--card))] font-bold text-[hsl(var(--muted-foreground))]" aria-hidden="true">
-                  {professorAvatarUrl ? <img src={professorAvatarUrl} alt={`Foto de ${project.professor}`} className="h-full w-full object-cover" /> : <span>{professorInitial}</span>}
+                <div
+                  className="grid h-[34px] w-[34px] place-items-center overflow-hidden rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--card))] font-bold text-[hsl(var(--muted-foreground))]"
+                  aria-hidden="true"
+                >
+                  {professorAvatarUrl ? (
+                    <img
+                      src={professorAvatarUrl}
+                      alt={`Foto de ${project.professor}`}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span>{professorInitial}</span>
+                  )}
                 </div>
-                <p className="m-0 overflow-hidden text-ellipsis text-[0.9rem] leading-none font-bold whitespace-nowrap text-[hsl(var(--foreground))]">{project.professor}</p>
+                <p className="m-0 overflow-hidden text-ellipsis whitespace-nowrap text-[0.9rem] leading-none font-bold text-[hsl(var(--foreground))]">
+                  {project.professor}
+                </p>
               </div>
             </div>
             <h2 className="m-0 text-[0.98rem]">Linha do tempo</h2>
