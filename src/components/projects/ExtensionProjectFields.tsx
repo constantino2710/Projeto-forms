@@ -190,7 +190,12 @@ export function ExtensionProjectFields({
             CPF do docente coordenador
             <Input
               value={form.coordinatorCpf}
-              onChange={(event) => setField('coordinatorCpf', event.target.value)}
+              onChange={(event) =>
+                setField('coordinatorCpf', event.target.value.replace(/\D/g, '').slice(0, 11))
+              }
+              inputMode="numeric"
+              maxLength={11}
+              placeholder="Apenas numeros"
               required
               disabled={disabled}
             />
@@ -200,7 +205,12 @@ export function ExtensionProjectFields({
             Telefone (WhatsApp)
             <Input
               value={form.coordinatorPhone}
-              onChange={(event) => setField('coordinatorPhone', event.target.value)}
+              onChange={(event) =>
+                setField('coordinatorPhone', event.target.value.replace(/\D/g, '').slice(0, 13))
+              }
+              inputMode="tel"
+              maxLength={13}
+              placeholder="Apenas numeros (DDD + numero)"
               required
               disabled={disabled}
             />

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { FilePlus2, FolderKanban, History, LayoutList } from 'lucide-react'
+import { FilePlus2, FolderKanban, History, LayoutList, UserPlus, Users } from 'lucide-react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import './App.css'
 import { clearSessionToken, getStoredSessionToken, validateSession } from './auth/appAuth'
@@ -9,11 +9,14 @@ import { AdminProjectDetailPage } from './pages/admin/AdminProjectDetailPage'
 import { AdminProjectHistoryPage } from './pages/admin/AdminProjectHistoryPage'
 import { AdminProjectsPage } from './pages/admin/AdminProjectsPage'
 import { LoginPage } from './pages/LoginPage'
+import { SuperHistoryPage } from './pages/super/SuperHistoryPage'
+import { SuperNewUserPage } from './pages/super/SuperNewUserPage'
+import { SuperUsersPage } from './pages/super/SuperUsersPage'
 import { UserProjectDetailPage } from './pages/user/UserProjectDetailPage'
 import { UserNewProjectPage } from './pages/user/UserNewProjectPage'
 import { UserProjectsPage } from './pages/user/UserProjectsPage'
 
-export type AuthRole = 'admin' | 'user'
+export type AuthRole = 'admin' | 'user' | 'superadmin'
 
 export type AuthSession = {
   token: string
@@ -77,7 +80,12 @@ function App() {
     )
   }
 
-  const defaultPath = session?.role === 'admin' ? '/admin' : '/usuario'
+  const defaultPath =
+    session?.role === 'superadmin'
+      ? '/super'
+      : session?.role === 'admin'
+        ? '/admin'
+        : '/usuario'
 
   return (
     <Routes>
@@ -93,7 +101,7 @@ function App() {
           !session
             ? <Navigate to="/login" replace />
             : session.role !== 'user'
-              ? <Navigate to="/admin" replace />
+              ? <Navigate to={defaultPath} replace />
               : (
                 <DashboardLayout
                   session={session}
@@ -116,16 +124,25 @@ function App() {
         element={
           !session
             ? <Navigate to="/login" replace />
-            : session.role !== 'admin'
-              ? <Navigate to="/usuario" replace />
+            : session.role !== 'admin' && session.role !== 'superadmin'
+              ? <Navigate to={defaultPath} replace />
               : (
                 <DashboardLayout
                   session={session}
                   onLogout={handleLogout}
-                  items={[
-                    { label: 'Projetos', to: '/admin/projetos', icon: LayoutList },
-                    { label: 'Historico', to: '/admin/historico', icon: History },
-                  ]}
+                  items={
+                    session.role === 'superadmin'
+                      ? [
+                          { label: 'Usuarios', to: '/super/usuarios', icon: Users },
+                          { label: 'Novo Usuario', to: '/super/usuarios/novo', icon: UserPlus },
+                          { label: 'Historico Geral', to: '/super/historico', icon: History },
+                          { label: 'Projetos', to: '/admin/projetos', icon: LayoutList },
+                        ]
+                      : [
+                          { label: 'Projetos', to: '/admin/projetos', icon: LayoutList },
+                          { label: 'Historico', to: '/admin/historico', icon: History },
+                        ]
+                  }
                 />
               )
         }
@@ -134,6 +151,32 @@ function App() {
         <Route path="projetos" element={<AdminProjectsPage />} />
         <Route path="projetos/:projectId" element={<AdminProjectDetailPage />} />
         <Route path="historico" element={<AdminProjectHistoryPage />} />
+      </Route>
+      <Route
+        path="/super"
+        element={
+          !session
+            ? <Navigate to="/login" replace />
+            : session.role !== 'superadmin'
+              ? <Navigate to={defaultPath} replace />
+              : (
+                <DashboardLayout
+                  session={session}
+                  onLogout={handleLogout}
+                  items={[
+                    { label: 'Usuarios', to: '/super/usuarios', icon: Users },
+                    { label: 'Novo Usuario', to: '/super/usuarios/novo', icon: UserPlus },
+                    { label: 'Historico Geral', to: '/super/historico', icon: History },
+                    { label: 'Projetos', to: '/admin/projetos', icon: LayoutList },
+                  ]}
+                />
+              )
+        }
+      >
+        <Route index element={<Navigate to="usuarios" replace />} />
+        <Route path="usuarios" element={<SuperUsersPage />} />
+        <Route path="usuarios/novo" element={<SuperNewUserPage />} />
+        <Route path="historico" element={<SuperHistoryPage />} />
       </Route>
       <Route path="*" element={<Navigate to={session ? defaultPath : '/login'} replace />} />
     </Routes>

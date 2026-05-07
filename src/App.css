@@ -194,8 +194,9 @@
   color: hsl(var(--foreground));
   padding: 0.65rem 0.8rem;
   font-size: 0.95rem;
-  resize: vertical;
-  min-height: 110px;
+  resize: none;
+  height: 110px;
+  overflow-y: auto;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -512,6 +513,10 @@
   display: none;
 }
 
+.dashboard-sidebar-collapsed .settings-menu {
+  display: none;
+}
+
 .dashboard-mobile-header {
   display: none;
   margin-bottom: 14px;
@@ -559,6 +564,37 @@
   gap: 6px;
   font-size: 0.9rem;
   font-weight: 600;
+}
+
+.project-form label:has(input[required])::before,
+.project-form label:has(textarea[required])::before,
+.project-form label:has(select[required])::before {
+  content: '* ';
+  color: hsl(var(--destructive));
+  font-weight: 700;
+  margin-right: 2px;
+}
+
+.form-validation-summary {
+  border: 1px solid hsl(var(--destructive));
+  background: color-mix(in oklab, hsl(var(--destructive)) 10%, transparent);
+  border-radius: calc(var(--radius) - 2px);
+  padding: 12px 14px;
+  color: hsl(var(--destructive));
+  font-size: 0.86rem;
+}
+
+.form-validation-title {
+  margin: 0 0 6px 0;
+  font-weight: 700;
+}
+
+.form-validation-summary ul {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .project-grid-2 {

@@ -52,6 +52,9 @@ export function DashboardLayout({ session, items, onLogout }: DashboardLayoutPro
     setIsDesktopSidebarCollapsed((current) => {
       const next = !current
       localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? '1' : '0')
+      if (next) {
+        setIsSettingsOpen(false)
+      }
       return next
     })
   }

@@ -7,16 +7,17 @@ import { Textarea } from '../../components/ui/textarea'
 import { uploadProjectAttachment } from '../../features/projects/projectAttachments'
 import {
   createEmptyExtensionPlan,
-  isExtensionPlanComplete,
   type ExtensionPlanData,
 } from '../../features/projects/extensionPlan'
+import {
+  collectFormErrors,
+  disciplineFormSchema,
+  extensionFormSchema,
+} from '../../features/projects/projectSchemas'
 import { createUserProject } from '../../features/projects/userProjects'
 
 const MIN_PROJECT_DATE = '2000-01-01'
 const MAX_PROJECT_DATE = '2100-12-31'
-const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
-
-const isIsoDate = (value: string) => ISO_DATE_PATTERN.test(value)
 
 type DisciplineFormData = {
   title: string
@@ -52,6 +53,7 @@ export function UserNewProjectPage() {
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [validationErrors, setValidationErrors] = useState<string[]>([])
   const [message, setMessage] = useState('')
 
   const formatAttachmentSize = (size: number) => {
@@ -78,54 +80,25 @@ export function UserNewProjectPage() {
     setPendingFiles((prev) => prev.filter((_, currentIndex) => currentIndex !== index))
   }
 
-  const validateDates = (periodStart: string, periodEnd: string) => {
-    if (!isIsoDate(periodStart) || !isIsoDate(periodEnd)) {
-      return 'Preencha as datas em formato valido.'
-    }
-
-    if (periodStart < MIN_PROJECT_DATE || periodStart > MAX_PROJECT_DATE) {
-      return 'A data inicial esta fora do intervalo permitido.'
-    }
-
-    if (periodEnd < MIN_PROJECT_DATE || periodEnd > MAX_PROJECT_DATE) {
-      return 'A data final esta fora do intervalo permitido.'
-    }
-
-    if (periodStart > periodEnd) {
-      return 'A data inicial nao pode ser maior que a data final.'
-    }
-
-    return ''
-  }
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setMessage('')
     setError('')
+    setValidationErrors([])
+
+    const parseResult =
+      projectType === 'extensao'
+        ? extensionFormSchema.safeParse(extensionForm)
+        : disciplineFormSchema.safeParse(disciplineForm)
+
+    if (!parseResult.success) {
+      setValidationErrors(collectFormErrors(parseResult.error.issues))
+      return
+    }
+
     setIsSubmitting(true)
 
-    const activePeriodStart = projectType === 'extensao' ? extensionForm.periodStart : disciplineForm.periodStart
-    const activePeriodEnd = projectType === 'extensao' ? extensionForm.periodEnd : disciplineForm.periodEnd
-    const dateError = validateDates(activePeriodStart, activePeriodEnd)
-
-    if (dateError) {
-      setError(dateError)
-      setIsSubmitting(false)
-      return
-    }
-
-    if (projectType === 'extensao' && !isExtensionPlanComplete(extensionForm)) {
-      setError('Marque todos os itens de confirmacao da conclusao para continuar.')
-      setIsSubmitting(false)
-      return
-    }
-
     const parsedBudget = projectType === 'extensao' ? 0 : Number(disciplineForm.budget)
-    if (!Number.isFinite(parsedBudget) || parsedBudget < 0) {
-      setError('Informe um orcamento valido.')
-      setIsSubmitting(false)
-      return
-    }
 
     try {
       const project =
@@ -360,6 +333,16 @@ export function UserNewProjectPage() {
           </ul>
         )}
 
+        {validationErrors.length > 0 && (
+          <div className="form-validation-summary">
+            <p className="form-validation-title">Corrija os campos abaixo:</p>
+            <ul>
+              {validationErrors.map((msg, index) => (
+                <li key={`${msg}-${index}`}>{msg}</li>
+              ))}
+            </ul>
+          </div>
+        )}
         {error && <p className="error">{error}</p>}
         {message && <p className="success">{message}</p>}
 
