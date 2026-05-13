@@ -1,7 +1,14 @@
-import { Grid3X3, List } from 'lucide-react'
+import { Grid3X3, List, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
+import { Input } from '../../components/ui/input'
+import { ProjectFiltersBar } from '../../components/projects/ProjectFiltersBar'
+import {
+  applyProjectFilters,
+  emptyProjectFilters,
+  type ProjectFilterState,
+} from '../../features/projects/projectFilters'
 import {
   listAdminProjectHistory,
   type AdminProjectHistoryCard,
@@ -10,11 +17,29 @@ import { projectStatusLabel } from '../../features/projects/userProjects'
 
 type ViewMode = 'list' | 'grid'
 const VIEW_MODE_KEY = 'admin_history_view_mode'
+const STATUS_OPTIONS = [
+  { value: 'aprovado', label: projectStatusLabel.aprovado },
+  { value: 'reprovado', label: projectStatusLabel.reprovado },
+  { value: 'em_ajustes', label: projectStatusLabel.em_ajustes },
+]
+
+const mergeUniqueSorted = (current: string[], incoming: (string | null | undefined)[]): string[] => {
+  const set = new Set(current)
+  for (const value of incoming) {
+    if (value) set.add(value)
+  }
+  return Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR'))
+}
 
 export function AdminProjectHistoryPage() {
   const [projects, setProjects] = useState<AdminProjectHistoryCard[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [query, setQuery] = useState('')
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
+  const [filters, setFilters] = useState<ProjectFilterState>(emptyProjectFilters)
+  const [courseOptions, setCourseOptions] = useState<string[]>([])
+  const [schoolOptions, setSchoolOptions] = useState<string[]>([])
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const stored = localStorage.getItem(VIEW_MODE_KEY)
     return stored === 'grid' ? 'grid' : 'list'
@@ -27,6 +52,8 @@ export function AdminProjectHistoryPage() {
       try {
         const data = await listAdminProjectHistory()
         setProjects(data)
+        setCourseOptions((current) => mergeUniqueSorted(current, data.map((p) => p.course)))
+        setSchoolOptions((current) => mergeUniqueSorted(current, data.map((p) => p.school)))
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Falha ao carregar historico.'
         setError(message)
@@ -42,6 +69,13 @@ export function AdminProjectHistoryPage() {
     setViewMode(nextMode)
     localStorage.setItem(VIEW_MODE_KEY, nextMode)
   }
+
+  const baseProjects = projects.filter((project) => {
+    const matchesName = project.title.toLowerCase().includes(query.trim().toLowerCase())
+    const matchesStatus = selectedStatuses.length === 0 ? true : selectedStatuses.includes(project.status)
+    return matchesName && matchesStatus
+  })
+  const filteredProjects = applyProjectFilters(baseProjects, filters)
 
   return (
     <article className="dashboard-panel">
@@ -74,14 +108,34 @@ export function AdminProjectHistoryPage() {
         </div>
       </div>
 
+      <div className="projects-toolbar">
+        <div className="search-wrap">
+          <Search size={14} />
+          <Input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Pesquisar projeto por nome"
+          />
+        </div>
+        <ProjectFiltersBar
+          value={filters}
+          onChange={setFilters}
+          courses={courseOptions}
+          schools={schoolOptions}
+          statusOptions={STATUS_OPTIONS}
+          selectedStatuses={selectedStatuses}
+          onStatusesChange={setSelectedStatuses}
+        />
+      </div>
+
       {isLoading && <p className="dashboard-note">Carregando historico...</p>}
       {error && <p className="error">{error}</p>}
-      {!isLoading && projects.length === 0 && (
+      {!isLoading && filteredProjects.length === 0 && (
         <p className="dashboard-note">Nenhum projeto decidido por voce ainda.</p>
       )}
 
       <div className={viewMode === 'grid' ? 'projects-list projects-grid' : 'projects-list'}>
-        {projects.map((project) => (
+        {filteredProjects.map((project) => (
           <Link key={project.id} to={`/admin/projetos/${project.id}`} className="project-card-link">
             <section className="project-card">
               <div className="project-card-top">

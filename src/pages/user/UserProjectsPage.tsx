@@ -1,13 +1,34 @@
-import { Funnel, Grid3X3, List, Search } from 'lucide-react'
+import { Grid3X3, List, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
+import { ProjectFiltersBar } from '../../components/projects/ProjectFiltersBar'
+import {
+  applyProjectFilters,
+  emptyProjectFilters,
+  type ProjectFilterState,
+} from '../../features/projects/projectFilters'
 import { listMyProjects, projectStatusLabel, type UserProject } from '../../features/projects/userProjects'
 
 type ViewMode = 'list' | 'grid'
 const VIEW_MODE_KEY = 'user_projects_view_mode'
-const ALL_STATUSES = ['rascunho', 'submetido', 'em_avaliacao', 'aprovado', 'reprovado'] as const
+const STATUS_OPTIONS = [
+  { value: 'rascunho', label: projectStatusLabel.rascunho },
+  { value: 'submetido', label: projectStatusLabel.submetido },
+  { value: 'em_avaliacao', label: projectStatusLabel.em_avaliacao },
+  { value: 'em_ajustes', label: projectStatusLabel.em_ajustes },
+  { value: 'aprovado', label: projectStatusLabel.aprovado },
+  { value: 'reprovado', label: projectStatusLabel.reprovado },
+]
+
+const mergeUniqueSorted = (current: string[], incoming: (string | null | undefined)[]): string[] => {
+  const set = new Set(current)
+  for (const value of incoming) {
+    if (value) set.add(value)
+  }
+  return Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR'))
+}
 
 export function UserProjectsPage() {
   const [projects, setProjects] = useState<UserProject[]>([])
@@ -15,7 +36,9 @@ export function UserProjectsPage() {
   const [error, setError] = useState('')
   const [query, setQuery] = useState('')
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [filters, setFilters] = useState<ProjectFilterState>(emptyProjectFilters)
+  const [courseOptions, setCourseOptions] = useState<string[]>([])
+  const [schoolOptions, setSchoolOptions] = useState<string[]>([])
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const stored = localStorage.getItem(VIEW_MODE_KEY)
     return stored === 'grid' ? 'grid' : 'list'
@@ -28,6 +51,8 @@ export function UserProjectsPage() {
     try {
       const data = await listMyProjects()
       setProjects(data)
+      setCourseOptions((current) => mergeUniqueSorted(current, data.map((p) => p.course)))
+      setSchoolOptions((current) => mergeUniqueSorted(current, data.map((p) => p.school)))
     } catch (err) {
       const nextError = err instanceof Error ? err.message : 'Falha ao carregar projetos.'
       setError(nextError)
@@ -45,18 +70,12 @@ export function UserProjectsPage() {
     localStorage.setItem(VIEW_MODE_KEY, nextMode)
   }
 
-  const toggleStatus = (status: string) => {
-    setSelectedStatuses((current) =>
-      current.includes(status) ? current.filter((item) => item !== status) : [...current, status],
-    )
-  }
-
-  const filteredProjects = projects.filter((project) => {
+  const baseProjects = projects.filter((project) => {
     const matchesName = project.title.toLowerCase().includes(query.trim().toLowerCase())
     const matchesStatus = selectedStatuses.length === 0 ? true : selectedStatuses.includes(project.status)
-
     return matchesName && matchesStatus
   })
+  const filteredProjects = applyProjectFilters(baseProjects, filters)
 
   return (
     <article className="dashboard-panel">
@@ -99,32 +118,15 @@ export function UserProjectsPage() {
           />
         </div>
 
-        <div className="filter-wrap">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setIsFilterOpen((state) => !state)}
-          >
-            <Funnel size={14} />
-            <span>Filtros</span>
-          </Button>
-
-          {isFilterOpen && (
-            <div className="filter-popover">
-              {ALL_STATUSES.map((status) => (
-                <button
-                  key={status}
-                  type="button"
-                  className={selectedStatuses.includes(status) ? 'filter-tag filter-tag-active' : 'filter-tag'}
-                  onClick={() => toggleStatus(status)}
-                >
-                  {projectStatusLabel[status]}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <ProjectFiltersBar
+          value={filters}
+          onChange={setFilters}
+          courses={courseOptions}
+          schools={schoolOptions}
+          statusOptions={STATUS_OPTIONS}
+          selectedStatuses={selectedStatuses}
+          onStatusesChange={setSelectedStatuses}
+        />
       </div>
 
       {isLoading && <p className="dashboard-note">Carregando projetos...</p>}

@@ -292,13 +292,13 @@ export function SuperUsersPage() {
               placeholder="opcional"
             />
           </label>
-          <label className="settings-avatar-field">
-            <span>Ativo</span>
+          <label className="project-checkbox-item">
             <input
               type="checkbox"
               checked={editing.is_active}
               onChange={(event) => setEditing({ ...editing, is_active: event.target.checked })}
             />
+            <span>Ativo</span>
           </label>
           <div className="view-toggle">
             <Button type="button" variant="outline" size="sm" onClick={() => setEditing(null)}>

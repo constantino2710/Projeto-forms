@@ -18,6 +18,7 @@ export type UserProject = {
   semestre_letivo: string | null;
   thematic_area: string;
   course: string | null;
+  school: string | null;
   period_start: string;
   period_end: string;
   target_audience: string;

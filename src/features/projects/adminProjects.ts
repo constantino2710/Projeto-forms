@@ -14,6 +14,8 @@ export type AdminProjectCard = {
   id: string
   title: string
   tipo: 'extensao' | 'disciplina'
+  course: string | null
+  school: string | null
   period_start: string
   period_end: string
   budget: number
@@ -25,6 +27,8 @@ export type AdminProjectHistoryCard = {
   id: string
   title: string
   tipo: 'extensao' | 'disciplina'
+  course: string | null
+  school: string | null
   period_start: string
   period_end: string
   budget: number
@@ -81,6 +85,24 @@ export const listAdminProjects = async (): Promise<AdminProjectCard[]> => {
   }
 
   return (data ?? []) as AdminProjectCard[]
+}
+
+let pendingAdminProjectsPrefetch: Promise<AdminProjectCard[]> | null = null
+
+export const prefetchAdminProjects = (): void => {
+  if (pendingAdminProjectsPrefetch) {
+    return
+  }
+  pendingAdminProjectsPrefetch = listAdminProjects().catch((err) => {
+    pendingAdminProjectsPrefetch = null
+    throw err
+  })
+}
+
+export const consumePrefetchedAdminProjects = (): Promise<AdminProjectCard[]> | null => {
+  const promise = pendingAdminProjectsPrefetch
+  pendingAdminProjectsPrefetch = null
+  return promise
 }
 
 export const listAdminProjectHistory = async (): Promise<AdminProjectHistoryCard[]> => {

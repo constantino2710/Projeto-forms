@@ -1,9 +1,24 @@
+import { Search } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
+import { ProjectFiltersBar } from '../../components/projects/ProjectFiltersBar'
+import {
+  applyProjectFilters,
+  emptyProjectFilters,
+  type ProjectFilterState,
+} from '../../features/projects/projectFilters'
 import { listSuperHistory, type SuperHistoryRow } from '../../features/super/superAdmin'
 import { projectStatusLabel } from '../../features/projects/userProjects'
+
+const mergeUniqueSorted = (current: string[], incoming: (string | null | undefined)[]): string[] => {
+  const set = new Set(current)
+  for (const value of incoming) {
+    if (value) set.add(value)
+  }
+  return Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR'))
+}
 
 const PAGE_SIZE = 10
 
@@ -24,6 +39,9 @@ export function SuperHistoryPage() {
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('')
+  const [filters, setFilters] = useState<ProjectFilterState>(emptyProjectFilters)
+  const [courseOptions, setCourseOptions] = useState<string[]>([])
+  const [schoolOptions, setSchoolOptions] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -39,6 +57,8 @@ export function SuperHistoryPage() {
       })
       setRows(data)
       setTotal(totalCount)
+      setCourseOptions((current) => mergeUniqueSorted(current, data.map((p) => p.course)))
+      setSchoolOptions((current) => mergeUniqueSorted(current, data.map((p) => p.school)))
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Falha ao carregar historico.'
       setError(message)
@@ -62,6 +82,8 @@ export function SuperHistoryPage() {
     setPage(0)
     setSearch(searchInput.trim())
   }
+
+  const visibleRows = applyProjectFilters(rows, filters)
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
@@ -89,25 +111,34 @@ export function SuperHistoryPage() {
         ))}
       </div>
 
-      <form onSubmit={handleSearchSubmit} className="form" style={{ marginBottom: 16 }}>
-        <Input
-          value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
-          placeholder="Buscar por titulo, professor ou curso"
-        />
+      <form onSubmit={handleSearchSubmit} className="projects-toolbar" style={{ marginBottom: 16 }}>
+        <div className="search-wrap">
+          <Search size={14} />
+          <Input
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+            placeholder="Buscar por titulo, professor ou curso"
+          />
+        </div>
         <Button type="submit" variant="outline" size="sm">
           Buscar
         </Button>
+        <ProjectFiltersBar
+          value={filters}
+          onChange={setFilters}
+          courses={courseOptions}
+          schools={schoolOptions}
+        />
       </form>
 
       {isLoading && <p className="dashboard-note">Carregando historico...</p>}
       {error && <p className="error">{error}</p>}
-      {!isLoading && rows.length === 0 && (
+      {!isLoading && visibleRows.length === 0 && (
         <p className="dashboard-note">Nenhum projeto encontrado.</p>
       )}
 
       <div className="projects-list">
-        {rows.map((project) => (
+        {visibleRows.map((project) => (
           <Link key={project.id} to={`/admin/projetos/${project.id}`} className="project-card-link">
             <section className="project-card">
               <div className="project-card-top">

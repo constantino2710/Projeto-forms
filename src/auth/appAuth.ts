@@ -1,7 +1,11 @@
-import type { AuthSession } from '../App'
+import type { AuthRole, AuthSession } from '../App'
 import { supabase } from '../lib/supabase'
 
 const SESSION_TOKEN_KEY = 'extensao_session_token'
+const SESSION_ROLE_KEY = 'extensao_session_role'
+
+const isAuthRole = (value: string | null): value is AuthRole =>
+  value === 'admin' || value === 'user' || value === 'superadmin'
 
 type LoginResponse = {
   token: string
@@ -34,8 +38,14 @@ const parseSession = (value: unknown): AuthSession => {
 
 export const getStoredSessionToken = () => localStorage.getItem(SESSION_TOKEN_KEY)
 
+export const getStoredSessionRole = (): AuthRole | null => {
+  const stored = localStorage.getItem(SESSION_ROLE_KEY)
+  return isAuthRole(stored) ? stored : null
+}
+
 export const clearSessionToken = () => {
   localStorage.removeItem(SESSION_TOKEN_KEY)
+  localStorage.removeItem(SESSION_ROLE_KEY)
 }
 
 const mapAuthErrorMessage = (message: string) => {
@@ -70,6 +80,7 @@ export const login = async (username: string, password: string): Promise<AuthSes
 
   const session = parseSession(data)
   localStorage.setItem(SESSION_TOKEN_KEY, session.token)
+  localStorage.setItem(SESSION_ROLE_KEY, session.role)
   return session
 }
 
@@ -86,7 +97,9 @@ export const validateSession = async (token: string): Promise<AuthSession | null
     return null
   }
 
-  return parseSession(data)
+  const session = parseSession(data)
+  localStorage.setItem(SESSION_ROLE_KEY, session.role)
+  return session
 }
 
 export const logoutSession = async () => {

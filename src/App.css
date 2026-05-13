@@ -646,6 +646,7 @@
 .project-checkbox-group {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 10px;
 }
 
@@ -655,15 +656,21 @@
   color: hsl(var(--foreground));
 }
 
+.form label.project-checkbox-item,
 .project-checkbox-item {
   display: flex;
+  flex-direction: row;
   align-items: flex-start;
+  justify-content: flex-start;
   gap: 10px;
   font-weight: 500;
 }
 
 .project-checkbox-item input {
-  margin-top: 4px;
+  margin: 0;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 3px;
 }
 
 .success {
@@ -1337,6 +1344,12 @@
 
 .filter-wrap {
   position: relative;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.filter-wrap + .filter-wrap {
+  margin-left: 0;
 }
 
 .filter-popover {
@@ -1369,6 +1382,73 @@
   border-color: hsl(var(--primary));
   background: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
+}
+
+.filter-popover--stack {
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 240px;
+  gap: 10px;
+  padding: 12px;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+}
+
+.filter-label {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: calc(var(--radius) - 4px);
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  cursor: pointer;
+}
+
+.filter-select:focus-visible {
+  outline: none;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.25);
+}
+
+.filter-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.filter-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  align-self: flex-end;
+  padding: 4px 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  background: transparent;
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--radius) - 4px);
+  cursor: pointer;
+}
+
+.filter-clear:hover {
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--foreground) / 0.4);
 }
 
 * {

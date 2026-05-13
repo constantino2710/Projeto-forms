@@ -2,9 +2,15 @@ import { useEffect, useState } from 'react'
 import { FilePlus2, FolderKanban, History, LayoutList, UserPlus, Users } from 'lucide-react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import './App.css'
-import { clearSessionToken, getStoredSessionToken, validateSession } from './auth/appAuth'
+import {
+  clearSessionToken,
+  getStoredSessionRole,
+  getStoredSessionToken,
+  validateSession,
+} from './auth/appAuth'
 import { DashboardLayout } from './components/layout/DashboardLayout'
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card'
+import { prefetchAdminProjects } from './features/projects/adminProjects'
 import { AdminProjectDetailPage } from './pages/admin/AdminProjectDetailPage'
 import { AdminProjectHistoryPage } from './pages/admin/AdminProjectHistoryPage'
 import { AdminProjectsPage } from './pages/admin/AdminProjectsPage'
@@ -40,6 +46,11 @@ function App() {
         setSession(null)
         setIsLoading(false)
         return
+      }
+
+      const cachedRole = getStoredSessionRole()
+      if (cachedRole === 'admin' || cachedRole === 'superadmin') {
+        prefetchAdminProjects()
       }
 
       try {
