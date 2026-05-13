@@ -130,6 +130,19 @@ export const resetSuperUserPassword = async (input: {
   }
 }
 
+export const deleteSuperUser = async (input: { id: string }): Promise<void> => {
+  const token = getTokenOrThrow()
+
+  const { error } = await supabase.rpc('app_sa_delete_user', {
+    p_token: token,
+    p_user_id: input.id,
+  })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+}
+
 export const listSuperHistory = async (params: {
   search?: string
   status?: string | null

@@ -657,20 +657,28 @@
 }
 
 .form label.project-checkbox-item,
+.project-form label.project-checkbox-item,
 .project-checkbox-item {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  justify-content: flex-start;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
   gap: 10px;
   font-weight: 500;
+  width: 100%;
 }
 
 .project-checkbox-item input {
   margin: 0;
-  flex-shrink: 0;
-  align-self: flex-start;
-  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+  align-self: start;
+  justify-self: start;
+  margin-top: 2px;
+}
+
+.project-checkbox-item span {
+  display: block;
+  line-height: 1.45;
 }
 
 .success {

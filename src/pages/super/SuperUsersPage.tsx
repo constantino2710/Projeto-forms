@@ -1,10 +1,11 @@
-import { KeyRound, Pencil, ShieldCheck, UserCog } from 'lucide-react'
+import { KeyRound, Pencil, ShieldCheck, Trash2, UserCog } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import {
   listSuperUsers,
+  deleteSuperUser,
   resetSuperUserPassword,
   updateSuperUser,
   type SuperUserRole,
@@ -34,6 +35,10 @@ type ResetState = {
   confirm: string
 }
 
+type DeleteState = {
+  user: SuperUserRow
+}
+
 export function SuperUsersPage() {
   const [rows, setRows] = useState<SuperUserRow[]>([])
   const [total, setTotal] = useState(0)
@@ -45,6 +50,7 @@ export function SuperUsersPage() {
   const [error, setError] = useState('')
   const [editing, setEditing] = useState<EditState | null>(null)
   const [resetting, setResetting] = useState<ResetState | null>(null)
+  const [removing, setRemoving] = useState<DeleteState | null>(null)
   const [actionMessage, setActionMessage] = useState('')
   const [actionError, setActionError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
@@ -129,6 +135,24 @@ export function SuperUsersPage() {
     }
   }
 
+  const handleDeleteUser = async () => {
+    if (!removing) return
+    setActionError('')
+    setActionMessage('')
+    setIsSaving(true)
+    try {
+      await deleteSuperUser({ id: removing.user.id })
+      setActionMessage('Usuario removido.')
+      setRemoving(null)
+      await load()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Falha ao remover usuario.'
+      setActionError(message)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   return (
@@ -136,7 +160,7 @@ export function SuperUsersPage() {
       <div className="projects-header">
         <div>
           <h1>Usuarios da Plataforma</h1>
-          <p>Liste, edite e gerencie professores e administradores.</p>
+          <p>Liste, edite, redefina senha e remova professores e administradores.</p>
         </div>
         <Link to="/super/usuarios/novo">
           <Button type="button" size="sm">
@@ -213,6 +237,8 @@ export function SuperUsersPage() {
                 onClick={() => {
                   setActionError('')
                   setActionMessage('')
+                  setResetting(null)
+                  setRemoving(null)
                   setEditing({
                     user,
                     display_name: user.display_name,
@@ -234,11 +260,30 @@ export function SuperUsersPage() {
                   onClick={() => {
                     setActionError('')
                     setActionMessage('')
+                    setEditing(null)
+                    setRemoving(null)
                     setResetting({ user, password: '', confirm: '' })
                   }}
                 >
                   <KeyRound size={14} />
                   <span>Redefinir senha</span>
+                </Button>
+              )}
+              {user.role !== 'superadmin' && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => {
+                    setActionError('')
+                    setActionMessage('')
+                    setEditing(null)
+                    setResetting(null)
+                    setRemoving({ user })
+                  }}
+                >
+                  <Trash2 size={14} />
+                  <span>Remover</span>
                 </Button>
               )}
             </div>
@@ -339,6 +384,28 @@ export function SuperUsersPage() {
             </Button>
             <Button type="button" size="sm" onClick={handleResetPassword} disabled={isSaving}>
               {isSaving ? 'Aplicando...' : 'Aplicar'}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {removing && (
+        <div className="settings-menu" style={{ marginTop: 24, padding: 16 }}>
+          <h2>
+            <Trash2 size={16} /> Remover {removing.user.display_name}
+          </h2>
+          <p className="dashboard-note">
+            Esta acao remove o usuario da plataforma e encerra as sessoes ativas dele.
+          </p>
+          <p className="dashboard-note">
+            Se esse usuario tiver projetos vinculados, a remocao sera bloqueada para preservar os dados.
+          </p>
+          <div className="view-toggle">
+            <Button type="button" variant="outline" size="sm" onClick={() => setRemoving(null)}>
+              Cancelar
+            </Button>
+            <Button type="button" variant="destructive" size="sm" onClick={handleDeleteUser} disabled={isSaving}>
+              {isSaving ? 'Removendo...' : 'Confirmar remocao'}
             </Button>
           </div>
         </div>
