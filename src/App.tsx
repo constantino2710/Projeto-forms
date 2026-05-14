@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { FilePlus2, FolderKanban, History, LayoutList, UserPlus, Users } from 'lucide-react'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import './App.css'
 import {
   clearSessionToken,
   getStoredSessionRole,
@@ -78,13 +77,13 @@ function App() {
 
   if (isLoading) {
     return (
-      <main className="auth-shell">
+      <main className="min-h-screen flex items-center justify-center px-4 py-5 bg-[radial-gradient(circle_at_18%_18%,hsl(var(--accent)/0.5)_0,transparent_38%),radial-gradient(circle_at_85%_82%,hsl(var(--secondary)/0.5)_0,transparent_34%)]">
         <Card>
           <CardHeader>
             <CardTitle>Carregando...</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="hint">Validando sessao.</p>
+            <p className="m-0 text-muted-foreground">Validando sessao.</p>
           </CardContent>
         </Card>
       </main>

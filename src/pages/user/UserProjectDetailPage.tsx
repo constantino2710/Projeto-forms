@@ -29,6 +29,51 @@ import {
   getProjectTimeline,
   type ProjectTimeline,
 } from "../../features/projects/projectTimeline";
+import { projectFormLabelClass } from "../../lib/formStyles";
+import {
+  attachmentActionsClass,
+  attachmentItemClass,
+  attachmentLinkClass,
+  attachmentMetaClass,
+  attachmentNameClass,
+  attachmentsHeaderClass,
+  attachmentsListClass,
+  attachmentsPanelClass,
+  attachmentsUploadClass,
+  backLinkClass,
+  confirmModalActionsClass,
+  confirmModalBackdropClass,
+  confirmModalClass,
+  dashboardNoteClass,
+  dashboardPanelFlatClass,
+  draftDeleteIconBtnClass,
+  errorTextClass,
+  projectCardTopClass,
+  projectDetailActionsLeftClass,
+  projectDetailActionsSpreadClass,
+  projectDetailClass,
+  projectFeedbackNoteClass,
+  projectFormClass,
+  projectGrid2Class,
+  projectInfoGridClass,
+  projectInfoItemClass,
+  projectInfoItemFullClass,
+  projectInfoLabelClass,
+  projectInfoSectionClass,
+  projectInfoValueClass,
+  projectInlineActionsClass,
+  projectMainCardClass,
+  projectSectionsStackClass,
+  projectTwoCardsClass,
+  statusBadgeBaseClass,
+  statusColorMap,
+  timelineRowClass,
+  timelineRowFutureClass,
+  timelineRowLatestClass,
+  timelineSideCardClass,
+  timelineStatusBadgeClass,
+} from "../../lib/projectStyles";
+import { cn } from "../../lib/utils";
 
 type EditFormState = {
   type: "extensao" | "disciplina";
@@ -318,187 +363,187 @@ export function UserProjectDetailPage() {
   };
 
   const renderExtensionSummary = (extensionForm: ExtensionPlanData) => (
-    <div className="project-sections-stack">
-      <section className="project-info-section">
+    <div className={projectSectionsStackClass}>
+      <section className={projectInfoSectionClass}>
         <h3>Identificacao da Iniciativa Extensionista</h3>
-        <div className="project-info-grid">
-          <div className="project-info-item">
-            <p className="project-info-label">Titulo da Iniciativa</p>
-            <p className="project-info-value">{extensionForm.title}</p>
+        <div className={projectInfoGridClass}>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Titulo da Iniciativa</p>
+            <p className={projectInfoValueClass}>{extensionForm.title}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">Carga horaria total</p>
-            <p className="project-info-value">{extensionForm.totalWorkload}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Carga horaria total</p>
+            <p className={projectInfoValueClass}>{extensionForm.totalWorkload}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">Programa Unicap</p>
-            <p className="project-info-value">{extensionForm.unicapProgram}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Programa Unicap</p>
+            <p className={projectInfoValueClass}>{extensionForm.unicapProgram}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">Periodo</p>
-            <p className="project-info-value">
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Periodo</p>
+            <p className={projectInfoValueClass}>
               {extensionForm.periodStart} ate {extensionForm.periodEnd}
             </p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">Curso ou programa vinculado</p>
-            <p className="project-info-value">{extensionForm.linkedCourse}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Curso ou programa vinculado</p>
+            <p className={projectInfoValueClass}>{extensionForm.linkedCourse}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">Curso</p>
-            <p className="project-info-value">{extensionForm.courseName}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Curso</p>
+            <p className={projectInfoValueClass}>{extensionForm.courseName}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">E-mail da Coordenacao</p>
-            <p className="project-info-value">{extensionForm.coordinationEmail}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>E-mail da Coordenacao</p>
+            <p className={projectInfoValueClass}>{extensionForm.coordinationEmail}</p>
           </div>
         </div>
       </section>
 
-      <section className="project-info-section">
+      <section className={projectInfoSectionClass}>
         <h3>Docentes</h3>
-        <div className="project-info-grid">
-          <div className="project-info-item">
-            <p className="project-info-label">Nome do docente coordenador</p>
-            <p className="project-info-value">{extensionForm.coordinatorName}</p>
+        <div className={projectInfoGridClass}>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Nome do docente coordenador</p>
+            <p className={projectInfoValueClass}>{extensionForm.coordinatorName}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">E-mail do docente coordenador</p>
-            <p className="project-info-value">{extensionForm.coordinatorEmail}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>E-mail do docente coordenador</p>
+            <p className={projectInfoValueClass}>{extensionForm.coordinatorEmail}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">CPF do docente coordenador</p>
-            <p className="project-info-value">{extensionForm.coordinatorCpf}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>CPF do docente coordenador</p>
+            <p className={projectInfoValueClass}>{extensionForm.coordinatorCpf}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">Telefone (WhatsApp)</p>
-            <p className="project-info-value">{extensionForm.coordinatorPhone}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Telefone (WhatsApp)</p>
+            <p className={projectInfoValueClass}>{extensionForm.coordinatorPhone}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">Carga Horaria Semanal - Coordenador</p>
-            <p className="project-info-value">{extensionForm.coordinatorWeeklyHours}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Carga Horaria Semanal - Coordenador</p>
+            <p className={projectInfoValueClass}>{extensionForm.coordinatorWeeklyHours}</p>
           </div>
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Forma de participacao do Coordenador</p>
-            <p className="project-info-value">{extensionForm.coordinatorParticipation}</p>
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Forma de participacao do Coordenador</p>
+            <p className={projectInfoValueClass}>{extensionForm.coordinatorParticipation}</p>
           </div>
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Outros docentes colaboradores voluntarios</p>
-            <p className="project-info-value">{extensionForm.otherVolunteerTeachers || "-"}</p>
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Outros docentes colaboradores voluntarios</p>
+            <p className={projectInfoValueClass}>{extensionForm.otherVolunteerTeachers || "-"}</p>
           </div>
         </div>
       </section>
 
-      <section className="project-info-section">
+      <section className={projectInfoSectionClass}>
         <h3>Estudantes voluntarios</h3>
-        <div className="project-info-grid">
-          <div className="project-info-item">
-            <p className="project-info-label">Carga Horaria Semanal - Estudantes</p>
-            <p className="project-info-value">{extensionForm.studentWeeklyHours}</p>
+        <div className={projectInfoGridClass}>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Carga Horaria Semanal - Estudantes</p>
+            <p className={projectInfoValueClass}>{extensionForm.studentWeeklyHours}</p>
           </div>
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Estudantes participantes</p>
-            <p className="project-info-value">{extensionForm.studentParticipants}</p>
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Estudantes participantes</p>
+            <p className={projectInfoValueClass}>{extensionForm.studentParticipants}</p>
           </div>
         </div>
       </section>
 
-      <section className="project-info-section">
+      <section className={projectInfoSectionClass}>
         <h3>Eixo Aprendizagem</h3>
-        <div className="project-info-grid">
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Objetivos de Aprendizagem</p>
-            <p className="project-info-value">{extensionForm.learningObjectives.filter(Boolean).join(" | ")}</p>
+        <div className={projectInfoGridClass}>
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Objetivos de Aprendizagem</p>
+            <p className={projectInfoValueClass}>{extensionForm.learningObjectives.filter(Boolean).join(" | ")}</p>
           </div>
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Competencias Transversais</p>
-            <p className="project-info-value">
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Competencias Transversais</p>
+            <p className={projectInfoValueClass}>
               {extensionForm.transversalCompetencies.filter(Boolean).join(" | ")}
             </p>
           </div>
         </div>
       </section>
 
-      <section className="project-info-section">
+      <section className={projectInfoSectionClass}>
         <h3>Eixo Servico</h3>
-        <div className="project-info-grid">
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Servico a ser oferecido</p>
-            <p className="project-info-value">{extensionForm.serviceOffered}</p>
+        <div className={projectInfoGridClass}>
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Servico a ser oferecido</p>
+            <p className={projectInfoValueClass}>{extensionForm.serviceOffered}</p>
           </div>
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Atividades</p>
-            <p className="project-info-value">{extensionForm.activities.filter(Boolean).join(" | ")}</p>
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Atividades</p>
+            <p className={projectInfoValueClass}>{extensionForm.activities.filter(Boolean).join(" | ")}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">Local de realizacao</p>
-            <p className="project-info-value">{extensionForm.executionLocation}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Local de realizacao</p>
+            <p className={projectInfoValueClass}>{extensionForm.executionLocation}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">Publico que sera atendido</p>
-            <p className="project-info-value">{extensionForm.targetAudience}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Publico que sera atendido</p>
+            <p className={projectInfoValueClass}>{extensionForm.targetAudience}</p>
           </div>
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Procedimentos Metodologicos</p>
-            <p className="project-info-value">{extensionForm.methodologicalProcedures}</p>
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Procedimentos Metodologicos</p>
+            <p className={projectInfoValueClass}>{extensionForm.methodologicalProcedures}</p>
           </div>
         </div>
       </section>
 
-      <section className="project-info-section">
+      <section className={projectInfoSectionClass}>
         <h3>Eixo Impacto</h3>
-        <div className="project-info-grid">
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Problema ou Necessidade a ser respondido</p>
-            <p className="project-info-value">{extensionForm.problemStatement}</p>
+        <div className={projectInfoGridClass}>
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Problema ou Necessidade a ser respondido</p>
+            <p className={projectInfoValueClass}>{extensionForm.problemStatement}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">ODS Impactado</p>
-            <p className="project-info-value">{extensionForm.sustainableDevelopmentGoal}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>ODS Impactado</p>
+            <p className={projectInfoValueClass}>{extensionForm.sustainableDevelopmentGoal}</p>
           </div>
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Metas</p>
-            <p className="project-info-value">{extensionForm.goals.filter(Boolean).join(" | ")}</p>
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Metas</p>
+            <p className={projectInfoValueClass}>{extensionForm.goals.filter(Boolean).join(" | ")}</p>
           </div>
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Estrategias de Divulgacao</p>
-            <p className="project-info-value">{extensionForm.disseminationStrategies}</p>
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Estrategias de Divulgacao</p>
+            <p className={projectInfoValueClass}>{extensionForm.disseminationStrategies}</p>
           </div>
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Resumo do projeto</p>
-            <p className="project-info-value">{extensionForm.projectSummary}</p>
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Resumo do projeto</p>
+            <p className={projectInfoValueClass}>{extensionForm.projectSummary}</p>
           </div>
         </div>
       </section>
 
-      <section className="project-info-section">
+      <section className={projectInfoSectionClass}>
         <h3>Eixo Reflexao e Avaliacao</h3>
-        <div className="project-info-grid">
-          <div className="project-info-item">
-            <p className="project-info-label">Estrategias de Reflexao</p>
-            <p className="project-info-value">{extensionForm.reflectionStrategies}</p>
+        <div className={projectInfoGridClass}>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Estrategias de Reflexao</p>
+            <p className={projectInfoValueClass}>{extensionForm.reflectionStrategies}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">Estrategias de Avaliacao</p>
-            <p className="project-info-value">{extensionForm.evaluationStrategies}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Estrategias de Avaliacao</p>
+            <p className={projectInfoValueClass}>{extensionForm.evaluationStrategies}</p>
           </div>
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Feedback do Publico Parceiro</p>
-            <p className="project-info-value">{extensionForm.partnerFeedback}</p>
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Feedback do Publico Parceiro</p>
+            <p className={projectInfoValueClass}>{extensionForm.partnerFeedback}</p>
           </div>
         </div>
       </section>
 
-      <section className="project-info-section">
+      <section className={projectInfoSectionClass}>
         <h3>Conclusao</h3>
-        <div className="project-info-grid">
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Informacoes Adicionais</p>
-            <p className="project-info-value">{extensionForm.additionalInformation || "-"}</p>
+        <div className={projectInfoGridClass}>
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Informacoes Adicionais</p>
+            <p className={projectInfoValueClass}>{extensionForm.additionalInformation || "-"}</p>
           </div>
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Compreendi que...</p>
-            <p className="project-info-value">
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Compreendi que...</p>
+            <p className={projectInfoValueClass}>
               {ACKNOWLEDGEMENT_OPTIONS.filter((item) =>
                 extensionForm.acknowledgements.includes(item.id),
               )
@@ -531,20 +576,20 @@ export function UserProjectDetailPage() {
   };
 
   return (
-    <article className="dashboard-panel dashboard-panel-flat">
-      <Link to="/usuario/meus-projetos" className="back-link">
+    <article className={dashboardPanelFlatClass}>
+      <Link to="/usuario/meus-projetos" className={backLinkClass}>
         <ArrowLeft size={14} />
         <span>Voltar para meus projetos</span>
       </Link>
 
-      {isLoading && <p className="dashboard-note">Carregando projeto...</p>}
-      {error && <p className="error">{error}</p>}
+      {isLoading && <p className={dashboardNoteClass}>Carregando projeto...</p>}
+      {error && <p className={errorTextClass}>{error}</p>}
 
       {!isLoading && project && (
-        <div className="project-two-cards">
-          <section className="project-main-card">
-            <div className="project-detail">
-              <div className="project-card-top">
+        <div className={projectTwoCardsClass}>
+          <section className={projectMainCardClass}>
+            <div className={projectDetailClass}>
+              <div className={projectCardTopClass}>
                 <h1>{project.title}</h1>
               </div>
 
@@ -553,44 +598,44 @@ export function UserProjectDetailPage() {
                   {project.tipo === "extensao" ? (
                     renderExtensionSummary(createExtensionPlanFromProject(project))
                   ) : (
-                    <section className="project-info-grid">
-                      <div className="project-info-item">
-                        <p className="project-info-label">Area</p>
-                        <p className="project-info-value">{project.thematic_area}</p>
+                    <section className={projectInfoGridClass}>
+                      <div className={projectInfoItemClass}>
+                        <p className={projectInfoLabelClass}>Area</p>
+                        <p className={projectInfoValueClass}>{project.thematic_area}</p>
                       </div>
-                      <div className="project-info-item">
-                        <p className="project-info-label">Curso</p>
-                        <p className="project-info-value">{project.course || "-"}</p>
+                      <div className={projectInfoItemClass}>
+                        <p className={projectInfoLabelClass}>Curso</p>
+                        <p className={projectInfoValueClass}>{project.course || "-"}</p>
                       </div>
-                      <div className="project-info-item">
-                        <p className="project-info-label">Periodo</p>
-                        <p className="project-info-value">
+                      <div className={projectInfoItemClass}>
+                        <p className={projectInfoLabelClass}>Periodo</p>
+                        <p className={projectInfoValueClass}>
                           {project.period_start} ate {project.period_end}
                         </p>
                       </div>
-                      <div className="project-info-item">
-                        <p className="project-info-label">Publico-alvo</p>
-                        <p className="project-info-value">{project.target_audience}</p>
+                      <div className={projectInfoItemClass}>
+                        <p className={projectInfoLabelClass}>Publico-alvo</p>
+                        <p className={projectInfoValueClass}>{project.target_audience}</p>
                       </div>
-                      <div className="project-info-item">
-                        <p className="project-info-label">Orcamento</p>
-                        <p className="project-info-value">R$ {Number(project.budget).toFixed(2)}</p>
+                      <div className={projectInfoItemClass}>
+                        <p className={projectInfoLabelClass}>Orcamento</p>
+                        <p className={projectInfoValueClass}>R$ {Number(project.budget).toFixed(2)}</p>
                       </div>
-                      <div className="project-info-item project-info-item-full">
-                        <p className="project-info-label">Descricao</p>
-                        <p className="project-info-value">{project.description}</p>
+                      <div className={projectInfoItemFullClass}>
+                        <p className={projectInfoLabelClass}>Descricao</p>
+                        <p className={projectInfoValueClass}>{project.description}</p>
                       </div>
                     </section>
                   )}
                   {project.admin_message && (
-                    <div className="project-feedback-note">
-                      <p className="project-info-label">Mensagem da avaliacao</p>
-                      <p className="project-info-value">{project.admin_message}</p>
+                    <div className={projectFeedbackNoteClass}>
+                      <p className={projectInfoLabelClass}>Mensagem da avaliacao</p>
+                      <p className={projectInfoValueClass}>{project.admin_message}</p>
                     </div>
                   )}
 
-                  <div className="project-detail-actions project-detail-actions-spread">
-                    <div className="project-detail-actions-left">
+                  <div className={projectDetailActionsSpreadClass}>
+                    <div className={projectDetailActionsLeftClass}>
                     {(project.status === "rascunho" ||
                       project.status === "em_ajustes") && (
                       <Button
@@ -624,7 +669,7 @@ export function UserProjectDetailPage() {
                     {project.status === "rascunho" && (
                       <button
                         type="button"
-                        className="draft-delete-icon-btn"
+                        className={draftDeleteIconBtnClass}
                         onClick={() => setIsDeleteModalOpen(true)}
                         disabled={isDeleting || isSubmitting}
                         aria-label="Excluir rascunho"
@@ -635,10 +680,10 @@ export function UserProjectDetailPage() {
                     )}
                   </div>
 
-                  <section className="attachments-panel">
-                    <div className="attachments-header">
+                  <section className={attachmentsPanelClass}>
+                    <div className={attachmentsHeaderClass}>
                       <h2>Anexos</h2>
-                      <label className="attachments-upload">
+                      <label className={attachmentsUploadClass}>
                         <Input
                           type="file"
                           onChange={handleUploadAttachment}
@@ -647,42 +692,42 @@ export function UserProjectDetailPage() {
                       </label>
                     </div>
 
-                    <p className="dashboard-note">
+                    <p className={dashboardNoteClass}>
                       Envie arquivos de apoio (PDF, imagens, DOC, XLS, PPT) ate 20
                       MB.
                     </p>
 
                     {isAttachmentsLoading && (
-                      <p className="dashboard-note">Carregando anexos...</p>
+                      <p className={dashboardNoteClass}>Carregando anexos...</p>
                     )}
-                    {attachmentError && <p className="error">{attachmentError}</p>}
+                    {attachmentError && <p className={errorTextClass}>{attachmentError}</p>}
 
                     {!isAttachmentsLoading && attachments.length === 0 && (
-                      <p className="dashboard-note">Nenhum anexo enviado.</p>
+                      <p className={dashboardNoteClass}>Nenhum anexo enviado.</p>
                     )}
 
                     {!isAttachmentsLoading && attachments.length > 0 && (
-                      <ul className="attachments-list">
+                      <ul className={attachmentsListClass}>
                         {attachments.map((attachment) => (
-                          <li key={attachment.id} className="attachment-item">
+                          <li key={attachment.id} className={attachmentItemClass}>
                             <div>
-                              <p className="attachment-name">
+                              <p className={attachmentNameClass}>
                                 {attachment.file_name}
                               </p>
-                              <p className="attachment-meta">
+                              <p className={attachmentMetaClass}>
                                 {formatAttachmentSize(attachment.size_bytes)} -{" "}
                                 {new Date(attachment.created_at).toLocaleString(
                                   "pt-BR",
                                 )}
                               </p>
                             </div>
-                            <div className="attachment-actions">
+                            <div className={attachmentActionsClass}>
                               {attachment.download_url && (
                                 <a
                                   href={attachment.download_url}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="attachment-link"
+                                  className={attachmentLinkClass}
                                 >
                                   Baixar
                                 </a>
@@ -708,7 +753,7 @@ export function UserProjectDetailPage() {
                   </section>
                 </>
               ) : (
-                <form className="project-form" onSubmit={handleSaveEdit}>
+                <form className={projectFormClass} onSubmit={handleSaveEdit}>
                   {editForm?.type === "extensao" ? (
                     <ExtensionProjectFields
                       form={editForm.extensionForm}
@@ -721,7 +766,7 @@ export function UserProjectDetailPage() {
                     />
                   ) : (
                     <>
-                      <label>
+                      <label className={projectFormLabelClass}>
                         Titulo
                         <Input
                           value={editForm?.title ?? ""}
@@ -734,7 +779,7 @@ export function UserProjectDetailPage() {
                         />
                       </label>
 
-                      <label>
+                      <label className={projectFormLabelClass}>
                         Area tematica
                         <Input
                           value={editForm?.thematicArea ?? ""}
@@ -749,7 +794,7 @@ export function UserProjectDetailPage() {
                         />
                       </label>
 
-                      <label>
+                      <label className={projectFormLabelClass}>
                         Curso
                         <Input
                           value={editForm?.course ?? ""}
@@ -761,8 +806,8 @@ export function UserProjectDetailPage() {
                         />
                       </label>
 
-                      <div className="project-grid-2">
-                        <label>
+                      <div className={projectGrid2Class}>
+                        <label className={projectFormLabelClass}>
                           Inicio
                           <Input
                             type="date"
@@ -777,7 +822,7 @@ export function UserProjectDetailPage() {
                             required
                           />
                         </label>
-                        <label>
+                        <label className={projectFormLabelClass}>
                           Fim
                           <Input
                             type="date"
@@ -794,7 +839,7 @@ export function UserProjectDetailPage() {
                         </label>
                       </div>
 
-                      <label>
+                      <label className={projectFormLabelClass}>
                         Publico-alvo
                         <Input
                           value={editForm?.targetAudience ?? ""}
@@ -809,7 +854,7 @@ export function UserProjectDetailPage() {
                         />
                       </label>
 
-                      <label>
+                      <label className={projectFormLabelClass}>
                         Orcamento
                         <Input
                           type="number"
@@ -825,7 +870,7 @@ export function UserProjectDetailPage() {
                         />
                       </label>
 
-                      <label>
+                      <label className={projectFormLabelClass}>
                         Descricao
                         <Textarea
                           value={editForm?.description ?? ""}
@@ -843,7 +888,7 @@ export function UserProjectDetailPage() {
                     </>
                   )}
 
-                  <div className="project-inline-actions">
+                  <div className={projectInlineActionsClass}>
                     <Button type="submit" size="sm" disabled={isSubmitting}>
                       {isSubmitting ? "Salvando..." : "Salvar alteracoes"}
                     </Button>
@@ -861,18 +906,24 @@ export function UserProjectDetailPage() {
             </div>
           </section>
 
-          <aside className="timeline-side-card">
-            <span className={`status-badge status-${project.status} timeline-status-badge`}>
+          <aside className={timelineSideCardClass}>
+            <span
+              className={cn(
+                statusBadgeBaseClass,
+                statusColorMap[project.status],
+                timelineStatusBadgeClass,
+              )}
+            >
               {projectStatusLabel[project.status]}
             </span>
             <h2>Linha do tempo</h2>
             {timelineSteps.map((step, index) => {
               const isLatest = step.date !== null && index === latestTimelineIndex;
               const rowClass = isLatest
-                ? "timeline-row timeline-row-latest"
+                ? cn(timelineRowClass, timelineRowLatestClass)
                 : step.date
-                  ? "timeline-row"
-                  : "timeline-row timeline-row-future";
+                  ? timelineRowClass
+                  : cn(timelineRowClass, timelineRowFutureClass);
 
               return (
                 <p key={step.key} className={rowClass}>
@@ -888,7 +939,7 @@ export function UserProjectDetailPage() {
       )}
       {isDeleteModalOpen && (
         <div
-          className="confirm-modal-backdrop"
+          className={confirmModalBackdropClass}
           onClick={() => {
             if (!isDeleting) {
               setIsDeleteModalOpen(false);
@@ -896,7 +947,7 @@ export function UserProjectDetailPage() {
           }}
         >
           <div
-            className="confirm-modal"
+            className={confirmModalClass}
             role="dialog"
             aria-modal="true"
             aria-labelledby="delete-draft-title"
@@ -907,7 +958,7 @@ export function UserProjectDetailPage() {
               Este rascunho vai sumir da sua lista, mas os dados ficam salvos
               para recuperacao depois.
             </p>
-            <div className="confirm-modal-actions">
+            <div className={confirmModalActionsClass}>
               <Button
                 type="button"
                 variant="outline"

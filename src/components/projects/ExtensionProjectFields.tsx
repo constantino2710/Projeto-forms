@@ -10,12 +10,23 @@ import {
   WEEKLY_HOURS_OPTIONS,
   type ExtensionPlanData,
 } from '../../features/projects/extensionPlan'
+import {
+  checkboxItemClass,
+  projectFormLabelClass,
+  selectInputClass,
+} from '../../lib/formStyles'
 
 type ExtensionProjectFieldsProps = {
   form: ExtensionPlanData
   onChange: (next: ExtensionPlanData) => void
   disabled?: boolean
 }
+
+const sectionClass =
+  'flex flex-col gap-3.5 p-4 border border-border rounded-[calc(var(--radius)-2px)] bg-card'
+const sectionHeadingClass = 'flex flex-col gap-1'
+const grid2 = 'grid grid-cols-1 md:grid-cols-2 gap-2.5'
+const grid3 = 'grid grid-cols-1 md:grid-cols-3 gap-2.5'
 
 const updateArrayValue = (values: string[], index: number, value: string) =>
   values.map((item, currentIndex) => (currentIndex === index ? value : item))
@@ -41,15 +52,15 @@ export function ExtensionProjectFields({
   }
 
   return (
-    <div className="extension-form-layout">
-      <section className="project-form-section">
-        <div className="project-form-section-heading">
-          <h2>Identificacao da Iniciativa Extensionista</h2>
-          <p>Replica dos campos principais do plano de trabalho voluntario.</p>
+    <div className="flex flex-col gap-[18px]">
+      <section className={sectionClass}>
+        <div className={sectionHeadingClass}>
+          <h2 className="m-0 text-base text-foreground">Identificacao da Iniciativa Extensionista</h2>
+          <p className="m-0 text-muted-foreground">Replica dos campos principais do plano de trabalho voluntario.</p>
         </div>
 
-        <div className="project-grid-2">
-          <label>
+        <div className={grid2}>
+          <label className={projectFormLabelClass}>
             Titulo da Iniciativa
             <Input
               value={form.title}
@@ -59,7 +70,7 @@ export function ExtensionProjectFields({
             />
           </label>
 
-          <label>
+          <label className={projectFormLabelClass}>
             Carga horaria total da iniciativa
             <Input
               type="number"
@@ -72,10 +83,10 @@ export function ExtensionProjectFields({
           </label>
         </div>
 
-        <label>
+        <label className={projectFormLabelClass}>
           Programa Unicap
           <select
-            className="ui-input ui-select"
+            className={selectInputClass}
             value={form.unicapProgram}
             onChange={(event) => setField('unicapProgram', event.target.value)}
             required
@@ -90,8 +101,8 @@ export function ExtensionProjectFields({
           </select>
         </label>
 
-        <div className="project-grid-2">
-          <label>
+        <div className={grid2}>
+          <label className={projectFormLabelClass}>
             Data de realizacao - Inicio
             <Input
               type="date"
@@ -102,7 +113,7 @@ export function ExtensionProjectFields({
             />
           </label>
 
-          <label>
+          <label className={projectFormLabelClass}>
             Data de realizacao - Termino
             <Input
               type="date"
@@ -114,10 +125,10 @@ export function ExtensionProjectFields({
           </label>
         </div>
 
-        <label>
+        <label className={projectFormLabelClass}>
           Curso ou Programa de Pos-Graduacao ao qual a disciplina esta vinculada
           <select
-            className="ui-input ui-select"
+            className={selectInputClass}
             value={form.linkedCourse}
             onChange={(event) => setField('linkedCourse', event.target.value)}
             required
@@ -132,8 +143,8 @@ export function ExtensionProjectFields({
           </select>
         </label>
 
-        <div className="project-grid-2">
-          <label>
+        <div className={grid2}>
+          <label className={projectFormLabelClass}>
             Curso
             <Input
               value={form.courseName}
@@ -143,7 +154,7 @@ export function ExtensionProjectFields({
             />
           </label>
 
-          <label>
+          <label className={projectFormLabelClass}>
             E-mail da Coordenacao
             <Input
               type="email"
@@ -156,14 +167,14 @@ export function ExtensionProjectFields({
         </div>
       </section>
 
-      <section className="project-form-section">
-        <div className="project-form-section-heading">
-          <h2>Docentes</h2>
-          <p>Dados do coordenador e docentes colaboradores.</p>
+      <section className={sectionClass}>
+        <div className={sectionHeadingClass}>
+          <h2 className="m-0 text-base text-foreground">Docentes</h2>
+          <p className="m-0 text-muted-foreground">Dados do coordenador e docentes colaboradores.</p>
         </div>
 
-        <div className="project-grid-2">
-          <label>
+        <div className={grid2}>
+          <label className={projectFormLabelClass}>
             Nome do docente coordenador
             <Input
               value={form.coordinatorName}
@@ -173,7 +184,7 @@ export function ExtensionProjectFields({
             />
           </label>
 
-          <label>
+          <label className={projectFormLabelClass}>
             E-mail do docente coordenador
             <Input
               type="email"
@@ -185,8 +196,8 @@ export function ExtensionProjectFields({
           </label>
         </div>
 
-        <div className="project-grid-3">
-          <label>
+        <div className={grid3}>
+          <label className={projectFormLabelClass}>
             CPF do docente coordenador
             <Input
               value={form.coordinatorCpf}
@@ -201,7 +212,7 @@ export function ExtensionProjectFields({
             />
           </label>
 
-          <label>
+          <label className={projectFormLabelClass}>
             Telefone (WhatsApp)
             <Input
               value={form.coordinatorPhone}
@@ -216,10 +227,10 @@ export function ExtensionProjectFields({
             />
           </label>
 
-          <label>
+          <label className={projectFormLabelClass}>
             Carga Horaria Semanal - Coordenador
             <select
-              className="ui-input ui-select"
+              className={selectInputClass}
               value={form.coordinatorWeeklyHours}
               onChange={(event) => setField('coordinatorWeeklyHours', event.target.value)}
               required
@@ -235,10 +246,10 @@ export function ExtensionProjectFields({
           </label>
         </div>
 
-        <label>
+        <label className={projectFormLabelClass}>
           Forma de participacao do Coordenador
           <select
-            className="ui-input ui-select"
+            className={selectInputClass}
             value={form.coordinatorParticipation}
             onChange={(event) => setField('coordinatorParticipation', event.target.value)}
             required
@@ -253,7 +264,7 @@ export function ExtensionProjectFields({
           </select>
         </label>
 
-        <label>
+        <label className={projectFormLabelClass}>
           Outros docentes colaboradores voluntarios na atividade
           <Textarea
             value={form.otherVolunteerTeachers}
@@ -264,16 +275,16 @@ export function ExtensionProjectFields({
         </label>
       </section>
 
-      <section className="project-form-section">
-        <div className="project-form-section-heading">
-          <h2>Estudantes voluntarios</h2>
+      <section className={sectionClass}>
+        <div className={sectionHeadingClass}>
+          <h2 className="m-0 text-base text-foreground">Estudantes voluntarios</h2>
         </div>
 
-        <div className="project-grid-2">
-          <label>
+        <div className={grid2}>
+          <label className={projectFormLabelClass}>
             Carga Horaria Semanal - Estudantes
             <select
-              className="ui-input ui-select"
+              className={selectInputClass}
               value={form.studentWeeklyHours}
               onChange={(event) => setField('studentWeeklyHours', event.target.value)}
               required
@@ -288,7 +299,7 @@ export function ExtensionProjectFields({
             </select>
           </label>
 
-          <label>
+          <label className={projectFormLabelClass}>
             Estudantes participantes
             <Textarea
               value={form.studentParticipants}
@@ -301,14 +312,14 @@ export function ExtensionProjectFields({
         </div>
       </section>
 
-      <section className="project-form-section">
-        <div className="project-form-section-heading">
-          <h2>Eixo Aprendizagem</h2>
+      <section className={sectionClass}>
+        <div className={sectionHeadingClass}>
+          <h2 className="m-0 text-base text-foreground">Eixo Aprendizagem</h2>
         </div>
 
-        <div className="project-grid-3">
+        <div className={grid3}>
           {form.learningObjectives.map((objective, index) => (
-            <label key={`objective-${index}`}>
+            <label key={`objective-${index}`} className={projectFormLabelClass}>
               Objetivo de Aprendizagem {index + 1}
               <Textarea
                 value={objective}
@@ -326,12 +337,12 @@ export function ExtensionProjectFields({
           ))}
         </div>
 
-        <div className="project-grid-3">
+        <div className={grid3}>
           {form.transversalCompetencies.map((competency, index) => (
-            <label key={`competency-${index}`}>
+            <label key={`competency-${index}`} className={projectFormLabelClass}>
               Competencia Transversal {index + 1}
               <select
-                className="ui-input ui-select"
+                className={selectInputClass}
                 value={competency}
                 onChange={(event) =>
                   setField(
@@ -354,12 +365,12 @@ export function ExtensionProjectFields({
         </div>
       </section>
 
-      <section className="project-form-section">
-        <div className="project-form-section-heading">
-          <h2>Eixo Servico</h2>
+      <section className={sectionClass}>
+        <div className={sectionHeadingClass}>
+          <h2 className="m-0 text-base text-foreground">Eixo Servico</h2>
         </div>
 
-        <label>
+        <label className={projectFormLabelClass}>
           Servico a ser oferecido
           <Textarea
             value={form.serviceOffered}
@@ -370,9 +381,9 @@ export function ExtensionProjectFields({
           />
         </label>
 
-        <div className="project-grid-3">
+        <div className={grid3}>
           {form.activities.map((activity, index) => (
-            <label key={`activity-${index}`}>
+            <label key={`activity-${index}`} className={projectFormLabelClass}>
               Atividade {index + 1}
               <Textarea
                 value={activity}
@@ -387,7 +398,7 @@ export function ExtensionProjectFields({
           ))}
         </div>
 
-        <label>
+        <label className={projectFormLabelClass}>
           Local de realizacao
           <Textarea
             value={form.executionLocation}
@@ -398,7 +409,7 @@ export function ExtensionProjectFields({
           />
         </label>
 
-        <label>
+        <label className={projectFormLabelClass}>
           Publico que sera atendido
           <Textarea
             value={form.targetAudience}
@@ -409,7 +420,7 @@ export function ExtensionProjectFields({
           />
         </label>
 
-        <label>
+        <label className={projectFormLabelClass}>
           Procedimentos Metodologicos
           <Textarea
             value={form.methodologicalProcedures}
@@ -421,12 +432,12 @@ export function ExtensionProjectFields({
         </label>
       </section>
 
-      <section className="project-form-section">
-        <div className="project-form-section-heading">
-          <h2>Eixo Impacto</h2>
+      <section className={sectionClass}>
+        <div className={sectionHeadingClass}>
+          <h2 className="m-0 text-base text-foreground">Eixo Impacto</h2>
         </div>
 
-        <label>
+        <label className={projectFormLabelClass}>
           Problema ou Necessidade a ser respondido
           <Textarea
             value={form.problemStatement}
@@ -437,10 +448,10 @@ export function ExtensionProjectFields({
           />
         </label>
 
-        <label>
+        <label className={projectFormLabelClass}>
           Principal Objetivo de Desenvolvimento Sustentavel Impactado
           <select
-            className="ui-input ui-select"
+            className={selectInputClass}
             value={form.sustainableDevelopmentGoal}
             onChange={(event) => setField('sustainableDevelopmentGoal', event.target.value)}
             required
@@ -455,9 +466,9 @@ export function ExtensionProjectFields({
           </select>
         </label>
 
-        <div className="project-grid-3">
+        <div className={grid3}>
           {form.goals.map((goal, index) => (
-            <label key={`goal-${index}`}>
+            <label key={`goal-${index}`} className={projectFormLabelClass}>
               Meta {index + 1}
               <Textarea
                 value={goal}
@@ -470,7 +481,7 @@ export function ExtensionProjectFields({
           ))}
         </div>
 
-        <label>
+        <label className={projectFormLabelClass}>
           Estrategias de Divulgacao da Atividade
           <Textarea
             value={form.disseminationStrategies}
@@ -481,7 +492,7 @@ export function ExtensionProjectFields({
           />
         </label>
 
-        <label>
+        <label className={projectFormLabelClass}>
           Texto breve com uma apresentacao/resumo do projeto
           <Textarea
             value={form.projectSummary}
@@ -493,12 +504,12 @@ export function ExtensionProjectFields({
         </label>
       </section>
 
-      <section className="project-form-section">
-        <div className="project-form-section-heading">
-          <h2>Eixo Reflexao e Avaliacao</h2>
+      <section className={sectionClass}>
+        <div className={sectionHeadingClass}>
+          <h2 className="m-0 text-base text-foreground">Eixo Reflexao e Avaliacao</h2>
         </div>
 
-        <label>
+        <label className={projectFormLabelClass}>
           Estrategias de Reflexao
           <Textarea
             value={form.reflectionStrategies}
@@ -509,7 +520,7 @@ export function ExtensionProjectFields({
           />
         </label>
 
-        <label>
+        <label className={projectFormLabelClass}>
           Estrategias de Avaliacao
           <Textarea
             value={form.evaluationStrategies}
@@ -520,7 +531,7 @@ export function ExtensionProjectFields({
           />
         </label>
 
-        <label>
+        <label className={projectFormLabelClass}>
           Feedback do Publico Parceiro
           <Textarea
             value={form.partnerFeedback}
@@ -532,12 +543,12 @@ export function ExtensionProjectFields({
         </label>
       </section>
 
-      <section className="project-form-section">
-        <div className="project-form-section-heading">
-          <h2>Conclusao</h2>
+      <section className={sectionClass}>
+        <div className={sectionHeadingClass}>
+          <h2 className="m-0 text-base text-foreground">Conclusao</h2>
         </div>
 
-        <label>
+        <label className={projectFormLabelClass}>
           Informacoes Adicionais
           <Textarea
             value={form.additionalInformation}
@@ -547,17 +558,18 @@ export function ExtensionProjectFields({
           />
         </label>
 
-        <div className="project-checkbox-group">
-          <p className="project-checkbox-title">Compreendi que...</p>
+        <div className="flex flex-col items-start gap-2.5">
+          <p className="m-0 font-bold text-foreground">Compreendi que...</p>
           {ACKNOWLEDGEMENT_OPTIONS.map((item) => (
-            <label key={item.id} className="project-checkbox-item">
+            <label key={item.id} className={checkboxItemClass}>
               <input
                 type="checkbox"
+                className="m-0 w-4 h-4 self-start justify-self-start mt-0.5"
                 checked={form.acknowledgements.includes(item.id)}
                 onChange={() => toggleAcknowledgement(item.id)}
                 disabled={disabled}
               />
-              <span>{item.label}</span>
+              <span className="block leading-[1.45]">{item.label}</span>
             </label>
           ))}
         </div>

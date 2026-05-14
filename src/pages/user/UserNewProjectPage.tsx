@@ -15,9 +15,34 @@ import {
   extensionFormSchema,
 } from '../../features/projects/projectSchemas'
 import { createUserProject } from '../../features/projects/userProjects'
+import { projectFormLabelClass } from '../../lib/formStyles'
+import {
+  attachmentActionsClass,
+  attachmentItemClass,
+  attachmentMetaClass,
+  attachmentNameClass,
+  attachmentsListClass,
+  dashboardPanelClass,
+  errorTextClass,
+  formValidationSummaryClass,
+  formValidationTitleClass,
+  projectFormClass,
+  projectGrid2Class,
+  successTextClass,
+} from '../../lib/projectStyles'
+import { cn } from '../../lib/utils'
 
 const MIN_PROJECT_DATE = '2000-01-01'
 const MAX_PROJECT_DATE = '2100-12-31'
+
+const projectTypeToggleClass =
+  'mt-4 inline-flex gap-2 p-1.5 border border-border rounded-[calc(var(--radius)-2px)] bg-muted/50'
+
+const projectTypeOptionBaseClass =
+  'border border-transparent rounded-[calc(var(--radius)-4px)] bg-transparent text-muted-foreground text-[0.86rem] font-bold leading-none px-[0.9rem] py-[0.62rem] cursor-pointer transition-[background-color,border-color,color] duration-150 ease-in-out hover:bg-accent hover:text-accent-foreground'
+
+const projectTypeOptionActiveClass =
+  'border-primary bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground'
 
 type DisciplineFormData = {
   title: string
@@ -155,33 +180,33 @@ export function UserNewProjectPage() {
   }
 
   return (
-    <article className="dashboard-panel">
+    <article className={dashboardPanelClass}>
       <h1>Novo Projeto</h1>
       <p>Escolha o tipo e preencha o formulario correspondente.</p>
 
-      <div className="project-type-toggle">
+      <div className={projectTypeToggleClass}>
         <button
           type="button"
           onClick={() => setProjectType('extensao')}
-          className={`project-type-option ${projectType === 'extensao' ? 'active' : ''}`}
+          className={cn(projectTypeOptionBaseClass, projectType === 'extensao' && projectTypeOptionActiveClass)}
         >
           Projeto de Extensao
         </button>
         <button
           type="button"
           onClick={() => setProjectType('disciplina')}
-          className={`project-type-option ${projectType === 'disciplina' ? 'active' : ''}`}
+          className={cn(projectTypeOptionBaseClass, projectType === 'disciplina' && projectTypeOptionActiveClass)}
         >
           Disciplina Extensionista
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="project-form">
+      <form onSubmit={handleSubmit} className={projectFormClass}>
         {projectType === 'extensao' ? (
           <ExtensionProjectFields form={extensionForm} onChange={setExtensionForm} disabled={isSubmitting} />
         ) : (
           <>
-            <label>
+            <label className={projectFormLabelClass}>
               Titulo
               <Input
                 value={disciplineForm.title}
@@ -190,7 +215,7 @@ export function UserNewProjectPage() {
               />
             </label>
 
-            <label>
+            <label className={projectFormLabelClass}>
               Area tematica
               <Input
                 value={disciplineForm.thematicArea}
@@ -201,8 +226,8 @@ export function UserNewProjectPage() {
               />
             </label>
 
-            <div className="project-grid-2">
-              <label>
+            <div className={projectGrid2Class}>
+              <label className={projectFormLabelClass}>
                 Codigo da Disciplina
                 <Input
                   type="text"
@@ -215,7 +240,7 @@ export function UserNewProjectPage() {
                 />
               </label>
 
-              <label>
+              <label className={projectFormLabelClass}>
                 Semestre Letivo
                 <Input
                   type="text"
@@ -229,7 +254,7 @@ export function UserNewProjectPage() {
               </label>
             </div>
 
-            <label>
+            <label className={projectFormLabelClass}>
               Curso
               <Input
                 value={disciplineForm.course}
@@ -237,8 +262,8 @@ export function UserNewProjectPage() {
               />
             </label>
 
-            <div className="project-grid-2">
-              <label>
+            <div className={projectGrid2Class}>
+              <label className={projectFormLabelClass}>
                 Inicio
                 <Input
                   type="date"
@@ -251,7 +276,7 @@ export function UserNewProjectPage() {
                   required
                 />
               </label>
-              <label>
+              <label className={projectFormLabelClass}>
                 Fim
                 <Input
                   type="date"
@@ -266,7 +291,7 @@ export function UserNewProjectPage() {
               </label>
             </div>
 
-            <label>
+            <label className={projectFormLabelClass}>
               Publico-alvo
               <Input
                 value={disciplineForm.targetAudience}
@@ -277,7 +302,7 @@ export function UserNewProjectPage() {
               />
             </label>
 
-            <label>
+            <label className={projectFormLabelClass}>
               Orcamento
               <Input
                 type="number"
@@ -289,7 +314,7 @@ export function UserNewProjectPage() {
               />
             </label>
 
-            <label>
+            <label className={projectFormLabelClass}>
               Descricao
               <Textarea
                 value={disciplineForm.description}
@@ -304,20 +329,20 @@ export function UserNewProjectPage() {
           </>
         )}
 
-        <label>
+        <label className={projectFormLabelClass}>
           Anexos
           <Input type="file" multiple onChange={handleFilesSelected} disabled={isSubmitting} />
         </label>
 
         {pendingFiles.length > 0 && (
-          <ul className="attachments-list">
+          <ul className={attachmentsListClass}>
             {pendingFiles.map((file, index) => (
-              <li key={`${file.name}-${file.size}-${index}`} className="attachment-item">
+              <li key={`${file.name}-${file.size}-${index}`} className={attachmentItemClass}>
                 <div>
-                  <p className="attachment-name">{file.name}</p>
-                  <p className="attachment-meta">{formatAttachmentSize(file.size)}</p>
+                  <p className={attachmentNameClass}>{file.name}</p>
+                  <p className={attachmentMetaClass}>{formatAttachmentSize(file.size)}</p>
                 </div>
-                <div className="attachment-actions">
+                <div className={attachmentActionsClass}>
                   <Button
                     type="button"
                     variant="outline"
@@ -334,8 +359,8 @@ export function UserNewProjectPage() {
         )}
 
         {validationErrors.length > 0 && (
-          <div className="form-validation-summary">
-            <p className="form-validation-title">Corrija os campos abaixo:</p>
+          <div className={formValidationSummaryClass}>
+            <p className={formValidationTitleClass}>Corrija os campos abaixo:</p>
             <ul>
               {validationErrors.map((msg, index) => (
                 <li key={`${msg}-${index}`}>{msg}</li>
@@ -343,10 +368,10 @@ export function UserNewProjectPage() {
             </ul>
           </div>
         )}
-        {error && <p className="error">{error}</p>}
-        {message && <p className="success">{message}</p>}
+        {error && <p className={errorTextClass}>{error}</p>}
+        {message && <p className={successTextClass}>{message}</p>}
 
-        <Button type="submit" className="full-width" disabled={isSubmitting}>
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? 'Salvando...' : 'Criar projeto'}
         </Button>
       </form>

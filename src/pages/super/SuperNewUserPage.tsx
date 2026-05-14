@@ -3,10 +3,23 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { createSuperUser } from '../../features/super/superAdmin'
+import { formLabelClass } from '../../lib/formStyles'
+import {
+  dashboardPanelClass,
+  errorTextClass,
+  projectsHeaderClass,
+  viewToggleClass,
+} from '../../lib/projectStyles'
+import { cn } from '../../lib/utils'
 
 type Role = 'user' | 'admin'
 
 const DEFAULT_PASSWORD = 'acesso123'
+
+const segmentedClass =
+  'mb-4 grid grid-cols-2 gap-2'
+
+const activeSegmentClass = 'border-primary! bg-primary! text-primary-foreground!'
 
 export function SuperNewUserPage() {
   const navigate = useNavigate()
@@ -66,8 +79,8 @@ export function SuperNewUserPage() {
   }
 
   return (
-    <article className="dashboard-panel">
-      <div className="projects-header">
+    <article className={dashboardPanelClass}>
+      <div className={projectsHeaderClass}>
         <div>
           <h1>Novo Usuario</h1>
           <p>
@@ -77,12 +90,12 @@ export function SuperNewUserPage() {
         </div>
       </div>
 
-      <div className="segmented" style={{ marginBottom: 16 }}>
+      <div className={segmentedClass}>
         <Button
           type="button"
           variant="outline"
           size="sm"
-          className={role === 'user' ? 'active' : ''}
+          className={role === 'user' ? activeSegmentClass : ''}
           onClick={() => handleRoleChange('user')}
         >
           Professor
@@ -91,15 +104,15 @@ export function SuperNewUserPage() {
           type="button"
           variant="outline"
           size="sm"
-          className={role === 'admin' ? 'active' : ''}
+          className={role === 'admin' ? activeSegmentClass : ''}
           onClick={() => handleRoleChange('admin')}
         >
           Admin
         </Button>
       </div>
 
-      <form onSubmit={handleSubmit} className="form">
-        <label>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
+        <label className={formLabelClass}>
           Nome de usuario
           <Input
             value={username}
@@ -111,7 +124,7 @@ export function SuperNewUserPage() {
           />
         </label>
 
-        <label>
+        <label className={formLabelClass}>
           Nome de exibicao
           <Input
             value={displayName}
@@ -121,7 +134,7 @@ export function SuperNewUserPage() {
           />
         </label>
 
-        <label>
+        <label className={formLabelClass}>
           E-mail (opcional)
           <Input
             type="email"
@@ -131,7 +144,7 @@ export function SuperNewUserPage() {
           />
         </label>
 
-        <label>
+        <label className={formLabelClass}>
           Senha inicial
           <Input
             type="text"
@@ -142,7 +155,7 @@ export function SuperNewUserPage() {
             minLength={6}
           />
         </label>
-        <label>
+        <label className={formLabelClass}>
           Confirmar senha
           <Input
             type="text"
@@ -153,9 +166,9 @@ export function SuperNewUserPage() {
           />
         </label>
 
-        {error && <p className="error">{error}</p>}
+        {error && <p className={errorTextClass}>{error}</p>}
 
-        <div className="view-toggle">
+        <div className={cn(viewToggleClass)}>
           <Button
             type="button"
             variant="outline"

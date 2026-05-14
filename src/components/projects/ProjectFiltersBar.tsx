@@ -10,6 +10,7 @@ import {
   type ProjectSortDir,
   type ProjectSortKey,
 } from '../../features/projects/projectFilters'
+import { cn } from '../../lib/utils'
 
 export type StatusOption = {
   value: string
@@ -25,6 +26,8 @@ type ProjectFiltersBarProps = {
   selectedStatuses?: string[]
   onStatusesChange?: (next: string[]) => void
 }
+
+const activeButtonClass = 'border-primary! bg-primary! text-primary-foreground!'
 
 export function ProjectFiltersBar({
   value,
@@ -91,13 +94,16 @@ export function ProjectFiltersBar({
     if (onStatusesChange) onStatusesChange([])
   }
 
+  const selectClass =
+    'w-full px-2 py-1.5 text-[0.85rem] font-medium rounded-[calc(var(--radius)-4px)] border border-border bg-background text-foreground cursor-pointer focus-visible:outline-none focus-visible:border-primary focus-visible:shadow-[0_0_0_2px_hsl(var(--primary)/0.25)]'
+
   return (
-    <div className="filter-wrap" ref={containerRef}>
+    <div className="relative flex-[0_0_auto] ml-auto" ref={containerRef}>
       <Button
         type="button"
         variant="outline"
         size="sm"
-        className={isActive ? 'active' : ''}
+        className={isActive ? activeButtonClass : ''}
         onClick={() => setIsOpen((state) => !state)}
       >
         <Funnel size={14} />
@@ -105,33 +111,37 @@ export function ProjectFiltersBar({
       </Button>
 
       {isOpen && (
-        <div className="filter-popover filter-popover--stack">
+        <div className="absolute right-0 max-md:right-auto max-md:left-0 top-[calc(100%+8px)] min-w-[240px] border border-border rounded-[calc(var(--radius)-2px)] bg-card p-3 flex flex-col items-stretch gap-2.5 z-40 shadow-[0_12px_28px_hsl(var(--foreground)/0.12)]">
           {hasStatusFilter && (
-            <div className="filter-field">
-              <span className="filter-label">Status</span>
-              <div className="filter-tag-row">
-                {statusOptions!.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    className={
-                      selectedStatuses.includes(option.value)
-                        ? 'filter-tag filter-tag-active'
-                        : 'filter-tag'
-                    }
-                    onClick={() => toggleStatus(option.value)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+            <div className="flex flex-col gap-1 text-[0.78rem] font-semibold text-muted-foreground">
+              <span className="uppercase tracking-[0.04em]">Status</span>
+              <div className="flex flex-wrap gap-1.5">
+                {statusOptions!.map((option) => {
+                  const isSelected = selectedStatuses.includes(option.value)
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={cn(
+                        'rounded-full px-[9px] py-[5px] text-[0.78rem] cursor-pointer',
+                        isSelected
+                          ? 'border border-primary bg-primary text-primary-foreground'
+                          : 'border border-border bg-background text-foreground',
+                      )}
+                      onClick={() => toggleStatus(option.value)}
+                    >
+                      {option.label}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           )}
 
-          <label className="filter-field">
-            <span className="filter-label">Curso</span>
+          <label className="flex flex-col gap-1 text-[0.78rem] font-semibold text-muted-foreground">
+            <span className="uppercase tracking-[0.04em]">Curso</span>
             <select
-              className="filter-select"
+              className={selectClass}
               value={value.course ?? ''}
               onChange={(event) => handleCourse(event.target.value)}
             >
@@ -144,10 +154,10 @@ export function ProjectFiltersBar({
             </select>
           </label>
 
-          <label className="filter-field">
-            <span className="filter-label">Escola</span>
+          <label className="flex flex-col gap-1 text-[0.78rem] font-semibold text-muted-foreground">
+            <span className="uppercase tracking-[0.04em]">Escola</span>
             <select
-              className="filter-select"
+              className={selectClass}
               value={value.school ?? ''}
               onChange={(event) => handleSchool(event.target.value)}
             >
@@ -160,10 +170,10 @@ export function ProjectFiltersBar({
             </select>
           </label>
 
-          <label className="filter-field">
-            <span className="filter-label">Ordenar por</span>
+          <label className="flex flex-col gap-1 text-[0.78rem] font-semibold text-muted-foreground">
+            <span className="uppercase tracking-[0.04em]">Ordenar por</span>
             <select
-              className="filter-select"
+              className={selectClass}
               value={currentSort.value}
               onChange={(event) => handleSort(event.target.value)}
             >
@@ -176,7 +186,11 @@ export function ProjectFiltersBar({
           </label>
 
           {isActive && (
-            <button type="button" className="filter-clear" onClick={handleClear}>
+            <button
+              type="button"
+              className="inline-flex items-center justify-center gap-1 self-end px-2 py-1 text-[0.78rem] font-semibold text-muted-foreground bg-transparent border border-border rounded-[calc(var(--radius)-4px)] cursor-pointer hover:text-foreground hover:border-[hsl(var(--foreground)/0.4)]"
+              onClick={handleClear}
+            >
               <X size={12} />
               <span>Limpar filtros</span>
             </button>

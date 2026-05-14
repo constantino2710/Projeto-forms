@@ -7,6 +7,7 @@ import { logoutSession, updateMyAvatar } from '../../auth/appAuth'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { ThemeToggle } from '../ui/theme-toggle'
+import { cn } from '../../lib/utils'
 
 type SidebarItem = {
   label: string
@@ -75,26 +76,43 @@ export function DashboardLayout({ session, items, onLogout }: DashboardLayoutPro
   }
 
   return (
-    <main className={isDesktopSidebarCollapsed ? 'dashboard-shell sidebar-collapsed' : 'dashboard-shell'}>
+    <main className="block relative min-h-screen h-screen overflow-hidden bg-background max-md:h-auto max-md:overflow-visible">
       <div
-        className={isMobileSidebarOpen ? 'sidebar-overlay sidebar-overlay-open' : 'sidebar-overlay'}
+        className={cn(
+          'fixed inset-0 hidden max-md:block bg-[hsl(222_30%_8%/0.45)] backdrop-blur-[4px] z-20 transition-opacity duration-200 ease-in-out',
+          isMobileSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none',
+        )}
         onClick={() => setIsMobileSidebarOpen(false)}
       />
 
       <aside
-        className={
-          isMobileSidebarOpen
-            ? `dashboard-sidebar sidebar-open ${isDesktopSidebarCollapsed ? 'dashboard-sidebar-collapsed' : ''}`
-            : `dashboard-sidebar ${isDesktopSidebarCollapsed ? 'dashboard-sidebar-collapsed' : ''}`
-        }
+        className={cn(
+          'fixed left-0 top-0 bottom-0 z-30 flex flex-col justify-between gap-4 overflow-y-auto',
+          'border-r border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-bg))] text-[hsl(var(--sidebar-text))]',
+          'transition-[width,padding,transform] duration-[260ms] ease-in-out',
+          isDesktopSidebarCollapsed ? 'w-[84px] px-2.5 py-6' : 'w-[280px] px-4 py-6',
+          'max-md:w-[min(78vw,300px)] max-md:px-4 max-md:py-6 max-md:border-r max-md:border-border max-md:shadow-[0_18px_48px_hsl(var(--foreground)/0.24)] max-md:transition-transform max-md:duration-200',
+          isMobileSidebarOpen ? 'max-md:translate-x-0' : 'max-md:-translate-x-full',
+        )}
       >
-        <div className="sidebar-top">
-          <div className="sidebar-collapse-row">
+        <div className="flex flex-col gap-3">
+          <div
+            className={cn(
+              'flex max-md:hidden',
+              isDesktopSidebarCollapsed ? 'justify-center' : 'justify-end',
+            )}
+          >
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className={isDesktopSidebarCollapsed ? 'sidebar-collapse-btn' : 'sidebar-collapse-btn is-expanded'}
+              className={cn(
+                'w-8 min-w-8 min-h-8 p-0',
+                'border-[hsl(var(--sidebar-link-border))] bg-[hsl(var(--sidebar-link-bg))] text-[hsl(var(--sidebar-text))]',
+                'hover:not-disabled:bg-[hsl(var(--sidebar-link-hover-bg))] hover:not-disabled:text-[hsl(var(--sidebar-text))]',
+                '[&_svg]:transition-transform [&_svg]:duration-[240ms] [&_svg]:ease-in-out',
+                !isDesktopSidebarCollapsed && '[&_svg]:rotate-180',
+              )}
               onClick={toggleDesktopSidebar}
               title={isDesktopSidebarCollapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
             >
@@ -102,7 +120,7 @@ export function DashboardLayout({ session, items, onLogout }: DashboardLayoutPro
             </Button>
           </div>
 
-          <nav className="sidebar-nav">
+          <nav className="flex flex-col gap-1.5">
             {items.map((item) => {
               const Icon = item.icon
               return (
@@ -110,7 +128,14 @@ export function DashboardLayout({ session, items, onLogout }: DashboardLayoutPro
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
-                    isActive ? 'sidebar-link sidebar-link-active' : 'sidebar-link'
+                    cn(
+                      'flex items-center gap-2 no-underline border rounded-[calc(var(--radius)-2px)] px-2.5 py-2 font-medium text-[0.83rem]',
+                      'transition-[background-color,border-color,color] duration-150 ease-in-out',
+                      isActive
+                        ? 'bg-[hsl(var(--sidebar-link-active-bg))] border-[hsl(var(--sidebar-link-active-bg))] text-[hsl(var(--sidebar-link-active-text))]'
+                        : 'bg-[hsl(var(--sidebar-link-bg))] border-[hsl(var(--sidebar-link-border))] text-[hsl(var(--sidebar-text))] hover:bg-[hsl(var(--sidebar-link-hover-bg))] hover:text-[hsl(var(--sidebar-text))]',
+                      isDesktopSidebarCollapsed && 'max-md:justify-start max-md:p-2.5 md:justify-center md:p-2 md:[&>span]:hidden',
+                    )
                   }
                   title={item.label}
                 >
@@ -122,27 +147,45 @@ export function DashboardLayout({ session, items, onLogout }: DashboardLayoutPro
           </nav>
         </div>
 
-        <div className="sidebar-footer">
-          <div className="sidebar-user">
-            <div className="sidebar-user-icon">
+        <div className="flex flex-col gap-2.5 border-t border-[hsl(var(--sidebar-link-border))] pt-3">
+          <div
+            className={cn(
+              'flex items-center gap-2.5',
+              isDesktopSidebarCollapsed && 'md:justify-center md:[&>div:last-child]:hidden',
+            )}
+          >
+            <div className="w-7 h-7 rounded-full border border-[hsl(var(--sidebar-link-border))] grid place-items-center text-[hsl(var(--sidebar-muted))] bg-[hsl(var(--sidebar-surface-bg))] overflow-hidden">
               {avatarUrl ? (
-                <img src={avatarUrl} alt={`Foto de ${session.display_name}`} className="sidebar-user-photo" />
+                <img
+                  src={avatarUrl}
+                  alt={`Foto de ${session.display_name}`}
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <UserRound size={16} />
               )}
             </div>
             <div>
-              <p className="sidebar-title">{session.display_name}</p>
-              <p className="sidebar-subtitle">@{session.username}</p>
+              <p className="m-0 text-[0.92rem] leading-tight text-[hsl(var(--sidebar-text))]">
+                {session.display_name}
+              </p>
+              <p className="m-0 text-[hsl(var(--sidebar-muted))] text-[0.78rem]">
+                @{session.username}
+              </p>
             </div>
           </div>
 
-          <div className="settings-box">
+          <div className="relative">
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className="settings-trigger"
+              className={cn(
+                'w-full',
+                'border-[hsl(var(--sidebar-link-border))] bg-[hsl(var(--sidebar-link-bg))] text-[hsl(var(--sidebar-text))]',
+                'hover:not-disabled:bg-[hsl(var(--sidebar-link-hover-bg))] hover:not-disabled:text-[hsl(var(--sidebar-text))]',
+                isDesktopSidebarCollapsed && 'md:justify-center md:[&>span]:hidden',
+              )}
               onClick={() => setIsSettingsOpen((state) => !state)}
               title="Configuracoes"
             >
@@ -150,10 +193,12 @@ export function DashboardLayout({ session, items, onLogout }: DashboardLayoutPro
               <span>Configuracoes</span>
             </Button>
 
-            {isSettingsOpen && (
-              <div className="settings-menu">
-                <label className="settings-avatar-field">
-                  <span>URL da foto</span>
+            {isSettingsOpen && !isDesktopSidebarCollapsed && (
+              <div className="flex flex-col gap-2 mt-2 border border-[hsl(var(--sidebar-link-border))] rounded-[calc(var(--radius)-2px)] p-2 bg-[hsl(var(--sidebar-surface-bg))]">
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-[0.72rem] text-[hsl(var(--sidebar-muted))] font-bold">
+                    URL da foto
+                  </span>
                   <Input
                     value={avatarDraft}
                     onChange={(event) => setAvatarDraft(event.target.value)}
@@ -161,11 +206,14 @@ export function DashboardLayout({ session, items, onLogout }: DashboardLayoutPro
                     disabled={isSavingAvatar}
                   />
                 </label>
-                {avatarError && <p className="settings-error">{avatarError}</p>}
+                {avatarError && (
+                  <p className="m-0 text-destructive text-[0.78rem] font-semibold">{avatarError}</p>
+                )}
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
+                  className="border-[hsl(var(--sidebar-link-border))] bg-[hsl(var(--sidebar-link-bg))] text-[hsl(var(--sidebar-text))] hover:not-disabled:bg-[hsl(var(--sidebar-link-hover-bg))] hover:not-disabled:text-[hsl(var(--sidebar-text))]"
                   onClick={handleSaveAvatar}
                   disabled={isSavingAvatar}
                 >
@@ -182,13 +230,22 @@ export function DashboardLayout({ session, items, onLogout }: DashboardLayoutPro
         </div>
       </aside>
 
-      <section className="dashboard-content">
-        <header className="dashboard-mobile-header">
+      <section
+        className={cn(
+          'h-screen overflow-y-auto p-6',
+          'transition-[margin-left,width,max-width] duration-[260ms] ease-in-out',
+          isDesktopSidebarCollapsed
+            ? 'ml-[84px] w-[calc(100%-84px)] max-w-[calc(100%-84px)]'
+            : 'ml-[280px] w-[calc(100%-280px)] max-w-[calc(100%-280px)]',
+          'max-md:ml-0 max-md:w-full max-md:max-w-full max-md:h-auto max-md:overflow-visible max-md:p-4',
+        )}
+      >
+        <header className="hidden max-md:flex mb-3.5">
           <Button
             type="button"
             variant="outline"
             size="sm"
-            className="menu-trigger"
+            className="w-auto"
             onClick={() => setIsMobileSidebarOpen((state) => !state)}
           >
             {isMobileSidebarOpen ? <X size={16} /> : <Menu size={16} />}

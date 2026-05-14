@@ -17,6 +17,37 @@ import {
   type AdminProjectDetail,
 } from '../../features/projects/adminProjects'
 import { projectStatusLabel } from '../../features/projects/userProjects'
+import { formLabelClass } from '../../lib/formStyles'
+import {
+  backLinkClass,
+  dashboardNoteClass,
+  dashboardPanelFlatClass,
+  errorTextClass,
+  projectApprovalChipClass,
+  projectApprovalDateClass,
+  projectApprovalLabelClass,
+  projectApprovalValueClass,
+  projectCardTopClass,
+  projectDetailActionsClass,
+  projectDetailClass,
+  projectInfoGridClass,
+  projectInfoItemClass,
+  projectInfoItemFullClass,
+  projectInfoLabelClass,
+  projectInfoSectionClass,
+  projectInfoValueClass,
+  projectMainCardClass,
+  projectSectionsStackClass,
+  projectTwoCardsClass,
+  statusBadgeBaseClass,
+  statusColorMap,
+  timelineRowClass,
+  timelineRowFutureClass,
+  timelineRowLatestClass,
+  timelineSideCardClass,
+  timelineStatusBadgeClass,
+} from '../../lib/projectStyles'
+import { cn } from '../../lib/utils'
 
 export function AdminProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>()
@@ -128,107 +159,107 @@ export function AdminProjectDetailPage() {
         : null
 
   const renderExtensionSummary = (extensionForm: ExtensionPlanData) => (
-    <div className="project-sections-stack">
-      <section className="project-info-section">
+    <div className={projectSectionsStackClass}>
+      <section className={projectInfoSectionClass}>
         <h3>Identificacao da Iniciativa Extensionista</h3>
-        <div className="project-info-grid">
-          <div className="project-info-item">
-            <p className="project-info-label">Titulo da Iniciativa</p>
-            <p className="project-info-value">{extensionForm.title}</p>
+        <div className={projectInfoGridClass}>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Titulo da Iniciativa</p>
+            <p className={projectInfoValueClass}>{extensionForm.title}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">Carga horaria total</p>
-            <p className="project-info-value">{extensionForm.totalWorkload}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Carga horaria total</p>
+            <p className={projectInfoValueClass}>{extensionForm.totalWorkload}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">Programa Unicap</p>
-            <p className="project-info-value">{extensionForm.unicapProgram}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Programa Unicap</p>
+            <p className={projectInfoValueClass}>{extensionForm.unicapProgram}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">Periodo</p>
-            <p className="project-info-value">
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Periodo</p>
+            <p className={projectInfoValueClass}>
               {extensionForm.periodStart} ate {extensionForm.periodEnd}
             </p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">Curso ou programa vinculado</p>
-            <p className="project-info-value">{extensionForm.linkedCourse}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Curso ou programa vinculado</p>
+            <p className={projectInfoValueClass}>{extensionForm.linkedCourse}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">Curso</p>
-            <p className="project-info-value">{extensionForm.courseName}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Curso</p>
+            <p className={projectInfoValueClass}>{extensionForm.courseName}</p>
           </div>
         </div>
       </section>
 
-      <section className="project-info-section">
+      <section className={projectInfoSectionClass}>
         <h3>Docentes</h3>
-        <div className="project-info-grid">
-          <div className="project-info-item">
-            <p className="project-info-label">Professor</p>
-            <p className="project-info-value">{project?.professor}</p>
+        <div className={projectInfoGridClass}>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Professor</p>
+            <p className={projectInfoValueClass}>{project?.professor}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">Nome do docente coordenador</p>
-            <p className="project-info-value">{extensionForm.coordinatorName}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Nome do docente coordenador</p>
+            <p className={projectInfoValueClass}>{extensionForm.coordinatorName}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">E-mail do docente coordenador</p>
-            <p className="project-info-value">{extensionForm.coordinatorEmail}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>E-mail do docente coordenador</p>
+            <p className={projectInfoValueClass}>{extensionForm.coordinatorEmail}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">CPF do docente coordenador</p>
-            <p className="project-info-value">{extensionForm.coordinatorCpf}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>CPF do docente coordenador</p>
+            <p className={projectInfoValueClass}>{extensionForm.coordinatorCpf}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">Telefone (WhatsApp)</p>
-            <p className="project-info-value">{extensionForm.coordinatorPhone}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Telefone (WhatsApp)</p>
+            <p className={projectInfoValueClass}>{extensionForm.coordinatorPhone}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">Participacao do Coordenador</p>
-            <p className="project-info-value">{extensionForm.coordinatorParticipation}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Participacao do Coordenador</p>
+            <p className={projectInfoValueClass}>{extensionForm.coordinatorParticipation}</p>
           </div>
         </div>
       </section>
 
-      <section className="project-info-section">
+      <section className={projectInfoSectionClass}>
         <h3>Conteudo do Plano</h3>
-        <div className="project-info-grid">
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Objetivos de Aprendizagem</p>
-            <p className="project-info-value">{extensionForm.learningObjectives.filter(Boolean).join(' | ')}</p>
+        <div className={projectInfoGridClass}>
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Objetivos de Aprendizagem</p>
+            <p className={projectInfoValueClass}>{extensionForm.learningObjectives.filter(Boolean).join(' | ')}</p>
           </div>
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Servico a ser oferecido</p>
-            <p className="project-info-value">{extensionForm.serviceOffered}</p>
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Servico a ser oferecido</p>
+            <p className={projectInfoValueClass}>{extensionForm.serviceOffered}</p>
           </div>
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Atividades</p>
-            <p className="project-info-value">{extensionForm.activities.filter(Boolean).join(' | ')}</p>
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Atividades</p>
+            <p className={projectInfoValueClass}>{extensionForm.activities.filter(Boolean).join(' | ')}</p>
           </div>
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Problema ou Necessidade</p>
-            <p className="project-info-value">{extensionForm.problemStatement}</p>
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Problema ou Necessidade</p>
+            <p className={projectInfoValueClass}>{extensionForm.problemStatement}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">ODS Impactado</p>
-            <p className="project-info-value">{extensionForm.sustainableDevelopmentGoal}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>ODS Impactado</p>
+            <p className={projectInfoValueClass}>{extensionForm.sustainableDevelopmentGoal}</p>
           </div>
-          <div className="project-info-item">
-            <p className="project-info-label">Publico atendido</p>
-            <p className="project-info-value">{extensionForm.targetAudience}</p>
+          <div className={projectInfoItemClass}>
+            <p className={projectInfoLabelClass}>Publico atendido</p>
+            <p className={projectInfoValueClass}>{extensionForm.targetAudience}</p>
           </div>
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Resumo</p>
-            <p className="project-info-value">{extensionForm.projectSummary}</p>
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Resumo</p>
+            <p className={projectInfoValueClass}>{extensionForm.projectSummary}</p>
           </div>
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Informacoes adicionais</p>
-            <p className="project-info-value">{extensionForm.additionalInformation || '-'}</p>
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Informacoes adicionais</p>
+            <p className={projectInfoValueClass}>{extensionForm.additionalInformation || '-'}</p>
           </div>
-          <div className="project-info-item project-info-item-full">
-            <p className="project-info-label">Confirmacoes marcadas</p>
-            <p className="project-info-value">
+          <div className={projectInfoItemFullClass}>
+            <p className={projectInfoLabelClass}>Confirmacoes marcadas</p>
+            <p className={projectInfoValueClass}>
               {ACKNOWLEDGEMENT_OPTIONS.filter((item) =>
                 extensionForm.acknowledgements.includes(item.id),
               )
@@ -242,71 +273,71 @@ export function AdminProjectDetailPage() {
   )
 
   return (
-    <article className="dashboard-panel dashboard-panel-flat">
-      <Link to="/admin/projetos" className="back-link">
+    <article className={dashboardPanelFlatClass}>
+      <Link to="/admin/projetos" className={backLinkClass}>
         <ArrowLeft size={14} />
         <span>Voltar para projetos</span>
       </Link>
 
-      {isLoading && <p className="dashboard-note">Carregando projeto...</p>}
-      {error && <p className="error">{error}</p>}
+      {isLoading && <p className={dashboardNoteClass}>Carregando projeto...</p>}
+      {error && <p className={errorTextClass}>{error}</p>}
 
       {!isLoading && project && (
-        <div className="project-two-cards">
-          <section className="project-main-card">
-            <div className="project-detail">
-              <div className="project-card-top">
+        <div className={projectTwoCardsClass}>
+          <section className={projectMainCardClass}>
+            <div className={projectDetailClass}>
+              <div className={projectCardTopClass}>
                 <h1>{project.title}</h1>
               </div>
 
-              <div className="project-approval-chip">
-                <p className="project-approval-label">Status de aprovacao</p>
-                <p className="project-approval-value">{approvalStatusLabel}</p>
-                <p className="project-approval-date">{formatTimelineDate(approvalStatusDate)}</p>
+              <div className={projectApprovalChipClass}>
+                <p className={projectApprovalLabelClass}>Status de aprovacao</p>
+                <p className={projectApprovalValueClass}>{approvalStatusLabel}</p>
+                <p className={projectApprovalDateClass}>{formatTimelineDate(approvalStatusDate)}</p>
               </div>
 
-              <section className="project-info-grid">
+              <section className={projectInfoGridClass}>
                 {project.tipo === 'extensao' ? (
-                  <div className="project-info-item project-info-item-full">
+                  <div className={projectInfoItemFullClass}>
                     {renderExtensionSummary(createExtensionPlanFromProject(project))}
                   </div>
                 ) : (
                   <>
-                    <div className="project-info-item">
-                      <p className="project-info-label">Professor</p>
-                      <p className="project-info-value">{project.professor}</p>
+                    <div className={projectInfoItemClass}>
+                      <p className={projectInfoLabelClass}>Professor</p>
+                      <p className={projectInfoValueClass}>{project.professor}</p>
                     </div>
-                    <div className="project-info-item">
-                      <p className="project-info-label">Disciplina</p>
-                      <p className="project-info-value">{project.discipline}</p>
+                    <div className={projectInfoItemClass}>
+                      <p className={projectInfoLabelClass}>Disciplina</p>
+                      <p className={projectInfoValueClass}>{project.discipline}</p>
                     </div>
-                    <div className="project-info-item">
-                      <p className="project-info-label">Curso</p>
-                      <p className="project-info-value">{project.course}</p>
+                    <div className={projectInfoItemClass}>
+                      <p className={projectInfoLabelClass}>Curso</p>
+                      <p className={projectInfoValueClass}>{project.course}</p>
                     </div>
-                    <div className="project-info-item">
-                      <p className="project-info-label">Periodo</p>
-                      <p className="project-info-value">
+                    <div className={projectInfoItemClass}>
+                      <p className={projectInfoLabelClass}>Periodo</p>
+                      <p className={projectInfoValueClass}>
                         {project.period_start} ate {project.period_end}
                       </p>
                     </div>
-                    <div className="project-info-item">
-                      <p className="project-info-label">Publico-alvo</p>
-                      <p className="project-info-value">{project.target_audience}</p>
+                    <div className={projectInfoItemClass}>
+                      <p className={projectInfoLabelClass}>Publico-alvo</p>
+                      <p className={projectInfoValueClass}>{project.target_audience}</p>
                     </div>
-                    <div className="project-info-item">
-                      <p className="project-info-label">Orcamento</p>
-                      <p className="project-info-value">R$ {Number(project.budget).toFixed(2)}</p>
+                    <div className={projectInfoItemClass}>
+                      <p className={projectInfoLabelClass}>Orcamento</p>
+                      <p className={projectInfoValueClass}>R$ {Number(project.budget).toFixed(2)}</p>
                     </div>
-                    <div className="project-info-item project-info-item-full">
-                      <p className="project-info-label">Descricao</p>
-                      <p className="project-info-value">{project.description}</p>
+                    <div className={projectInfoItemFullClass}>
+                      <p className={projectInfoLabelClass}>Descricao</p>
+                      <p className={projectInfoValueClass}>{project.description}</p>
                     </div>
                   </>
                 )}
               </section>
 
-              <label>
+              <label className={formLabelClass}>
                 Mensagem ao professor
                 <Textarea
                   value={adminMessage}
@@ -317,7 +348,7 @@ export function AdminProjectDetailPage() {
                 />
               </label>
 
-              <div className="project-detail-actions">
+              <div className={projectDetailActionsClass}>
                 <Button
                   type="button"
                   size="sm"
@@ -348,18 +379,24 @@ export function AdminProjectDetailPage() {
             </div>
           </section>
 
-          <aside className="timeline-side-card">
-            <span className={`status-badge status-${project.status} timeline-status-badge`}>
+          <aside className={timelineSideCardClass}>
+            <span
+              className={cn(
+                statusBadgeBaseClass,
+                statusColorMap[project.status],
+                timelineStatusBadgeClass,
+              )}
+            >
               {projectStatusLabel[project.status]}
             </span>
             <h2>Linha do tempo</h2>
             {timelineSteps.map((step, index) => {
               const isLatest = step.date !== null && index === latestTimelineIndex
               const rowClass = isLatest
-                ? 'timeline-row timeline-row-latest'
+                ? cn(timelineRowClass, timelineRowLatestClass)
                 : step.date
-                  ? 'timeline-row'
-                  : 'timeline-row timeline-row-future'
+                  ? timelineRowClass
+                  : cn(timelineRowClass, timelineRowFutureClass)
 
               return (
                 <p key={step.key} className={rowClass}>

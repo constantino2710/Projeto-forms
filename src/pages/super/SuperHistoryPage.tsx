@@ -11,6 +11,28 @@ import {
 } from '../../features/projects/projectFilters'
 import { listSuperHistory, type SuperHistoryRow } from '../../features/super/superAdmin'
 import { projectStatusLabel } from '../../features/projects/userProjects'
+import {
+  activeToggleButtonClass,
+  dashboardNoteClass,
+  dashboardPanelClass,
+  errorTextClass,
+  projectCardClass,
+  projectCardLinkClass,
+  projectCardMetaClass,
+  projectCardTopClass,
+  projectTitleWrapClass,
+  projectTypeBadgeBaseClass,
+  projectTypeBadgeDisciplinaClass,
+  projectTypeBadgeExtensaoClass,
+  projectsHeaderClass,
+  projectsListClass,
+  projectsToolbarClass,
+  searchWrapClass,
+  statusBadgeBaseClass,
+  statusColorMap,
+  viewToggleClass,
+} from '../../lib/projectStyles'
+import { cn } from '../../lib/utils'
 
 const mergeUniqueSorted = (current: string[], incoming: (string | null | undefined)[]): string[] => {
   const set = new Set(current)
@@ -88,22 +110,22 @@ export function SuperHistoryPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   return (
-    <article className="dashboard-panel">
-      <div className="projects-header">
+    <article className={dashboardPanelClass}>
+      <div className={projectsHeaderClass}>
         <div>
           <h1>Historico Geral de Projetos</h1>
           <p>Todos os projetos submetidos na plataforma, independente do revisor.</p>
         </div>
       </div>
 
-      <div className="view-toggle" style={{ marginBottom: 12, flexWrap: 'wrap' }}>
+      <div className={cn(viewToggleClass, 'flex-wrap mb-3')}>
         {statusOptions.map((option) => (
           <Button
             key={option.value || 'all'}
             type="button"
             variant="outline"
             size="sm"
-            className={statusFilter === option.value ? 'active' : ''}
+            className={statusFilter === option.value ? activeToggleButtonClass : ''}
             onClick={() => handleStatus(option.value)}
           >
             <span>{option.label}</span>
@@ -111,8 +133,8 @@ export function SuperHistoryPage() {
         ))}
       </div>
 
-      <form onSubmit={handleSearchSubmit} className="projects-toolbar" style={{ marginBottom: 16 }}>
-        <div className="search-wrap">
+      <form onSubmit={handleSearchSubmit} className={cn(projectsToolbarClass, 'mb-4')}>
+        <div className={searchWrapClass}>
           <Search size={14} />
           <Input
             value={searchInput}
@@ -131,38 +153,39 @@ export function SuperHistoryPage() {
         />
       </form>
 
-      {isLoading && <p className="dashboard-note">Carregando historico...</p>}
-      {error && <p className="error">{error}</p>}
+      {isLoading && <p className={dashboardNoteClass}>Carregando historico...</p>}
+      {error && <p className={errorTextClass}>{error}</p>}
       {!isLoading && visibleRows.length === 0 && (
-        <p className="dashboard-note">Nenhum projeto encontrado.</p>
+        <p className={dashboardNoteClass}>Nenhum projeto encontrado.</p>
       )}
 
-      <div className="projects-list">
+      <div className={projectsListClass}>
         {visibleRows.map((project) => (
-          <Link key={project.id} to={`/admin/projetos/${project.id}`} className="project-card-link">
-            <section className="project-card">
-              <div className="project-card-top">
-                <div className="project-title-wrap">
+          <Link key={project.id} to={`/admin/projetos/${project.id}`} className={projectCardLinkClass}>
+            <section className={projectCardClass}>
+              <div className={projectCardTopClass}>
+                <div className={projectTitleWrapClass}>
                   <h2>{project.title}</h2>
                   <span
-                    className={`project-type-badge ${
+                    className={cn(
+                      projectTypeBadgeBaseClass,
                       project.tipo === 'disciplina'
-                        ? 'project-type-badge--disciplina'
-                        : 'project-type-badge--extensao'
-                    }`}
+                        ? projectTypeBadgeDisciplinaClass
+                        : projectTypeBadgeExtensaoClass,
+                    )}
                   >
                     {project.tipo === 'disciplina' ? 'Disciplina Extensionista' : 'Projeto de Extensão'}
                   </span>
                 </div>
-                <span className={`status-badge status-${project.status}`}>
+                <span className={cn(statusBadgeBaseClass, statusColorMap[project.status])}>
                   {projectStatusLabel[project.status]}
                 </span>
               </div>
-              <p className="project-card-meta">Professor: {project.professor}</p>
-              <p className="project-card-meta">
+              <p className={projectCardMetaClass}>Professor: {project.professor}</p>
+              <p className={projectCardMetaClass}>
                 Periodo: {project.period_start} ate {project.period_end}
               </p>
-              <p className="project-card-meta">
+              <p className={projectCardMetaClass}>
                 Revisor: {project.reviewer ?? 'pendente'}
                 {project.reviewed_at ? ` em ${new Date(project.reviewed_at).toLocaleDateString()}` : ''}
               </p>
@@ -172,7 +195,7 @@ export function SuperHistoryPage() {
       </div>
 
       {total > PAGE_SIZE && (
-        <div className="view-toggle" style={{ marginTop: 16 }}>
+        <div className={cn(viewToggleClass, 'mt-4')}>
           <Button
             type="button"
             variant="outline"
@@ -182,7 +205,7 @@ export function SuperHistoryPage() {
           >
             Anterior
           </Button>
-          <span className="dashboard-note" style={{ alignSelf: 'center', margin: '0 12px' }}>
+          <span className={cn(dashboardNoteClass, 'self-center mx-3 my-0')}>
             Pagina {page + 1} de {totalPages}
           </span>
           <Button
