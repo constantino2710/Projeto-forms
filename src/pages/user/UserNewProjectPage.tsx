@@ -43,8 +43,11 @@ const MAX_PROJECT_DATE = '2100-12-31'
 const projectTypeToggleClass =
   'mt-4 inline-flex gap-2 p-1.5 border border-border rounded-[calc(var(--radius)-2px)] bg-muted/50'
 
-const projectTypeOptionBaseClass =
-  'border border-transparent rounded-[calc(var(--radius)-4px)] bg-transparent text-muted-foreground text-[0.86rem] font-bold leading-none px-[0.9rem] py-[0.62rem] cursor-pointer transition-[background-color,border-color,color] duration-150 ease-in-out hover:bg-accent hover:text-accent-foreground'
+const projectTypeOptionLayoutClass =
+  'border border-transparent rounded-[calc(var(--radius)-4px)] text-[0.86rem] font-bold leading-none px-[0.9rem] py-[0.62rem] cursor-pointer transition-[background-color,border-color,color] duration-150 ease-in-out'
+
+const projectTypeOptionInactiveClass =
+  'bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground'
 
 const projectTypeOptionActiveClass =
   'border-primary bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground'
@@ -261,14 +264,20 @@ export function UserNewProjectPage() {
         <button
           type="button"
           onClick={() => setProjectType('extensao')}
-          className={cn(projectTypeOptionBaseClass, projectType === 'extensao' && projectTypeOptionActiveClass)}
+          className={cn(
+            projectTypeOptionLayoutClass,
+            projectType === 'extensao' ? projectTypeOptionActiveClass : projectTypeOptionInactiveClass,
+          )}
         >
           Projeto de Extensao
         </button>
         <button
           type="button"
           onClick={() => setProjectType('disciplina')}
-          className={cn(projectTypeOptionBaseClass, projectType === 'disciplina' && projectTypeOptionActiveClass)}
+          className={cn(
+            projectTypeOptionLayoutClass,
+            projectType === 'disciplina' ? projectTypeOptionActiveClass : projectTypeOptionInactiveClass,
+          )}
         >
           Disciplina Extensionista
         </button>

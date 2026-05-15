@@ -30,12 +30,12 @@ export const statusBadgeBaseClassName =
   'rounded-full border border-[hsl(var(--border))] px-2 py-[3px] text-[0.72rem] font-bold'
 
 export const statusBadgeByStatus: Record<AdminProjectStatus, string> = {
-  rascunho: 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]',
-  submetido: 'bg-[hsl(216_100%_96%)] text-[hsl(221_83%_48%)]',
-  em_avaliacao: 'bg-[hsl(45_100%_93%)] text-[hsl(30_89%_38%)]',
-  em_ajustes: 'bg-[hsl(24_100%_94%)] text-[hsl(20_83%_37%)]',
-  aprovado: 'bg-[hsl(140_67%_92%)] text-[hsl(142_72%_29%)]',
-  reprovado: 'bg-[hsl(0_93%_94%)] text-[hsl(var(--destructive))]',
+  rascunho: 'bg-muted text-muted-foreground',
+  submetido: 'bg-status-submitted-bg text-status-submitted-fg',
+  em_avaliacao: 'bg-status-review-bg text-status-review-fg',
+  em_ajustes: 'bg-status-adjust-bg text-status-adjust-fg',
+  aprovado: 'bg-status-approved-bg text-status-approved-fg',
+  reprovado: 'bg-status-rejected-bg text-status-rejected-fg',
 }
 
 export const typeBadgeBaseClassName =

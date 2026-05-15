@@ -21,7 +21,6 @@ import { projectStatusLabel } from '../../features/projects/userProjects'
 import { formLabelClass } from '../../lib/formStyles'
 import {
   backLinkClass,
-  dashboardNoteClass,
   dashboardPanelFlatClass,
   errorTextClass,
   projectApprovalChipClass,

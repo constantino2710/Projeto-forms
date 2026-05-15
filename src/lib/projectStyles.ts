@@ -46,11 +46,11 @@ export const statusBadgeBaseClass =
 
 export const statusColorMap: Record<string, string> = {
   rascunho: 'bg-muted text-muted-foreground',
-  submetido: 'bg-[hsl(216_100%_96%)] text-[hsl(221_83%_48%)]',
-  em_avaliacao: 'bg-[hsl(45_100%_93%)] text-[hsl(30_89%_38%)]',
-  em_ajustes: 'bg-[hsl(24_100%_94%)] text-[hsl(20_83%_37%)]',
-  aprovado: 'bg-[hsl(140_67%_92%)] text-[hsl(142_72%_29%)]',
-  reprovado: 'bg-[hsl(0_93%_94%)] text-destructive',
+  submetido: 'bg-status-submitted-bg text-status-submitted-fg',
+  em_avaliacao: 'bg-status-review-bg text-status-review-fg',
+  em_ajustes: 'bg-status-adjust-bg text-status-adjust-fg',
+  aprovado: 'bg-status-approved-bg text-status-approved-fg',
+  reprovado: 'bg-status-rejected-bg text-status-rejected-fg',
 }
 
 export const projectTypeBadgeBaseClass =
@@ -163,13 +163,13 @@ export const attachmentLinkClass =
   'no-underline text-primary font-semibold text-[0.88rem] hover:underline'
 
 export const draftDeleteIconBtnClass =
-  'w-[2.3rem] h-[2.3rem] rounded-full border border-[hsl(var(--destructive)/0.55)] bg-[hsl(0_0%_0%)] text-destructive inline-flex items-center justify-center cursor-pointer transition-[transform,background-color,border-color] duration-150 ease-in-out hover:not-disabled:-translate-y-px hover:not-disabled:bg-[hsl(0_0%_8%)] hover:not-disabled:border-[hsl(var(--destructive)/0.7)] disabled:opacity-60 disabled:cursor-not-allowed'
+  'w-[2.3rem] h-[2.3rem] rounded-full border border-[hsl(var(--destructive)/0.55)] bg-card text-destructive inline-flex items-center justify-center cursor-pointer transition-[transform,background-color,border-color] duration-150 ease-in-out hover:not-disabled:-translate-y-px hover:not-disabled:bg-muted hover:not-disabled:border-[hsl(var(--destructive)/0.7)] disabled:opacity-60 disabled:cursor-not-allowed'
 
 export const confirmModalBackdropClass =
-  'fixed inset-0 z-[70] bg-[hsl(0_0%_0%/0.7)] grid place-items-center p-4'
+  'fixed inset-0 z-[70] bg-[hsl(var(--overlay)/0.7)] grid place-items-center p-4'
 
 export const confirmModalClass =
-  'w-[min(460px,100%)] border border-[hsl(0_0%_20%)] rounded-[var(--radius)] bg-[hsl(0_0%_0%)] text-[hsl(0_0%_96%)] shadow-[0_22px_64px_hsl(0_0%_0%/0.55)] p-[18px] [&_h2]:m-0 [&_h2]:text-[1.15rem] [&_h2]:text-[hsl(0_0%_98%)] [&>p]:mt-2.5 [&>p]:m-0 [&>p]:text-[hsl(0_0%_74%)]'
+  'w-[min(460px,100%)] border border-border rounded-[var(--radius)] bg-card text-card-foreground shadow-[0_22px_64px_hsl(var(--overlay)/0.55)] p-[18px] [&_h2]:m-0 [&_h2]:text-[1.15rem] [&_h2]:text-foreground [&>p]:mt-2.5 [&>p]:m-0 [&>p]:text-muted-foreground'
 
 export const confirmModalActionsClass =
   'mt-4 flex justify-end gap-2'

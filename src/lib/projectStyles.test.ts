@@ -49,8 +49,9 @@ describe('projectStyles', () => {
       expect(statusColorMap.rascunho).toContain('bg-muted')
     })
 
-    it('reprovado usa destructive', () => {
-      expect(statusColorMap.reprovado).toContain('text-destructive')
+    it('reprovado usa cores de status rejected', () => {
+      expect(statusColorMap.reprovado).toContain('bg-status-rejected-bg')
+      expect(statusColorMap.reprovado).toContain('text-status-rejected-fg')
     })
   })
 })

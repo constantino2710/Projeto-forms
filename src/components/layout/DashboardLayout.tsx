@@ -65,7 +65,7 @@ export function DashboardLayout({
     <main className="block relative min-h-screen h-screen overflow-hidden bg-background max-md:h-auto max-md:overflow-visible">
       <div
         className={cn(
-          'fixed inset-0 hidden max-md:block bg-[hsl(222_30%_8%/0.45)] backdrop-blur-[4px] z-20 transition-opacity duration-200 ease-in-out',
+          'fixed inset-0 hidden max-md:block bg-[hsl(var(--overlay)/0.45)] backdrop-blur-[4px] z-20 transition-opacity duration-200 ease-in-out',
           isMobileSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none',
         )}
         onClick={() => setIsMobileSidebarOpen(false)}

@@ -32,11 +32,12 @@ describe('statusBadgeClassName', () => {
   })
 
   it('rascunho usa fundo mutado', () => {
-    expect(statusBadgeByStatus.rascunho).toContain('bg-[hsl(var(--muted))]')
+    expect(statusBadgeByStatus.rascunho).toContain('bg-muted')
   })
 
-  it('reprovado usa cor destructive', () => {
-    expect(statusBadgeByStatus.reprovado).toContain('text-[hsl(var(--destructive))]')
+  it('reprovado usa cores de status rejected', () => {
+    expect(statusBadgeByStatus.reprovado).toContain('bg-status-rejected-bg')
+    expect(statusBadgeByStatus.reprovado).toContain('text-status-rejected-fg')
   })
 })
 
