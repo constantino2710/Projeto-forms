@@ -23,7 +23,7 @@ type ExtensionProjectFieldsProps = {
 }
 
 const sectionClass =
-  'flex flex-col gap-3.5 p-4 border border-border rounded-[calc(var(--radius)-2px)] bg-card'
+  'flex flex-col gap-3.5 p-5 rounded-[1.25rem] bg-card shadow-[0_4px_18px_hsl(var(--foreground)/0.06)]'
 const sectionHeadingClass = 'flex flex-col gap-1'
 const grid2 = 'grid grid-cols-1 md:grid-cols-2 gap-2.5'
 const grid3 = 'grid grid-cols-1 md:grid-cols-3 gap-2.5'

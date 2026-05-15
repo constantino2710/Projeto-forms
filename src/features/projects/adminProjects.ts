@@ -73,50 +73,117 @@ const getTokenOrThrow = () => {
   return token
 }
 
-export const listAdminProjects = async (): Promise<AdminProjectCard[]> => {
+type ListAdminProjectsParams = {
+  limit?: number
+  offset?: number
+  query?: string | null
+  statuses?: string[] | null
+  course?: string | null
+  school?: string | null
+  sortKey?: string | null
+  sortDir?: string | null
+}
+
+type ListAdminProjectsRow = AdminProjectCard & { total_count: number }
+type ListAdminProjectHistoryRow = AdminProjectHistoryCard & { total_count: number }
+
+export const listAdminProjects = async (
+  params: ListAdminProjectsParams = {},
+): Promise<{ rows: AdminProjectCard[]; total: number }> => {
   const token = getTokenOrThrow()
 
   const { data, error } = await supabase.rpc('app_list_admin_projects', {
     p_token: token,
+    p_limit: params.limit ?? 200,
+    p_offset: params.offset ?? 0,
+    p_course: params.course ?? null,
+    p_school: params.school ?? null,
+    p_sort_key: params.sortKey ?? null,
+    p_sort_dir: params.sortDir ?? null,
+    p_query: params.query ?? null,
+    p_statuses:
+      params.statuses && params.statuses.length > 0 ? params.statuses : null,
   })
 
   if (error) {
     throw new Error(error.message)
   }
 
-  return (data ?? []) as AdminProjectCard[]
+  const rows = (data ?? []) as ListAdminProjectsRow[]
+  const total = rows.length > 0 ? Number(rows[0].total_count) : 0
+  return { rows: rows as AdminProjectCard[], total }
 }
 
-let pendingAdminProjectsPrefetch: Promise<AdminProjectCard[]> | null = null
+let pendingAdminProjectsPrefetch: Promise<{ rows: AdminProjectCard[]; total: number }> | null = null
 
 export const prefetchAdminProjects = (): void => {
   if (pendingAdminProjectsPrefetch) {
     return
   }
-  pendingAdminProjectsPrefetch = listAdminProjects().catch((err) => {
+  pendingAdminProjectsPrefetch = listAdminProjects({ limit: 9, offset: 0 }).catch((err) => {
     pendingAdminProjectsPrefetch = null
     throw err
   })
 }
 
-export const consumePrefetchedAdminProjects = (): Promise<AdminProjectCard[]> | null => {
+export const consumePrefetchedAdminProjects = (): Promise<{
+  rows: AdminProjectCard[]
+  total: number
+}> | null => {
   const promise = pendingAdminProjectsPrefetch
   pendingAdminProjectsPrefetch = null
   return promise
 }
 
-export const listAdminProjectHistory = async (): Promise<AdminProjectHistoryCard[]> => {
+export const listAdminProjectHistory = async (
+  params: ListAdminProjectsParams = {},
+): Promise<{ rows: AdminProjectHistoryCard[]; total: number }> => {
   const token = getTokenOrThrow()
 
   const { data, error } = await supabase.rpc('app_list_admin_project_history', {
     p_token: token,
+    p_limit: params.limit ?? 200,
+    p_offset: params.offset ?? 0,
+    p_course: params.course ?? null,
+    p_school: params.school ?? null,
+    p_sort_key: params.sortKey ?? null,
+    p_sort_dir: params.sortDir ?? null,
+    p_query: params.query ?? null,
+    p_statuses:
+      params.statuses && params.statuses.length > 0 ? params.statuses : null,
   })
 
   if (error) {
     throw new Error(error.message)
   }
 
-  return (data ?? []) as AdminProjectHistoryCard[]
+  const rows = (data ?? []) as ListAdminProjectHistoryRow[]
+  const total = rows.length > 0 ? Number(rows[0].total_count) : 0
+  return { rows: rows as AdminProjectHistoryCard[], total }
+}
+
+let pendingAdminProjectHistoryPrefetch: Promise<{
+  rows: AdminProjectHistoryCard[]
+  total: number
+}> | null = null
+
+export const prefetchAdminProjectHistory = (): void => {
+  if (pendingAdminProjectHistoryPrefetch) {
+    return
+  }
+  pendingAdminProjectHistoryPrefetch = listAdminProjectHistory({ limit: 9, offset: 0 }).catch((err) => {
+    pendingAdminProjectHistoryPrefetch = null
+    throw err
+  })
+}
+
+export const consumePrefetchedAdminProjectHistory = (): Promise<{
+  rows: AdminProjectHistoryCard[]
+  total: number
+}> | null => {
+  const promise = pendingAdminProjectHistoryPrefetch
+  pendingAdminProjectHistoryPrefetch = null
+  return promise
 }
 
 export const getAdminProjectDetail = async (projectId: string): Promise<AdminProjectDetail> => {

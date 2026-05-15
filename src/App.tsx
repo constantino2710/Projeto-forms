@@ -3,13 +3,15 @@ import { FilePlus2, FolderKanban, History, LayoutList, UserPlus, Users } from 'l
 import { Navigate, Route, Routes } from 'react-router-dom'
 import {
   clearSessionToken,
+  getStoredSession,
   getStoredSessionRole,
   getStoredSessionToken,
+  persistSession,
   validateSession,
 } from './auth/appAuth'
 import { DashboardLayout } from './components/layout/DashboardLayout'
 import { Spinner } from './components/ui/spinner'
-import { prefetchAdminProjects } from './features/projects/adminProjects'
+import { prefetchAdminProjects, prefetchAdminProjectHistory } from './features/projects/adminProjects'
 import { AdminProjectDetailPage } from './pages/admin/AdminProjectDetailPage'
 import { AdminProjectHistoryPage } from './pages/admin/AdminProjectHistoryPage'
 import { AdminProjectsPage } from './pages/admin/AdminProjectsPage'
@@ -35,37 +37,43 @@ export type AuthSession = {
 }
 
 function App() {
-  const [isLoading, setIsLoading] = useState(true)
-  const [session, setSession] = useState<AuthSession | null>(null)
+  const [session, setSession] = useState<AuthSession | null>(() => getStoredSession())
+  const [isValidating, setIsValidating] = useState(() => Boolean(getStoredSessionToken()))
 
   useEffect(() => {
-    const loadSession = async () => {
-      const token = getStoredSessionToken()
+    if (session) persistSession(session)
+  }, [session])
 
-      if (!token) {
-        clearSessionToken()
-        setSession(null)
-        setIsLoading(false)
-        return
-      }
+  useEffect(() => {
+    const token = getStoredSessionToken()
 
-      const cachedRole = getStoredSessionRole()
-      if (cachedRole === 'admin' || cachedRole === 'superadmin') {
-        prefetchAdminProjects()
-      }
-
-      try {
-        const currentSession = await validateSession(token)
-        setSession(currentSession)
-      } catch {
-        clearSessionToken()
-        setSession(null)
-      } finally {
-        setIsLoading(false)
-      }
+    if (!token) {
+      clearSessionToken()
+      setSession(null)
+      setIsValidating(false)
+      return
     }
 
-    loadSession()
+    const cachedRole = getStoredSessionRole()
+    if (cachedRole === 'admin' || cachedRole === 'superadmin') {
+      prefetchAdminProjects()
+      prefetchAdminProjectHistory()
+    }
+
+    validateSession(token)
+      .then((currentSession) => {
+        if (currentSession) {
+          setSession(currentSession)
+        } else {
+          clearSessionToken()
+          setSession(null)
+        }
+      })
+      .catch(() => {
+        clearSessionToken()
+        setSession(null)
+      })
+      .finally(() => setIsValidating(false))
   }, [])
 
   const handleLogin = (nextSession: AuthSession) => {
@@ -77,7 +85,7 @@ function App() {
     setSession(null)
   }
 
-  if (isLoading) {
+  if (isValidating && !session) {
     return (
       <main className="min-h-screen flex items-center justify-center px-4 py-5 bg-[radial-gradient(circle_at_18%_18%,hsl(var(--accent)/0.5)_0,transparent_38%),radial-gradient(circle_at_85%_82%,hsl(var(--secondary)/0.5)_0,transparent_34%)] text-muted-foreground">
         <Spinner size="lg" />

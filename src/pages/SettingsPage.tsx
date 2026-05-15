@@ -1,5 +1,5 @@
 import { type FormEvent, useEffect, useState } from 'react'
-import { FileSpreadsheet, UserRound } from 'lucide-react'
+import { FileSpreadsheet, LogOut, UserRound } from 'lucide-react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import type { AuthSession } from '../App'
 import { updateMyProfile } from '../auth/appAuth'
@@ -20,20 +20,21 @@ import { cn } from '../lib/utils'
 export type DashboardOutletContext = {
   session: AuthSession
   onSessionUpdate: (next: AuthSession) => void
+  onLogout: () => void | Promise<void>
 }
 
 const sectionClass =
-  'mt-4 p-4 flex flex-col gap-3 border border-border rounded-[calc(var(--radius)-2px)] bg-card'
+  'mt-5 p-5 flex flex-col gap-3 rounded-[1.25rem] bg-card shadow-[0_4px_18px_hsl(var(--foreground)/0.06)]'
 
 const avatarPreviewWrapClass =
   'flex items-center gap-3'
 
 const avatarPreviewClass =
-  'w-14 h-14 rounded-full border border-border grid place-items-center text-muted-foreground bg-background overflow-hidden'
+  'w-14 h-14 rounded-full grid place-items-center text-muted-foreground bg-muted/40 overflow-hidden'
 
 export function SettingsPage() {
   const navigate = useNavigate()
-  const { session, onSessionUpdate } = useOutletContext<DashboardOutletContext>()
+  const { session, onSessionUpdate, onLogout } = useOutletContext<DashboardOutletContext>()
 
   const [displayName, setDisplayName] = useState(session.display_name)
   const [avatarUrl, setAvatarUrl] = useState(session.avatar_url ?? '')
@@ -164,6 +165,28 @@ export function SettingsPage() {
           </div>
         </section>
       )}
+
+      <section className={sectionClass}>
+        <h2 className="m-0 text-base flex items-center gap-2">
+          <LogOut size={16} /> Sessao
+        </h2>
+        <p className={dashboardNoteClass}>
+          Encerrar sua sessao na plataforma neste dispositivo.
+        </p>
+        <div className={cn(viewToggleClass)}>
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            onClick={() => {
+              void onLogout()
+            }}
+          >
+            <LogOut size={14} />
+            <span>Sair da conta</span>
+          </Button>
+        </div>
+      </section>
     </article>
   )
 }

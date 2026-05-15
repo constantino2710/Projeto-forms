@@ -33,13 +33,16 @@ describe('listAdminProjects', () => {
     localStorage.setItem(TOKEN_KEY, 'tok')
     rpc.mockResolvedValue({ data: [], error: null } as never)
     await listAdminProjects()
-    expect(rpc).toHaveBeenCalledWith('app_list_admin_projects', { p_token: 'tok' })
+    expect(rpc).toHaveBeenCalledWith(
+      'app_list_admin_projects',
+      expect.objectContaining({ p_token: 'tok' }),
+    )
   })
 
-  it('retorna array vazio quando data e null', async () => {
+  it('retorna { rows: [], total: 0 } quando data e null', async () => {
     localStorage.setItem(TOKEN_KEY, 'tok')
     rpc.mockResolvedValue({ data: null, error: null } as never)
-    expect(await listAdminProjects()).toEqual([])
+    expect(await listAdminProjects()).toEqual({ rows: [], total: 0 })
   })
 
   it('propaga erro do RPC', async () => {
@@ -88,18 +91,25 @@ describe('prefetchAdminProjects + consumePrefetchedAdminProjects', () => {
 })
 
 describe('listAdminProjectHistory', () => {
-  it('chama RPC e retorna array', async () => {
+  it('chama RPC e retorna { rows, total }', async () => {
     localStorage.setItem(TOKEN_KEY, 'tok')
-    rpc.mockResolvedValue({ data: [{ id: 'h1' }], error: null } as never)
+    rpc.mockResolvedValue({
+      data: [{ id: 'h1', total_count: 1 }],
+      error: null,
+    } as never)
     const result = await listAdminProjectHistory()
-    expect(rpc).toHaveBeenCalledWith('app_list_admin_project_history', { p_token: 'tok' })
-    expect(result).toHaveLength(1)
+    expect(rpc).toHaveBeenCalledWith(
+      'app_list_admin_project_history',
+      expect.objectContaining({ p_token: 'tok' }),
+    )
+    expect(result.rows).toHaveLength(1)
+    expect(result.total).toBe(1)
   })
 
-  it('retorna [] quando data e null', async () => {
+  it('retorna { rows: [], total: 0 } quando data e null', async () => {
     localStorage.setItem(TOKEN_KEY, 'tok')
     rpc.mockResolvedValue({ data: null, error: null } as never)
-    expect(await listAdminProjectHistory()).toEqual([])
+    expect(await listAdminProjectHistory()).toEqual({ rows: [], total: 0 })
   })
 })
 

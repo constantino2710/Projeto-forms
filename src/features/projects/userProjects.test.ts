@@ -125,13 +125,16 @@ describe('listMyProjects', () => {
     setToken()
     rpc.mockResolvedValue({ data: [], error: null } as never)
     await listMyProjects()
-    expect(rpc).toHaveBeenCalledWith('app_list_my_projects_v2', { p_token: VALID_TOKEN })
+    expect(rpc).toHaveBeenCalledWith(
+      'app_list_my_projects_v2',
+      expect.objectContaining({ p_token: VALID_TOKEN }),
+    )
   })
 
-  it('retorna array vazio quando data e null', async () => {
+  it('retorna { rows: [], total: 0 } quando data e null', async () => {
     setToken()
     rpc.mockResolvedValue({ data: null, error: null } as never)
-    expect(await listMyProjects()).toEqual([])
+    expect(await listMyProjects()).toEqual({ rows: [], total: 0 })
   })
 
   it('propaga erro do RPC', async () => {

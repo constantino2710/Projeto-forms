@@ -1,36 +1,32 @@
-import { Grid3X3, List, Search } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Search } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Spinner } from '../../components/ui/spinner'
+import { PageHeader } from '../../components/layout/PageHeader'
 import { ProjectFiltersBar } from '../../components/projects/ProjectFiltersBar'
 import {
-  applyProjectFilters,
   emptyProjectFilters,
   type ProjectFilterState,
 } from '../../features/projects/projectFilters'
 import {
+  consumePrefetchedAdminProjectHistory,
   listAdminProjectHistory,
   type AdminProjectHistoryCard,
 } from '../../features/projects/adminProjects'
 import { projectStatusLabel } from '../../features/projects/userProjects'
 import {
-  activeToggleButtonClass,
   dashboardNoteClass,
   dashboardPanelClass,
   errorTextClass,
-  projectCardClass,
-  projectCardLinkClass,
-  projectCardMetaClass,
-  projectCardTopClass,
-  projectTitleWrapClass,
+  historyCardClass,
+  historyCardLinkClass,
+  historyCardMetaClass,
+  historyListClass,
   projectTypeBadgeBaseClass,
   projectTypeBadgeDisciplinaClass,
   projectTypeBadgeExtensaoClass,
-  projectsGridClass,
-  projectsHeaderClass,
-  projectsListClass,
   projectsToolbarClass,
   searchWrapClass,
   statusBadgeBaseClass,
@@ -39,8 +35,9 @@ import {
 } from '../../lib/projectStyles'
 import { cn } from '../../lib/utils'
 
-type ViewMode = 'list' | 'grid'
-const VIEW_MODE_KEY = 'admin_history_view_mode'
+const PAGE_SIZE = 9
+const SEARCH_DEBOUNCE_MS = 350
+
 const STATUS_OPTIONS = [
   { value: 'aprovado', label: projectStatusLabel.aprovado },
   { value: 'reprovado', label: projectStatusLabel.reprovado },
@@ -57,141 +54,176 @@ const mergeUniqueSorted = (current: string[], incoming: (string | null | undefin
 
 export function AdminProjectHistoryPage() {
   const [projects, setProjects] = useState<AdminProjectHistoryCard[]>([])
+  const [total, setTotal] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [query, setQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
   const [filters, setFilters] = useState<ProjectFilterState>(emptyProjectFilters)
   const [courseOptions, setCourseOptions] = useState<string[]>([])
   const [schoolOptions, setSchoolOptions] = useState<string[]>([])
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    const stored = localStorage.getItem(VIEW_MODE_KEY)
-    return stored === 'grid' ? 'grid' : 'list'
-  })
+  const [currentPage, setCurrentPage] = useState(0)
+  const hasUsedPrefetchRef = useRef(false)
 
   useEffect(() => {
-    const load = async () => {
-      setError('')
-      setIsLoading(true)
-      try {
-        const data = await listAdminProjectHistory()
-        setProjects(data)
-        setCourseOptions((current) => mergeUniqueSorted(current, data.map((p) => p.course)))
-        setSchoolOptions((current) => mergeUniqueSorted(current, data.map((p) => p.school)))
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Falha ao carregar historico.'
-        setError(message)
-      } finally {
-        setIsLoading(false)
-      }
+    const handle = setTimeout(() => setDebouncedQuery(query.trim()), SEARCH_DEBOUNCE_MS)
+    return () => clearTimeout(handle)
+  }, [query])
+
+  useEffect(() => {
+    setCurrentPage(0)
+  }, [debouncedQuery, selectedStatuses, filters])
+
+  useEffect(() => {
+    let cancelled = false
+    setError('')
+    setIsLoading(true)
+
+    const isPristineFirstLoad =
+      !hasUsedPrefetchRef.current &&
+      currentPage === 0 &&
+      debouncedQuery === '' &&
+      selectedStatuses.length === 0 &&
+      filters === emptyProjectFilters
+    const prefetched = isPristineFirstLoad ? consumePrefetchedAdminProjectHistory() : null
+    if (isPristineFirstLoad) hasUsedPrefetchRef.current = true
+
+    const request =
+      prefetched ??
+      listAdminProjectHistory({
+        limit: PAGE_SIZE,
+        offset: currentPage * PAGE_SIZE,
+        query: debouncedQuery || null,
+        statuses: selectedStatuses.length > 0 ? selectedStatuses : null,
+        course: filters.course,
+        school: filters.school,
+        sortKey: filters.sortKey,
+        sortDir: filters.sortDir,
+      })
+
+    request
+      .then(({ rows, total: totalCount }) => {
+        if (cancelled) return
+        const filtered = rows.filter((row) => row.status !== 'em_avaliacao')
+        setProjects(filtered)
+        setTotal(totalCount - (rows.length - filtered.length))
+        setCourseOptions((current) => mergeUniqueSorted(current, filtered.map((p) => p.course)))
+        setSchoolOptions((current) => mergeUniqueSorted(current, filtered.map((p) => p.school)))
+      })
+      .catch((err) => {
+        if (cancelled) return
+        setError(err instanceof Error ? err.message : 'Falha ao carregar historico.')
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false)
+      })
+
+    return () => {
+      cancelled = true
     }
+  }, [currentPage, debouncedQuery, selectedStatuses, filters])
 
-    load()
-  }, [])
-
-  const handleSetViewMode = (nextMode: ViewMode) => {
-    setViewMode(nextMode)
-    localStorage.setItem(VIEW_MODE_KEY, nextMode)
-  }
-
-  const baseProjects = projects.filter((project) => {
-    const matchesName = project.title.toLowerCase().includes(query.trim().toLowerCase())
-    const matchesStatus = selectedStatuses.length === 0 ? true : selectedStatuses.includes(project.status)
-    return matchesName && matchesStatus
-  })
-  const filteredProjects = applyProjectFilters(baseProjects, filters)
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  const safePage = Math.min(currentPage, totalPages - 1)
 
   return (
-    <article className={dashboardPanelClass}>
-      <div className={projectsHeaderClass}>
-        <div>
-          <h1>Historico de Projetos</h1>
-          <p>Projetos que voce aprovou, recusou ou enviou para ajustes.</p>
-        </div>
-        <div className={viewToggleClass}>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className={viewMode === 'list' ? activeToggleButtonClass : ''}
-            onClick={() => handleSetViewMode('list')}
-          >
-            <List size={14} />
-            <span>Lista</span>
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className={viewMode === 'grid' ? activeToggleButtonClass : ''}
-            onClick={() => handleSetViewMode('grid')}
-          >
-            <Grid3X3 size={14} />
-            <span>Grid</span>
-          </Button>
-        </div>
-      </div>
-
-      <div className={projectsToolbarClass}>
-        <div className={searchWrapClass}>
-          <Search size={14} />
-          <Input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Pesquisar projeto por nome"
+    <>
+      <PageHeader
+        title="Historico de Projetos"
+        subtitle="Projetos que voce aprovou, recusou ou enviou para ajustes."
+      />
+      <article className={dashboardPanelClass}>
+        <div className={projectsToolbarClass}>
+          <div className={searchWrapClass}>
+            <Search size={14} />
+            <Input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Pesquisar projeto por nome"
+            />
+          </div>
+          <ProjectFiltersBar
+            value={filters}
+            onChange={setFilters}
+            courses={courseOptions}
+            schools={schoolOptions}
+            statusOptions={STATUS_OPTIONS}
+            selectedStatuses={selectedStatuses}
+            onStatusesChange={setSelectedStatuses}
           />
         </div>
-        <ProjectFiltersBar
-          value={filters}
-          onChange={setFilters}
-          courses={courseOptions}
-          schools={schoolOptions}
-          statusOptions={STATUS_OPTIONS}
-          selectedStatuses={selectedStatuses}
-          onStatusesChange={setSelectedStatuses}
-        />
-      </div>
 
-      {isLoading && (
-        <div className="mt-4 flex justify-center text-muted-foreground">
-          <Spinner />
-        </div>
-      )}
-      {error && <p className={errorTextClass}>{error}</p>}
-      {!isLoading && filteredProjects.length === 0 && (
-        <p className={dashboardNoteClass}>Nenhum projeto decidido por voce ainda.</p>
-      )}
+        {isLoading && projects.length === 0 && (
+          <div className="mt-4 flex justify-center text-muted-foreground">
+            <Spinner />
+          </div>
+        )}
+        {error && <p className={errorTextClass}>{error}</p>}
+        {!isLoading && total === 0 && (
+          <p className={dashboardNoteClass}>Nenhum projeto decidido por voce ainda.</p>
+        )}
 
-      <div className={viewMode === 'grid' ? projectsGridClass : projectsListClass}>
-        {filteredProjects.map((project) => (
-          <Link key={project.id} to={`/admin/projetos/${project.id}`} className={projectCardLinkClass}>
-            <section className={projectCardClass}>
-              <div className={projectCardTopClass}>
-                <div className={projectTitleWrapClass}>
-                  <h2>{project.title}</h2>
-                  <span
-                    className={cn(
-                      projectTypeBadgeBaseClass,
-                      project.tipo === 'disciplina'
-                        ? projectTypeBadgeDisciplinaClass
-                        : projectTypeBadgeExtensaoClass,
-                    )}
-                  >
-                    {project.tipo === 'disciplina' ? 'Disciplina Extensionista' : 'Projeto de Extensão'}
-                  </span>
-                </div>
+        <div
+          className={cn(
+            historyListClass,
+            isLoading && projects.length > 0 && 'opacity-60 pointer-events-none transition-opacity',
+          )}
+        >
+          {projects.map((project) => (
+            <Link key={project.id} to={`/admin/projetos/${project.id}`} className={historyCardLinkClass}>
+              <section className={historyCardClass}>
+                <h2>{project.title}</h2>
+                <span
+                  className={cn(
+                    projectTypeBadgeBaseClass,
+                    project.tipo === 'disciplina'
+                      ? projectTypeBadgeDisciplinaClass
+                      : projectTypeBadgeExtensaoClass,
+                  )}
+                >
+                  {project.tipo === 'disciplina' ? 'Disciplina' : 'Extensão'}
+                </span>
+                <span className={historyCardMetaClass}>
+                  {project.period_start} – {project.period_end}
+                </span>
+                <span className={cn(historyCardMetaClass, 'font-semibold')}>
+                  R$ {Number(project.budget).toFixed(2)}
+                </span>
                 <span className={cn(statusBadgeBaseClass, statusColorMap[project.status])}>
                   {projectStatusLabel[project.status]}
                 </span>
-              </div>
-              <p className={projectCardMetaClass}>
-                Periodo: {project.period_start} ate {project.period_end}
-              </p>
-              <p className={projectCardMetaClass}>Orcamento: R$ {Number(project.budget).toFixed(2)}</p>
-            </section>
-          </Link>
-        ))}
-      </div>
-    </article>
+              </section>
+            </Link>
+          ))}
+        </div>
+
+        {total > PAGE_SIZE && (
+          <div className={cn(viewToggleClass, 'mt-4 items-center')}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={safePage === 0}
+              onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+            >
+              Anterior
+            </Button>
+            <span className={cn(dashboardNoteClass, 'self-center mx-3 my-0')}>
+              Pagina {safePage + 1} de {totalPages}
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={safePage + 1 >= totalPages}
+              onClick={() => setCurrentPage((p) => p + 1)}
+            >
+              Proxima
+            </Button>
+          </div>
+        )}
+      </article>
+    </>
   )
 }

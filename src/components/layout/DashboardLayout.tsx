@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
-import { ChevronRight, LogOut, Menu, Settings, UserRound, X } from 'lucide-react'
+import { ChevronsLeft, ChevronsRight, Menu, Settings, UserRound, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import type { AuthSession } from '../../App'
 import { logoutSession } from '../../auth/appAuth'
 import { Button } from '../ui/button'
@@ -39,7 +39,6 @@ export function DashboardLayout({
     return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1'
   })
   const location = useLocation()
-  const navigate = useNavigate()
 
   useEffect(() => {
     setIsMobileSidebarOpen(false)
@@ -88,25 +87,34 @@ export function DashboardLayout({
               isDesktopSidebarCollapsed ? 'justify-center' : 'justify-end',
             )}
           >
-            <Button
+            <button
               type="button"
-              variant="outline"
-              size="sm"
-              className={cn(
-                'w-8 min-w-8 min-h-8 p-0',
-                'border-[hsl(var(--sidebar-link-border))] bg-[hsl(var(--sidebar-link-bg))] text-[hsl(var(--sidebar-text))]',
-                'hover:not-disabled:bg-[hsl(var(--sidebar-link-hover-bg))] hover:not-disabled:text-[hsl(var(--sidebar-text))]',
-                '[&_svg]:transition-transform [&_svg]:duration-[240ms] [&_svg]:ease-in-out',
-                !isDesktopSidebarCollapsed && '[&_svg]:rotate-180',
-              )}
               onClick={toggleDesktopSidebar}
               title={isDesktopSidebarCollapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+              aria-label={isDesktopSidebarCollapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+              className={cn(
+                'inline-flex items-center justify-center w-9 h-9 rounded-lg cursor-pointer bg-transparent border-0',
+                'text-[hsl(var(--sidebar-muted))] hover:text-[hsl(var(--sidebar-text))]',
+                'hover:bg-[hsl(var(--sidebar-link-hover-bg))] transition-colors duration-150',
+              )}
             >
-              <ChevronRight size={16} />
-            </Button>
+              {isDesktopSidebarCollapsed ? (
+                <ChevronsRight
+                  size={22}
+                  style={{ width: 22, height: 22 }}
+                  strokeWidth={2.25}
+                />
+              ) : (
+                <ChevronsLeft
+                  size={22}
+                  style={{ width: 22, height: 22 }}
+                  strokeWidth={2.25}
+                />
+              )}
+            </button>
           </div>
 
-          <nav className="flex flex-col gap-1.5">
+          <nav className="flex flex-col gap-0.5">
             {items.map((item) => {
               const Icon = item.icon
               return (
@@ -115,32 +123,54 @@ export function DashboardLayout({
                   to={item.to}
                   className={({ isActive }) =>
                     cn(
-                      'flex items-center gap-2 no-underline border rounded-[calc(var(--radius)-2px)] px-2.5 py-2 font-medium text-[0.83rem]',
-                      'transition-[background-color,border-color,color] duration-150 ease-in-out',
+                      'relative flex items-center gap-3 no-underline pl-5 pr-3 py-2.5 font-medium text-[0.9rem]',
+                      'transition-[color] duration-150 ease-in-out',
                       isActive
-                        ? 'bg-[hsl(var(--sidebar-link-active-bg))] border-[hsl(var(--sidebar-link-active-bg))] text-[hsl(var(--sidebar-link-active-text))]'
-                        : 'bg-[hsl(var(--sidebar-link-bg))] border-[hsl(var(--sidebar-link-border))] text-[hsl(var(--sidebar-text))] hover:bg-[hsl(var(--sidebar-link-hover-bg))] hover:text-[hsl(var(--sidebar-text))]',
-                      isDesktopSidebarCollapsed && 'max-md:justify-start max-md:p-2.5 md:justify-center md:p-2 md:[&>span]:hidden',
+                        ? 'text-[hsl(var(--sidebar-link-active-text))] font-semibold before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[5px] before:rounded-r-full before:bg-[hsl(var(--primary))]'
+                        : 'text-[hsl(var(--sidebar-text))] hover:text-[hsl(var(--sidebar-link-active-text))]',
+                      isDesktopSidebarCollapsed && 'max-md:justify-start max-md:p-2.5 max-md:pl-5 md:justify-center md:pl-2 md:pr-2 md:[&>span]:hidden',
                     )
                   }
                   title={item.label}
                 >
-                  <Icon size={16} />
+                  <Icon size={20} />
                   <span>{item.label}</span>
                 </NavLink>
               )
             })}
+            <NavLink
+              to={settingsPath}
+              className={({ isActive }) =>
+                cn(
+                  'relative flex items-center gap-3 no-underline pl-5 pr-3 py-2.5 font-medium text-[0.9rem]',
+                  'transition-[color] duration-150 ease-in-out',
+                  isActive
+                    ? 'text-[hsl(var(--sidebar-link-active-text))] font-semibold before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[5px] before:rounded-r-full before:bg-[hsl(var(--primary))]'
+                    : 'text-[hsl(var(--sidebar-text))] hover:text-[hsl(var(--sidebar-link-active-text))]',
+                  isDesktopSidebarCollapsed && 'max-md:justify-start max-md:p-2.5 max-md:pl-5 md:justify-center md:pl-2 md:pr-2 md:[&>span]:hidden',
+                )
+              }
+              title="Configuracoes"
+            >
+              <Settings size={20} />
+              <span>Configuracoes</span>
+            </NavLink>
           </nav>
         </div>
 
-        <div className="flex flex-col gap-2.5 border-t border-[hsl(var(--sidebar-link-border))] pt-3">
+        <div
+          className={cn(
+            'flex items-center gap-2.5 border-t border-[hsl(var(--sidebar-link-border))] pt-3',
+            isDesktopSidebarCollapsed && 'md:flex-col md:items-stretch',
+          )}
+        >
           <div
             className={cn(
-              'flex items-center gap-2.5',
+              'flex items-center gap-2.5 min-w-0 flex-1',
               isDesktopSidebarCollapsed && 'md:justify-center md:[&>div:last-child]:hidden',
             )}
           >
-            <div className="w-7 h-7 rounded-full border border-[hsl(var(--sidebar-link-border))] grid place-items-center text-[hsl(var(--sidebar-muted))] bg-[hsl(var(--sidebar-surface-bg))] overflow-hidden">
+            <div className="w-7 h-7 rounded-full border border-[hsl(var(--sidebar-link-border))] grid place-items-center text-[hsl(var(--sidebar-muted))] bg-[hsl(var(--sidebar-surface-bg))] overflow-hidden shrink-0">
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
@@ -151,46 +181,19 @@ export function DashboardLayout({
                 <UserRound size={16} />
               )}
             </div>
-            <div>
-              <p className="m-0 text-[0.92rem] leading-tight text-[hsl(var(--sidebar-text))]">
+            <div className="min-w-0">
+              <p className="m-0 text-[0.92rem] leading-tight text-[hsl(var(--sidebar-text))] truncate">
                 {session.display_name}
               </p>
-              <p className="m-0 text-[hsl(var(--sidebar-muted))] text-[0.78rem]">
+              <p className="m-0 text-[hsl(var(--sidebar-muted))] text-[0.78rem] truncate">
                 @{session.username}
               </p>
             </div>
           </div>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className={cn(
-              'w-full',
-              'border-[hsl(var(--sidebar-link-border))] bg-[hsl(var(--sidebar-link-bg))] text-[hsl(var(--sidebar-text))]',
-              'hover:not-disabled:bg-[hsl(var(--sidebar-link-hover-bg))] hover:not-disabled:text-[hsl(var(--sidebar-text))]',
-              isDesktopSidebarCollapsed && 'md:justify-center md:[&>span]:hidden',
-            )}
-            onClick={() => navigate(settingsPath)}
-            title="Configuracoes"
-          >
-            <Settings size={14} />
-            <span>Configuracoes</span>
-          </Button>
-
-          <ThemeToggle />
-
-          <Button
-            type="button"
-            variant="destructive"
-            size="sm"
-            onClick={handleLogout}
-            className={cn(isDesktopSidebarCollapsed && 'md:justify-center md:[&>span]:hidden')}
-            title="Logout"
-          >
-            <LogOut size={14} />
-            <span>Logout</span>
-          </Button>
+          <div className={cn('shrink-0', isDesktopSidebarCollapsed && 'md:self-center')}>
+            <ThemeToggle />
+          </div>
         </div>
       </aside>
 
@@ -216,7 +219,7 @@ export function DashboardLayout({
             <span>Menu</span>
           </Button>
         </header>
-        <Outlet context={{ session, onSessionUpdate }} />
+        <Outlet context={{ session, onSessionUpdate, onLogout: handleLogout }} />
       </section>
     </main>
   )

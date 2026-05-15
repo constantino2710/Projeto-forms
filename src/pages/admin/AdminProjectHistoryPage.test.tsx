@@ -9,6 +9,8 @@ import {
 
 vi.mock('../../features/projects/adminProjects', () => ({
   listAdminProjectHistory: vi.fn(),
+  prefetchAdminProjectHistory: vi.fn(),
+  consumePrefetchedAdminProjectHistory: vi.fn(() => null),
 }))
 
 const mockHistory: AdminProjectHistoryCard[] = [
@@ -45,13 +47,16 @@ describe('AdminProjectHistoryPage', () => {
   })
 
   it('renderiza historico retornado', async () => {
-    vi.mocked(listAdminProjectHistory).mockResolvedValue(mockHistory)
+    vi.mocked(listAdminProjectHistory).mockResolvedValue({
+      rows: mockHistory,
+      total: mockHistory.length,
+    })
     renderPage()
     expect(await screen.findByText('Aprovado A')).toBeInTheDocument()
   })
 
   it('mostra estado vazio', async () => {
-    vi.mocked(listAdminProjectHistory).mockResolvedValue([])
+    vi.mocked(listAdminProjectHistory).mockResolvedValue({ rows: [], total: 0 })
     renderPage()
     expect(
       await screen.findByText('Nenhum projeto decidido por voce ainda.'),

@@ -2,8 +2,8 @@ import { cn } from '../../lib/utils'
 import type { AdminProjectStatus } from './adminProjects'
 
 export const panelClassName =
-  'rounded-[var(--radius)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5'
-export const panelFlatClassName = 'border-none'
+  'rounded-[1.5rem] bg-[hsl(var(--card))] p-6 shadow-[0_8px_28px_hsl(var(--foreground)/0.08)]'
+export const panelFlatClassName = 'shadow-none'
 export const noteClassName = 'mt-2 text-[0.9rem] text-[hsl(var(--muted-foreground))]'
 export const errorClassName = 'm-0 font-semibold text-[hsl(var(--destructive))]'
 export const successClassName = 'm-0 font-semibold text-[hsl(var(--success-foreground))]'
@@ -20,14 +20,14 @@ export const projectsListClassName = 'mt-4 flex flex-col gap-3'
 export const projectsGridClassName = 'grid grid-cols-1 gap-3 md:grid-cols-2'
 export const projectCardLinkClassName = 'text-inherit no-underline'
 export const projectCardClassName =
-  'min-h-[170px] rounded-[calc(var(--radius)-2px)] border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-3.5 transition-[border-color,transform] hover:-translate-y-px hover:border-[hsl(var(--primary))]'
+  'min-h-[170px] rounded-[1.25rem] bg-[hsl(var(--card))] p-5 shadow-[0_6px_20px_hsl(var(--foreground)/0.07)] transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[0_10px_30px_hsl(var(--foreground)/0.08)]'
 export const projectCardTopClassName = 'flex items-center justify-between gap-2'
 export const projectTitleWrapClassName = 'flex flex-col gap-1'
 export const projectTitleClassName = 'm-0 text-base'
 export const projectCardMetaClassName = 'm-0 text-[0.88rem] font-semibold text-[hsl(var(--muted-foreground))]'
 
 export const statusBadgeBaseClassName =
-  'rounded-full border border-[hsl(var(--border))] px-2 py-[3px] text-[0.72rem] font-bold'
+  'rounded-full px-2.5 py-1 text-[0.72rem] font-bold'
 
 export const statusBadgeByStatus: Record<AdminProjectStatus, string> = {
   rascunho: 'bg-muted text-muted-foreground',

@@ -8,4 +8,4 @@ export const checkboxItemClass =
   'grid grid-cols-[18px_minmax(0,1fr)] items-start gap-2.5 font-medium w-full'
 
 export const selectInputClass =
-  'w-full border border-input rounded-[calc(var(--radius)-2px)] bg-background text-foreground px-[0.8rem] py-[0.65rem] min-h-11 text-[0.95rem] transition-[border-color,box-shadow] duration-150 ease-in-out appearance-none cursor-pointer placeholder:text-muted-foreground focus:outline-none focus:border-ring focus:shadow-[0_0_0_2px_hsl(var(--ring)/0.15)]'
+  'w-full border border-input rounded-2xl bg-card text-foreground px-4 py-[0.65rem] min-h-11 text-[0.95rem] transition-[border-color,box-shadow] duration-150 ease-in-out appearance-none cursor-pointer placeholder:text-muted-foreground focus:outline-none focus:border-ring focus:shadow-[0_0_0_3px_hsl(var(--ring)/0.12)]'

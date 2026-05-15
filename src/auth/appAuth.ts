@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 
 const SESSION_TOKEN_KEY = 'extensao_session_token'
 const SESSION_ROLE_KEY = 'extensao_session_role'
+const SESSION_DATA_KEY = 'extensao_session_data'
 
 const isAuthRole = (value: string | null): value is AuthRole =>
   value === 'admin' || value === 'user' || value === 'superadmin'
@@ -43,9 +44,44 @@ export const getStoredSessionRole = (): AuthRole | null => {
   return isAuthRole(stored) ? stored : null
 }
 
+export const getStoredSession = (): AuthSession | null => {
+  const raw = localStorage.getItem(SESSION_DATA_KEY)
+  if (!raw) return null
+  try {
+    const parsed = JSON.parse(raw) as Partial<AuthSession> | null
+    if (
+      !parsed ||
+      typeof parsed.token !== 'string' ||
+      typeof parsed.user_id !== 'string' ||
+      typeof parsed.username !== 'string' ||
+      typeof parsed.display_name !== 'string' ||
+      !isAuthRole(parsed.role ?? null)
+    ) {
+      return null
+    }
+    return {
+      token: parsed.token,
+      user_id: parsed.user_id,
+      username: parsed.username,
+      display_name: parsed.display_name,
+      avatar_url: parsed.avatar_url ?? null,
+      role: parsed.role as AuthRole,
+    }
+  } catch {
+    return null
+  }
+}
+
+export const persistSession = (session: AuthSession) => {
+  localStorage.setItem(SESSION_TOKEN_KEY, session.token)
+  localStorage.setItem(SESSION_ROLE_KEY, session.role)
+  localStorage.setItem(SESSION_DATA_KEY, JSON.stringify(session))
+}
+
 export const clearSessionToken = () => {
   localStorage.removeItem(SESSION_TOKEN_KEY)
   localStorage.removeItem(SESSION_ROLE_KEY)
+  localStorage.removeItem(SESSION_DATA_KEY)
 }
 
 const mapAuthErrorMessage = (message: string) => {
@@ -79,8 +115,7 @@ export const login = async (username: string, password: string): Promise<AuthSes
   }
 
   const session = parseSession(data)
-  localStorage.setItem(SESSION_TOKEN_KEY, session.token)
-  localStorage.setItem(SESSION_ROLE_KEY, session.role)
+  persistSession(session)
   return session
 }
 
@@ -98,7 +133,7 @@ export const validateSession = async (token: string): Promise<AuthSession | null
   }
 
   const session = parseSession(data)
-  localStorage.setItem(SESSION_ROLE_KEY, session.role)
+  persistSession(session)
   return session
 }
 

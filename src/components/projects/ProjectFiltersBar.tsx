@@ -95,7 +95,7 @@ export function ProjectFiltersBar({
   }
 
   const selectClass =
-    'w-full px-2 py-1.5 text-[0.85rem] font-medium rounded-[calc(var(--radius)-4px)] border border-border bg-background text-foreground cursor-pointer focus-visible:outline-none focus-visible:border-primary focus-visible:shadow-[0_0_0_2px_hsl(var(--primary)/0.25)]'
+    'w-full px-3 py-1.5 text-[0.85rem] font-medium rounded-xl border border-border bg-card text-foreground cursor-pointer focus-visible:outline-none focus-visible:border-primary focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.18)]'
 
   return (
     <div className="relative flex-[0_0_auto] ml-auto" ref={containerRef}>
@@ -111,7 +111,7 @@ export function ProjectFiltersBar({
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 max-md:right-auto max-md:left-0 top-[calc(100%+8px)] min-w-[240px] border border-border rounded-[calc(var(--radius)-2px)] bg-card p-3 flex flex-col items-stretch gap-2.5 z-40 shadow-[0_12px_28px_hsl(var(--foreground)/0.12)]">
+        <div className="absolute right-0 max-md:right-auto max-md:left-0 top-[calc(100%+8px)] min-w-[240px] rounded-[1.25rem] bg-card p-4 flex flex-col items-stretch gap-2.5 z-40 shadow-[0_18px_48px_hsl(var(--foreground)/0.14)]">
           {hasStatusFilter && (
             <div className="flex flex-col gap-1 text-[0.78rem] font-semibold text-muted-foreground">
               <span className="uppercase tracking-[0.04em]">Status</span>
@@ -123,10 +123,10 @@ export function ProjectFiltersBar({
                       key={option.value}
                       type="button"
                       className={cn(
-                        'rounded-full px-[9px] py-[5px] text-[0.78rem] cursor-pointer',
+                        'rounded-full px-3 py-1 text-[0.78rem] font-medium cursor-pointer transition-colors',
                         isSelected
                           ? 'border border-primary bg-primary text-primary-foreground'
-                          : 'border border-border bg-background text-foreground',
+                          : 'border border-border bg-card text-foreground hover:border-primary/40',
                       )}
                       onClick={() => toggleStatus(option.value)}
                     >
@@ -188,7 +188,7 @@ export function ProjectFiltersBar({
           {isActive && (
             <button
               type="button"
-              className="inline-flex items-center justify-center gap-1 self-end px-2 py-1 text-[0.78rem] font-semibold text-muted-foreground bg-transparent border border-border rounded-[calc(var(--radius)-4px)] cursor-pointer hover:text-foreground hover:border-[hsl(var(--foreground)/0.4)]"
+              className="inline-flex items-center justify-center gap-1 self-end px-3 py-1.5 text-[0.78rem] font-medium text-muted-foreground bg-transparent rounded-full cursor-pointer hover:text-foreground hover:bg-muted/60"
               onClick={handleClear}
             >
               <X size={12} />

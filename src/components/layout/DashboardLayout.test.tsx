@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { FolderKanban } from 'lucide-react'
@@ -72,21 +72,8 @@ describe('DashboardLayout', () => {
 
   it('clicar em Configuracoes navega para a pagina de configuracoes', async () => {
     renderLayout()
-    await userEvent.click(screen.getByRole('button', { name: /Configuracoes/ }))
+    await userEvent.click(screen.getByRole('link', { name: /Configuracoes/ }))
     expect(await screen.findByText('Pagina configuracoes')).toBeInTheDocument()
-  })
-
-  it('clicar em Logout chama logoutSession e onLogout', async () => {
-    vi.mocked(logoutSession).mockResolvedValue(undefined)
-    const onLogout = vi.fn()
-    renderLayout(undefined, onLogout)
-
-    await userEvent.click(screen.getByRole('button', { name: /Logout/ }))
-
-    await waitFor(() => {
-      expect(logoutSession).toHaveBeenCalled()
-      expect(onLogout).toHaveBeenCalled()
-    })
   })
 
   it('mostra avatar quando session.avatar_url existe', () => {

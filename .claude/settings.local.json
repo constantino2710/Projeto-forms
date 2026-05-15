@@ -11,7 +11,14 @@
       "Bash(node *)",
       "Bash(git stash *)",
       "Bash(npx eslint *)",
-      "Bash(npx vitest *)"
+      "Bash(npx vitest *)",
+      "Bash(mkdir \"C:\\\\Users\\\\joaoc\\\\Downloads\\\\bankdash-extracted\")",
+      "Bash(tar -xf \"BankDash - Dashboard UI Kit - Admin Template Dashboard - Admin Dashboard \\(Community\\).zip\" -C \"C:\\\\Users\\\\joaoc\\\\Downloads\\\\bankdash-extracted\")",
+      "PowerShell(New-Item *)",
+      "Bash(npx supabase *)",
+      "Bash(grep -n \"button svg\\\\|btn svg\\\\|^svg\\\\|\\\\\\\\[&_svg\\\\\\\\]\" src/index.css)",
+      "Bash(grep -nE \"\\\\\\\\*\\\\\\\\s*\\\\\\\\{|^[a-z\\\\\\\\.]\\\\\\\\S*\\\\\\\\s*\\\\\\\\{|@layer\" src/index.css)",
+      "Bash(xargs grep -l \"ThemeToggle\\\\|Configuracoes\\\\|Logout\\\\|DashboardLayout\")"
     ]
   }
 }

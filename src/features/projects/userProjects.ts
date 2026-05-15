@@ -134,18 +134,44 @@ export const createUserProject = async (
   return data as CreateProjectResult;
 };
 
-export const listMyProjects = async (): Promise<UserProject[]> => {
+type ListMyProjectsParams = {
+  limit?: number;
+  offset?: number;
+  query?: string | null;
+  statuses?: string[] | null;
+  course?: string | null;
+  school?: string | null;
+  sortKey?: string | null;
+  sortDir?: string | null;
+};
+
+type ListMyProjectsRow = UserProject & { total_count: number };
+
+export const listMyProjects = async (
+  params: ListMyProjectsParams = {},
+): Promise<{ rows: UserProject[]; total: number }> => {
   const token = getTokenOrThrow();
 
   const { data, error } = await supabase.rpc("app_list_my_projects_v2", {
     p_token: token,
+    p_limit: params.limit ?? 200,
+    p_offset: params.offset ?? 0,
+    p_query: params.query ?? null,
+    p_statuses:
+      params.statuses && params.statuses.length > 0 ? params.statuses : null,
+    p_course: params.course ?? null,
+    p_school: params.school ?? null,
+    p_sort_key: params.sortKey ?? null,
+    p_sort_dir: params.sortDir ?? null,
   });
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return (data ?? []) as UserProject[];
+  const rows = (data ?? []) as ListMyProjectsRow[];
+  const total = rows.length > 0 ? Number(rows[0].total_count) : 0;
+  return { rows: rows as UserProject[], total };
 };
 
 export const getMyProjectDetail = async (

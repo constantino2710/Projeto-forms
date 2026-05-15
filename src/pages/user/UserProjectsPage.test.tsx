@@ -54,6 +54,16 @@ const mockProjects: UserProject[] = [
   },
 ]
 
+const mockListWithFilters = () => {
+  vi.mocked(listMyProjects).mockImplementation(async (params) => {
+    const query = params?.query?.toLowerCase() ?? ''
+    const rows = query
+      ? mockProjects.filter((p) => p.title.toLowerCase().includes(query))
+      : mockProjects
+    return { rows, total: rows.length }
+  })
+}
+
 const renderPage = () =>
   render(
     <MemoryRouter>
@@ -73,14 +83,14 @@ describe('UserProjectsPage', () => {
   })
 
   it('renderiza projetos retornados', async () => {
-    vi.mocked(listMyProjects).mockResolvedValue(mockProjects)
+    mockListWithFilters()
     renderPage()
     expect(await screen.findByText('Projeto Alfa')).toBeInTheDocument()
     expect(screen.getByText('Projeto Beta')).toBeInTheDocument()
   })
 
   it('renderiza estado vazio quando lista esta vazia', async () => {
-    vi.mocked(listMyProjects).mockResolvedValue([])
+    vi.mocked(listMyProjects).mockResolvedValue({ rows: [], total: 0 })
     renderPage()
     expect(
       await screen.findByText('Voce ainda nao possui projetos cadastrados.'),
@@ -94,7 +104,7 @@ describe('UserProjectsPage', () => {
   })
 
   it('filtra projetos pelo campo de busca', async () => {
-    vi.mocked(listMyProjects).mockResolvedValue(mockProjects)
+    mockListWithFilters()
     renderPage()
     await screen.findByText('Projeto Alfa')
 
@@ -108,14 +118,14 @@ describe('UserProjectsPage', () => {
   })
 
   it('mostra labels de tipo (Extensao/Disciplina)', async () => {
-    vi.mocked(listMyProjects).mockResolvedValue(mockProjects)
+    mockListWithFilters()
     renderPage()
     expect(await screen.findByText('Projeto de Extensão')).toBeInTheDocument()
     expect(screen.getByText('Disciplina Extensionista')).toBeInTheDocument()
   })
 
   it('persiste modo de visualizacao em localStorage', async () => {
-    vi.mocked(listMyProjects).mockResolvedValue([])
+    vi.mocked(listMyProjects).mockResolvedValue({ rows: [], total: 0 })
     renderPage()
     await screen.findByText('Voce ainda nao possui projetos cadastrados.')
     await userEvent.click(screen.getByRole('button', { name: /Grid/ }))

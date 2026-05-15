@@ -10,7 +10,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 }
 
 const base =
-  'inline-flex items-center justify-center gap-[0.4rem] rounded-[calc(var(--radius)-2px)] border border-transparent text-[0.925rem] font-semibold leading-none cursor-pointer transition-[background-color,border-color,color] duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-60'
+  'inline-flex items-center justify-center gap-[0.4rem] rounded-full border border-transparent text-[0.925rem] font-medium leading-none cursor-pointer transition-[background-color,border-color,color,box-shadow] duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-60'
 
 const variantClasses: Record<ButtonVariant, string> = {
   default: 'bg-primary text-primary-foreground hover:not-disabled:bg-primary/90',
@@ -21,9 +21,9 @@ const variantClasses: Record<ButtonVariant, string> = {
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: 'min-h-8 px-[0.65rem] py-[0.4rem]',
-  default: 'min-h-11 px-4 py-[0.65rem]',
-  lg: 'min-h-12 px-[1.1rem] py-[0.8rem]',
+  sm: 'min-h-8 px-3.5 py-[0.4rem]',
+  default: 'min-h-11 px-6 py-[0.65rem]',
+  lg: 'min-h-12 px-8 py-[0.8rem]',
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(

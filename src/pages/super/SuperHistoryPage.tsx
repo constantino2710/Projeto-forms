@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Spinner } from '../../components/ui/spinner'
+import { PageHeader } from '../../components/layout/PageHeader'
 import { ProjectFiltersBar } from '../../components/projects/ProjectFiltersBar'
 import {
   applyProjectFilters,
@@ -17,16 +18,13 @@ import {
   dashboardNoteClass,
   dashboardPanelClass,
   errorTextClass,
-  projectCardClass,
-  projectCardLinkClass,
-  projectCardMetaClass,
-  projectCardTopClass,
-  projectTitleWrapClass,
+  historyCardClass,
+  historyCardLinkClass,
+  historyCardMetaClass,
+  historyListClass,
   projectTypeBadgeBaseClass,
   projectTypeBadgeDisciplinaClass,
   projectTypeBadgeExtensaoClass,
-  projectsHeaderClass,
-  projectsListClass,
   projectsToolbarClass,
   searchWrapClass,
   statusBadgeBaseClass,
@@ -48,7 +46,6 @@ const PAGE_SIZE = 10
 const statusOptions: Array<{ value: string; label: string }> = [
   { value: '', label: 'Todos' },
   { value: 'submetido', label: 'Submetidos' },
-  { value: 'em_avaliacao', label: 'Em analise' },
   { value: 'em_ajustes', label: 'Em ajustes' },
   { value: 'aprovado', label: 'Aprovados' },
   { value: 'reprovado', label: 'Recusados' },
@@ -78,10 +75,12 @@ export function SuperHistoryPage() {
         limit: PAGE_SIZE,
         offset: page * PAGE_SIZE,
       })
-      setRows(data)
-      setTotal(totalCount)
-      setCourseOptions((current) => mergeUniqueSorted(current, data.map((p) => p.course)))
-      setSchoolOptions((current) => mergeUniqueSorted(current, data.map((p) => p.school)))
+      const filtered = data.filter((row) => row.status !== 'em_avaliacao')
+      const adjustedTotal = totalCount - (data.length - filtered.length)
+      setRows(filtered)
+      setTotal(adjustedTotal)
+      setCourseOptions((current) => mergeUniqueSorted(current, filtered.map((p) => p.course)))
+      setSchoolOptions((current) => mergeUniqueSorted(current, filtered.map((p) => p.school)))
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Falha ao carregar historico.'
       setError(message)
@@ -111,15 +110,13 @@ export function SuperHistoryPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   return (
-    <article className={dashboardPanelClass}>
-      <div className={projectsHeaderClass}>
-        <div>
-          <h1>Historico Geral de Projetos</h1>
-          <p>Todos os projetos submetidos na plataforma, independente do revisor.</p>
-        </div>
-      </div>
-
-      <div className={cn(viewToggleClass, 'flex-wrap mb-3')}>
+    <>
+      <PageHeader
+        title="Historico Geral de Projetos"
+        subtitle="Todos os projetos submetidos na plataforma, independente do revisor."
+      />
+      <article className={dashboardPanelClass}>
+        <div className={cn(viewToggleClass, 'flex-wrap mb-3')}>
         {statusOptions.map((option) => (
           <Button
             key={option.value || 'all'}
@@ -154,7 +151,7 @@ export function SuperHistoryPage() {
         />
       </form>
 
-      {isLoading && (
+      {isLoading && rows.length === 0 && (
         <div className="mt-4 flex justify-center text-muted-foreground">
           <Spinner />
         </div>
@@ -164,66 +161,67 @@ export function SuperHistoryPage() {
         <p className={dashboardNoteClass}>Nenhum projeto encontrado.</p>
       )}
 
-      <div className={projectsListClass}>
+      <div
+        className={cn(
+          historyListClass,
+          isLoading && rows.length > 0 && 'opacity-60 pointer-events-none transition-opacity',
+        )}
+      >
         {visibleRows.map((project) => (
-          <Link key={project.id} to={`/admin/projetos/${project.id}`} className={projectCardLinkClass}>
-            <section className={projectCardClass}>
-              <div className={projectCardTopClass}>
-                <div className={projectTitleWrapClass}>
-                  <h2>{project.title}</h2>
-                  <span
-                    className={cn(
-                      projectTypeBadgeBaseClass,
-                      project.tipo === 'disciplina'
-                        ? projectTypeBadgeDisciplinaClass
-                        : projectTypeBadgeExtensaoClass,
-                    )}
-                  >
-                    {project.tipo === 'disciplina' ? 'Disciplina Extensionista' : 'Projeto de Extensão'}
-                  </span>
-                </div>
-                <span className={cn(statusBadgeBaseClass, statusColorMap[project.status])}>
-                  {projectStatusLabel[project.status]}
-                </span>
-              </div>
-              <p className={projectCardMetaClass}>Professor: {project.professor}</p>
-              <p className={projectCardMetaClass}>
-                Periodo: {project.period_start} ate {project.period_end}
-              </p>
-              <p className={projectCardMetaClass}>
+          <Link key={project.id} to={`/admin/projetos/${project.id}`} className={historyCardLinkClass}>
+            <section className={historyCardClass}>
+              <h2>{project.title}</h2>
+              <span
+                className={cn(
+                  projectTypeBadgeBaseClass,
+                  project.tipo === 'disciplina'
+                    ? projectTypeBadgeDisciplinaClass
+                    : projectTypeBadgeExtensaoClass,
+                )}
+              >
+                {project.tipo === 'disciplina' ? 'Disciplina' : 'Extensão'}
+              </span>
+              <span className={historyCardMetaClass}>Professor: {project.professor}</span>
+              <span className={historyCardMetaClass}>
+                {project.period_start} – {project.period_end}
+              </span>
+              <span className={historyCardMetaClass}>
                 Revisor: {project.reviewer ?? 'pendente'}
-                {project.reviewed_at ? ` em ${new Date(project.reviewed_at).toLocaleDateString()}` : ''}
-              </p>
+              </span>
+              <span className={cn(statusBadgeBaseClass, statusColorMap[project.status])}>
+                {projectStatusLabel[project.status]}
+              </span>
             </section>
           </Link>
         ))}
       </div>
 
-      {total > PAGE_SIZE && (
-        <div className={cn(viewToggleClass, 'mt-4')}>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={page === 0}
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-          >
-            Anterior
-          </Button>
-          <span className={cn(dashboardNoteClass, 'self-center mx-3 my-0')}>
-            Pagina {page + 1} de {totalPages}
-          </span>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={page + 1 >= totalPages}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            Proxima
-          </Button>
-        </div>
-      )}
-    </article>
+        {total > PAGE_SIZE && (
+          <div className={cn(viewToggleClass, 'mt-4')}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={page === 0}
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+            >
+              Anterior
+            </Button>
+            <span className={cn(dashboardNoteClass, 'self-center mx-3 my-0')}>
+              Pagina {page + 1} de {totalPages}
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={page + 1 >= totalPages}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Proxima
+            </Button>
+          </div>
+        )}
+      </article>
+    </>
   )
 }

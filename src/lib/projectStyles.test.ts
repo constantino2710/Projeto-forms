@@ -21,7 +21,7 @@ describe('projectStyles', () => {
   it('projectCardClass usa flex coluna com gap', () => {
     expect(projectCardClass).toContain('flex')
     expect(projectCardClass).toContain('flex-col')
-    expect(projectCardClass).toContain('gap-2.5')
+    expect(projectCardClass).toContain('gap-1')
   })
 
   it('projectTwoCardsClass usa grid responsivo md', () => {

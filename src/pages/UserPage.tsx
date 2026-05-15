@@ -33,9 +33,9 @@ export function UserPage({ session, onLogout }: UserPageProps) {
         </CardHeader>
         <CardContent>
           <ul className="m-0 flex list-none flex-col gap-2 p-0">
-            <li className="rounded-[calc(var(--radius)-4px)] border border-border bg-muted/40 px-3 py-2.5">Bem-vindo, {session.display_name}.</li>
-            <li className="rounded-[calc(var(--radius)-4px)] border border-border bg-muted/40 px-3 py-2.5">Usuario: {session.username}</li>
-            <li className="rounded-[calc(var(--radius)-4px)] border border-border bg-muted/40 px-3 py-2.5">Perfil: {session.role}</li>
+            <li className="rounded-xl bg-muted/40 px-4 py-2.5">Bem-vindo, {session.display_name}.</li>
+            <li className="rounded-xl bg-muted/40 px-4 py-2.5">Usuario: {session.username}</li>
+            <li className="rounded-xl bg-muted/40 px-4 py-2.5">Perfil: {session.role}</li>
           </ul>
           <div className="mt-3.5">
             <Button type="button" className="w-full" onClick={handleLogout}>

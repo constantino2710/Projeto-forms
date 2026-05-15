@@ -12,6 +12,7 @@ import {
   type SuperUserRole,
   type SuperUserRow,
 } from '../../features/super/superAdmin'
+import { PageHeader } from '../../components/layout/PageHeader'
 import { checkboxItemClass, formLabelClass } from '../../lib/formStyles'
 import {
   dashboardNoteClass,
@@ -24,7 +25,6 @@ import {
   projectTypeBadgeBaseClass,
   projectTypeBadgeDisciplinaClass,
   projectTypeBadgeExtensaoClass,
-  projectsHeaderClass,
   projectsListClass,
   statusBadgeBaseClass,
   statusColorMap,
@@ -61,7 +61,7 @@ type DeleteState = {
 }
 
 const settingsMenuClass =
-  'mt-6 p-4 flex flex-col gap-2 border border-border rounded-[calc(var(--radius)-2px)] bg-card'
+  'mt-6 p-5 flex flex-col gap-2 rounded-[1.25rem] bg-card shadow-[0_4px_18px_hsl(var(--foreground)/0.06)]'
 
 const passwordToggleClass =
   'absolute right-[0.45rem] top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-8 h-8 p-0 border-none bg-transparent text-muted-foreground cursor-pointer rounded-[calc(var(--radius)-4px)] transition-[color,background-color] duration-150 ease-in-out hover:text-foreground hover:bg-accent/60 focus-visible:outline-none focus-visible:text-foreground focus-visible:shadow-[0_0_0_2px_hsl(var(--ring)/0.4)]'
@@ -185,20 +185,20 @@ export function SuperUsersPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   return (
-    <article className={dashboardPanelClass}>
-      <div className={projectsHeaderClass}>
-        <div>
-          <h1>Usuarios da Plataforma</h1>
-          <p>Liste, edite, redefina senha e remova professores e administradores.</p>
-        </div>
-        <Link to="/super/usuarios/novo">
-          <Button type="button" size="sm">
-            <UserCog size={14} />
-            <span>Novo Usuario</span>
-          </Button>
-        </Link>
-      </div>
-
+    <>
+      <PageHeader
+        title="Usuarios da Plataforma"
+        subtitle="Liste, edite, redefina senha e remova professores e administradores."
+        actions={
+          <Link to="/super/usuarios/novo">
+            <Button type="button" size="sm">
+              <UserCog size={14} />
+              <span>Novo Usuario</span>
+            </Button>
+          </Link>
+        }
+      />
+      <article className={dashboardPanelClass}>
       <div className={cn(viewToggleClass, 'mb-3')}>
         {(['all', 'user', 'admin', 'superadmin'] as RoleFilter[]).map((role) => (
           <Button
@@ -479,6 +479,7 @@ export function SuperUsersPage() {
           </div>
         </div>
       )}
-    </article>
+      </article>
+    </>
   )
 }

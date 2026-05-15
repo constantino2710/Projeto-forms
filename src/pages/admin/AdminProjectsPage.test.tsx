@@ -49,13 +49,16 @@ describe('AdminProjectsPage', () => {
   })
 
   it('renderiza projetos submetidos', async () => {
-    vi.mocked(listAdminProjects).mockResolvedValue(mockProjects)
+    vi.mocked(listAdminProjects).mockResolvedValue({
+      rows: mockProjects,
+      total: mockProjects.length,
+    })
     renderPage()
     expect(await screen.findByText('Submetido A')).toBeInTheDocument()
   })
 
   it('mostra estado vazio', async () => {
-    vi.mocked(listAdminProjects).mockResolvedValue([])
+    vi.mocked(listAdminProjects).mockResolvedValue({ rows: [], total: 0 })
     renderPage()
     expect(
       await screen.findByText('Nenhum projeto submetido no momento.'),
@@ -70,7 +73,7 @@ describe('AdminProjectsPage', () => {
 
   it('usa prefetch quando disponivel', async () => {
     vi.mocked(consumePrefetchedAdminProjects).mockReturnValue(
-      Promise.resolve(mockProjects),
+      Promise.resolve({ rows: mockProjects, total: mockProjects.length }),
     )
     renderPage()
     expect(await screen.findByText('Submetido A')).toBeInTheDocument()

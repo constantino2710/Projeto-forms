@@ -32,18 +32,18 @@ const PAGE_SIZE = 10
 type UploadMode = 'replace' | 'upsert'
 
 const importModalClass =
-  'w-[min(720px,100%)] max-h-[min(90vh,720px)] overflow-y-auto border border-border rounded-[var(--radius)] bg-card text-foreground shadow-[0_22px_64px_hsl(var(--overlay)/0.45)] p-5 flex flex-col gap-3'
+  'w-[min(720px,100%)] max-h-[min(90vh,720px)] overflow-y-auto rounded-[1.5rem] bg-card text-foreground shadow-[0_22px_64px_hsl(var(--overlay)/0.45)] p-6 flex flex-col gap-3'
 
 const modalHeaderClass =
   'flex items-start justify-between gap-3 [&_h2]:m-0 [&_h2]:text-[1.1rem] [&_p]:m-0 [&_p]:mt-1 [&_p]:text-muted-foreground [&_p]:text-[0.85rem]'
 
 const previewTableClass =
-  'mt-2 w-full border border-border rounded-[calc(var(--radius)-2px)] overflow-hidden text-[0.85rem] [&_th]:bg-muted [&_th]:px-2 [&_th]:py-1.5 [&_th]:text-left [&_th]:font-bold [&_td]:px-2 [&_td]:py-1.5 [&_td]:border-t [&_td]:border-border'
+  'mt-2 w-full rounded-[1rem] overflow-hidden text-[0.85rem] bg-card [&_th]:bg-muted/60 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:font-bold [&_td]:px-3 [&_td]:py-2 [&_td]:border-t [&_td]:border-border'
 
 const previewScrollClass = 'max-h-[260px] overflow-auto'
 
 const dataTableWrapClass =
-  'mt-3 border border-border rounded-[calc(var(--radius)-2px)] overflow-hidden bg-background'
+  'mt-3 rounded-[1.25rem] overflow-hidden bg-card shadow-[0_4px_18px_hsl(var(--foreground)/0.06)]'
 
 const dataTableScrollClass = 'overflow-x-auto'
 
