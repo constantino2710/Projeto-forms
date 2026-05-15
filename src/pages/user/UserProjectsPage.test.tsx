@@ -69,7 +69,7 @@ describe('UserProjectsPage', () => {
   it('mostra estado de loading', () => {
     vi.mocked(listMyProjects).mockReturnValue(new Promise(() => {}))
     renderPage()
-    expect(screen.getByText('Carregando projetos...')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toBeInTheDocument()
   })
 
   it('renderiza projetos retornados', async () => {

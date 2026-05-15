@@ -50,7 +50,7 @@ describe('SuperUsersPage', () => {
   it('mostra loading inicial', () => {
     vi.mocked(listSuperUsers).mockReturnValue(new Promise(() => {}))
     renderPage()
-    expect(screen.getByText('Carregando usuarios...')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toBeInTheDocument()
   })
 
   it('renderiza usuarios retornados', async () => {

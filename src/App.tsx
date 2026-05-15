@@ -8,7 +8,7 @@ import {
   validateSession,
 } from './auth/appAuth'
 import { DashboardLayout } from './components/layout/DashboardLayout'
-import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card'
+import { Spinner } from './components/ui/spinner'
 import { prefetchAdminProjects } from './features/projects/adminProjects'
 import { AdminProjectDetailPage } from './pages/admin/AdminProjectDetailPage'
 import { AdminProjectHistoryPage } from './pages/admin/AdminProjectHistoryPage'
@@ -79,15 +79,8 @@ function App() {
 
   if (isLoading) {
     return (
-      <main className="min-h-screen flex items-center justify-center px-4 py-5 bg-[radial-gradient(circle_at_18%_18%,hsl(var(--accent)/0.5)_0,transparent_38%),radial-gradient(circle_at_85%_82%,hsl(var(--secondary)/0.5)_0,transparent_34%)]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Carregando...</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="m-0 text-muted-foreground">Validando sessao.</p>
-          </CardContent>
-        </Card>
+      <main className="min-h-screen flex items-center justify-center px-4 py-5 bg-[radial-gradient(circle_at_18%_18%,hsl(var(--accent)/0.5)_0,transparent_38%),radial-gradient(circle_at_85%_82%,hsl(var(--secondary)/0.5)_0,transparent_34%)] text-muted-foreground">
+        <Spinner size="lg" />
       </main>
     )
   }

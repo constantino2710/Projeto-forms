@@ -42,7 +42,7 @@ describe('SuperHistoryPage', () => {
   it('mostra loading inicial', () => {
     vi.mocked(listSuperHistory).mockReturnValue(new Promise(() => {}))
     renderPage()
-    expect(screen.getByText('Carregando historico...')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toBeInTheDocument()
   })
 
   it('renderiza projetos retornados', async () => {

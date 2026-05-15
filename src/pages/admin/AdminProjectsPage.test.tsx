@@ -45,7 +45,7 @@ describe('AdminProjectsPage', () => {
   it('mostra loading inicial', () => {
     vi.mocked(listAdminProjects).mockReturnValue(new Promise(() => {}))
     renderPage()
-    expect(screen.getByText('Carregando projetos...')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toBeInTheDocument()
   })
 
   it('renderiza projetos submetidos', async () => {

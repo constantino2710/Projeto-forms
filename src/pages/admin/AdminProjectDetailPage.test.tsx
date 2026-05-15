@@ -62,14 +62,14 @@ describe('AdminProjectDetailPage', () => {
   it('mostra loading inicial', () => {
     vi.mocked(getAdminProjectDetail).mockReturnValue(new Promise(() => {}))
     renderPage()
-    expect(screen.getByText('Carregando projeto...')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toBeInTheDocument()
   })
 
   it('renderiza titulo e nome do professor', async () => {
     vi.mocked(getAdminProjectDetail).mockResolvedValue(mockProject)
     renderPage()
     await waitFor(() =>
-      expect(screen.queryByText('Carregando projeto...')).not.toBeInTheDocument(),
+      expect(screen.queryByRole('status')).not.toBeInTheDocument(),
     )
     expect(
       screen.getByRole('heading', { level: 1, name: 'Projeto Admin Detalhe' }),

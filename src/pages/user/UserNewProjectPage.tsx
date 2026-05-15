@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { ExtensionProjectFields } from '../../components/projects/ExtensionProjectFields'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
+import { Spinner } from '../../components/ui/spinner'
 import { Textarea } from '../../components/ui/textarea'
 import {
   type DisciplineRow,
@@ -519,7 +520,8 @@ export function UserNewProjectPage() {
         {message && <p className={successTextClass}>{message}</p>}
 
         <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? 'Salvando...' : 'Criar projeto'}
+          {isSubmitting && <Spinner size="sm" />}
+          <span>Criar projeto</span>
         </Button>
       </form>
     </article>

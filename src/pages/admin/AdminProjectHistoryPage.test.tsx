@@ -41,7 +41,7 @@ describe('AdminProjectHistoryPage', () => {
   it('mostra loading inicial', () => {
     vi.mocked(listAdminProjectHistory).mockReturnValue(new Promise(() => {}))
     renderPage()
-    expect(screen.getByText('Carregando historico...')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toBeInTheDocument()
   })
 
   it('renderiza historico retornado', async () => {

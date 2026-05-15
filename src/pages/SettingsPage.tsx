@@ -5,6 +5,7 @@ import type { AuthSession } from '../App'
 import { updateMyProfile } from '../auth/appAuth'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
+import { Spinner } from '../components/ui/spinner'
 import { formLabelClass } from '../lib/formStyles'
 import {
   dashboardNoteClass,
@@ -135,7 +136,8 @@ export function SettingsPage() {
 
           <div className={cn(viewToggleClass)}>
             <Button type="submit" disabled={isSaving}>
-              {isSaving ? 'Salvando...' : 'Salvar alteracoes'}
+              {isSaving && <Spinner size="sm" />}
+              <span>Salvar alteracoes</span>
             </Button>
           </div>
         </form>

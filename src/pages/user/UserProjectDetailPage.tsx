@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ExtensionProjectFields } from "../../components/projects/ExtensionProjectFields";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
+import { Spinner } from "../../components/ui/spinner";
 import { Textarea } from "../../components/ui/textarea";
 import {
   ACKNOWLEDGEMENT_OPTIONS,
@@ -582,7 +583,11 @@ export function UserProjectDetailPage() {
         <span>Voltar para meus projetos</span>
       </Link>
 
-      {isLoading && <p className={dashboardNoteClass}>Carregando projeto...</p>}
+      {isLoading && (
+        <div className="mt-4 flex justify-center text-muted-foreground">
+          <Spinner />
+        </div>
+      )}
       {error && <p className={errorTextClass}>{error}</p>}
 
       {!isLoading && project && (
@@ -656,13 +661,14 @@ export function UserProjectDetailPage() {
                           onClick={handleStatusToggle}
                           disabled={isSubmitting || isDeleting}
                         >
-                          {isSubmitting
-                            ? "Atualizando..."
-                            : project.status === "submetido"
+                          {isSubmitting && <Spinner size="sm" />}
+                          <span>
+                            {project.status === "submetido"
                               ? "Voltar para rascunho"
                               : project.status === "em_ajustes"
                                 ? "Reenviar para avaliacao"
                                 : "Submeter"}
+                          </span>
                         </Button>
                       )}
                     </div>
@@ -698,7 +704,9 @@ export function UserProjectDetailPage() {
                     </p>
 
                     {isAttachmentsLoading && (
-                      <p className={dashboardNoteClass}>Carregando anexos...</p>
+                      <div className="mt-2 flex justify-center text-muted-foreground">
+                        <Spinner size="sm" />
+                      </div>
                     )}
                     {attachmentError && <p className={errorTextClass}>{attachmentError}</p>}
 
@@ -741,9 +749,10 @@ export function UserProjectDetailPage() {
                                 }
                                 disabled={deletingAttachmentId === attachment.id}
                               >
-                                {deletingAttachmentId === attachment.id
-                                  ? "Excluindo..."
-                                  : "Excluir"}
+                                {deletingAttachmentId === attachment.id && (
+                                  <Spinner size="sm" />
+                                )}
+                                <span>Excluir</span>
                               </Button>
                             </div>
                           </li>
@@ -890,7 +899,8 @@ export function UserProjectDetailPage() {
 
                   <div className={projectInlineActionsClass}>
                     <Button type="submit" size="sm" disabled={isSubmitting}>
-                      {isSubmitting ? "Salvando..." : "Salvar alteracoes"}
+                      {isSubmitting && <Spinner size="sm" />}
+                      <span>Salvar alteracoes</span>
                     </Button>
                     <Button
                       type="button"
@@ -975,7 +985,8 @@ export function UserProjectDetailPage() {
                 onClick={handleDeleteProject}
                 disabled={isDeleting}
               >
-                {isDeleting ? "Excluindo..." : "Confirmar exclusao"}
+                {isDeleting && <Spinner size="sm" />}
+                <span>Confirmar exclusao</span>
               </Button>
             </div>
           </div>

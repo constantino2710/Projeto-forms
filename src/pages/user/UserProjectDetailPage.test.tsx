@@ -74,7 +74,7 @@ describe('UserProjectDetailPage', () => {
   it('mostra loading inicial', () => {
     vi.mocked(getMyProjectDetail).mockReturnValue(new Promise(() => {}))
     renderPage()
-    expect(screen.getByText('Carregando projeto...')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toBeInTheDocument()
   })
 
   it('renderiza titulo do projeto', async () => {

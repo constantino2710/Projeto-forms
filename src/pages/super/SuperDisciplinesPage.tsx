@@ -2,6 +2,7 @@ import { type ChangeEvent, type FormEvent, useEffect, useState } from 'react'
 import { FileSpreadsheet, RefreshCw, Trash2, Upload, X } from 'lucide-react'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
+import { Spinner } from '../../components/ui/spinner'
 import {
   type DisciplineImportRow,
   type SuperDisciplineRow,
@@ -257,7 +258,7 @@ export function SuperDisciplinesPage() {
       <div className={dataTableWrapClass}>
         {isLoading ? (
           <div className={emptyStateClass}>
-            <p className="m-0">Carregando...</p>
+            <Spinner />
           </div>
         ) : rows.length === 0 ? (
           <div className={emptyStateClass}>
@@ -449,8 +450,8 @@ export function SuperDisciplinesPage() {
                 onClick={handleApply}
                 disabled={isSaving || preview.length === 0}
               >
-                <Upload size={14} />
-                <span>{isSaving ? 'Importando...' : 'Confirmar importacao'}</span>
+                {isSaving ? <Spinner size="sm" /> : <Upload size={14} />}
+                <span>Confirmar importacao</span>
               </Button>
             </div>
           </div>
@@ -495,7 +496,8 @@ export function SuperDisciplinesPage() {
                 onClick={handleClearAll}
                 disabled={isClearing}
               >
-                {isClearing ? 'Removendo...' : 'Confirmar limpeza'}
+                {isClearing && <Spinner size="sm" />}
+                <span>Confirmar limpeza</span>
               </Button>
             </div>
           </div>

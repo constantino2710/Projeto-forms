@@ -3,6 +3,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
+import { Spinner } from '../../components/ui/spinner'
 import { ProjectFiltersBar } from '../../components/projects/ProjectFiltersBar'
 import {
   applyProjectFilters,
@@ -153,7 +154,11 @@ export function SuperHistoryPage() {
         />
       </form>
 
-      {isLoading && <p className={dashboardNoteClass}>Carregando historico...</p>}
+      {isLoading && (
+        <div className="mt-4 flex justify-center text-muted-foreground">
+          <Spinner />
+        </div>
+      )}
       {error && <p className={errorTextClass}>{error}</p>}
       {!isLoading && visibleRows.length === 0 && (
         <p className={dashboardNoteClass}>Nenhum projeto encontrado.</p>

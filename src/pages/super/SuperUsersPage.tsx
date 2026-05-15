@@ -3,6 +3,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
+import { Spinner } from '../../components/ui/spinner'
 import {
   listSuperUsers,
   deleteSuperUser,
@@ -227,7 +228,11 @@ export function SuperUsersPage() {
       {actionMessage && <p className={dashboardNoteClass}>{actionMessage}</p>}
       {actionError && <p className={errorTextClass}>{actionError}</p>}
       {error && <p className={errorTextClass}>{error}</p>}
-      {isLoading && <p className={dashboardNoteClass}>Carregando usuarios...</p>}
+      {isLoading && (
+        <div className="mt-4 flex justify-center text-muted-foreground">
+          <Spinner />
+        </div>
+      )}
       {!isLoading && rows.length === 0 && (
         <p className={dashboardNoteClass}>Nenhum usuario encontrado.</p>
       )}
@@ -387,7 +392,8 @@ export function SuperUsersPage() {
               Cancelar
             </Button>
             <Button type="button" size="sm" onClick={handleSaveEdit} disabled={isSaving}>
-              {isSaving ? 'Salvando...' : 'Salvar'}
+              {isSaving && <Spinner size="sm" />}
+              <span>Salvar</span>
             </Button>
           </div>
         </div>
@@ -444,7 +450,8 @@ export function SuperUsersPage() {
               Cancelar
             </Button>
             <Button type="button" size="sm" onClick={handleResetPassword} disabled={isSaving}>
-              {isSaving ? 'Aplicando...' : 'Aplicar'}
+              {isSaving && <Spinner size="sm" />}
+              <span>Aplicar</span>
             </Button>
           </div>
         </div>
@@ -466,7 +473,8 @@ export function SuperUsersPage() {
               Cancelar
             </Button>
             <Button type="button" variant="destructive" size="sm" onClick={handleDeleteUser} disabled={isSaving}>
-              {isSaving ? 'Removendo...' : 'Confirmar remocao'}
+              {isSaving && <Spinner size="sm" />}
+              <span>Confirmar remocao</span>
             </Button>
           </div>
         </div>

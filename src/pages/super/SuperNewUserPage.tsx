@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
+import { Spinner } from '../../components/ui/spinner'
 import { createSuperUser } from '../../features/super/superAdmin'
 import { formLabelClass } from '../../lib/formStyles'
 import {
@@ -179,7 +180,8 @@ export function SuperNewUserPage() {
             Cancelar
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Salvando...' : 'Criar usuario'}
+            {isSubmitting && <Spinner size="sm" />}
+            <span>Criar usuario</span>
           </Button>
         </div>
       </form>

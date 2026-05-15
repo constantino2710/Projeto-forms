@@ -2,6 +2,7 @@ import { ArrowLeft } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
+import { Spinner } from '../../components/ui/spinner'
 import { Textarea } from '../../components/ui/textarea'
 import {
   ACKNOWLEDGEMENT_OPTIONS,
@@ -279,7 +280,11 @@ export function AdminProjectDetailPage() {
         <span>Voltar para projetos</span>
       </Link>
 
-      {isLoading && <p className={dashboardNoteClass}>Carregando projeto...</p>}
+      {isLoading && (
+        <div className="mt-4 flex justify-center text-muted-foreground">
+          <Spinner />
+        </div>
+      )}
       {error && <p className={errorTextClass}>{error}</p>}
 
       {!isLoading && project && (
