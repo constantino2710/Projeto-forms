@@ -131,3 +131,38 @@ export const updateMyAvatar = async (avatarUrl: string): Promise<string | null> 
   const payload = data as { avatar_url?: string | null } | null
   return payload?.avatar_url ?? null
 }
+
+export type BasicProfileUpdate = {
+  display_name: string
+  avatar_url: string | null
+}
+
+export const updateMyProfile = async (
+  displayName: string,
+  avatarUrl: string,
+): Promise<BasicProfileUpdate> => {
+  const token = getStoredSessionToken()
+  if (!token) {
+    throw new Error('Sessao invalida. Faca login novamente.')
+  }
+
+  const { data, error } = await supabase.rpc('app_update_my_basic_profile', {
+    p_token: token,
+    p_display_name: displayName.trim(),
+    p_avatar_url: avatarUrl.trim() || null,
+  })
+
+  if (error) {
+    throw new Error(mapAuthErrorMessage(error.message))
+  }
+
+  const payload = data as { display_name?: string; avatar_url?: string | null } | null
+  if (!payload || !payload.display_name) {
+    throw new Error('Resposta invalida do servidor ao atualizar perfil.')
+  }
+
+  return {
+    display_name: payload.display_name,
+    avatar_url: payload.avatar_url ?? null,
+  }
+}

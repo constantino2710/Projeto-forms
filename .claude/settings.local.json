@@ -7,7 +7,11 @@
       "Bash(npx tsc *)",
       "Bash(echo \"EXIT: $?\")",
       "Bash(npx vite *)",
-      "Bash(del *)"
+      "Bash(del *)",
+      "Bash(node *)",
+      "Bash(git stash *)",
+      "Bash(npx eslint *)",
+      "Bash(npx vitest *)"
     ]
   }
 }

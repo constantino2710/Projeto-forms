@@ -16,6 +16,9 @@ vi.mock('../../features/projects/userProjects', async (importOriginal) => {
 vi.mock('../../features/projects/projectAttachments', () => ({
   uploadProjectAttachment: vi.fn(),
 }))
+vi.mock('../../features/disciplines/disciplines', () => ({
+  listDisciplines: vi.fn().mockResolvedValue([]),
+}))
 
 const renderPage = () =>
   render(
@@ -71,7 +74,7 @@ describe('UserNewProjectPage', () => {
     })
     renderPage()
     await userEvent.click(screen.getByRole('button', { name: 'Disciplina Extensionista' }))
-    await userEvent.type(screen.getByLabelText('Titulo'), 'Disc')
+    await userEvent.type(screen.getByLabelText('Disciplina'), 'Disc')
     await userEvent.type(screen.getByLabelText('Area tematica'), 'TIC')
     await userEvent.type(screen.getByLabelText('Codigo da Disciplina'), 'CS1')
     await userEvent.type(screen.getByLabelText('Semestre Letivo'), '2025.1')
@@ -98,7 +101,7 @@ describe('UserNewProjectPage', () => {
     vi.mocked(createUserProject).mockRejectedValue(new Error('Token expirado'))
     renderPage()
     await userEvent.click(screen.getByRole('button', { name: 'Disciplina Extensionista' }))
-    await userEvent.type(screen.getByLabelText('Titulo'), 'T')
+    await userEvent.type(screen.getByLabelText('Disciplina'), 'T')
     await userEvent.type(screen.getByLabelText('Area tematica'), 'A')
     await userEvent.type(screen.getByLabelText('Codigo da Disciplina'), 'CS1')
     await userEvent.type(screen.getByLabelText('Semestre Letivo'), '2025.1')

@@ -14,6 +14,8 @@ import { AdminProjectDetailPage } from './pages/admin/AdminProjectDetailPage'
 import { AdminProjectHistoryPage } from './pages/admin/AdminProjectHistoryPage'
 import { AdminProjectsPage } from './pages/admin/AdminProjectsPage'
 import { LoginPage } from './pages/LoginPage'
+import { SettingsPage } from './pages/SettingsPage'
+import { SuperDisciplinesPage } from './pages/super/SuperDisciplinesPage'
 import { SuperHistoryPage } from './pages/super/SuperHistoryPage'
 import { SuperNewUserPage } from './pages/super/SuperNewUserPage'
 import { SuperUsersPage } from './pages/super/SuperUsersPage'
@@ -116,6 +118,7 @@ function App() {
                 <DashboardLayout
                   session={session}
                   onLogout={handleLogout}
+                  onSessionUpdate={setSession}
                   items={[
                     { label: 'Meus Projetos', to: '/usuario/meus-projetos', icon: FolderKanban },
                     { label: 'Novo Projeto', to: '/usuario/novo-projeto', icon: FilePlus2 },
@@ -128,6 +131,7 @@ function App() {
         <Route path="meus-projetos" element={<UserProjectsPage />} />
         <Route path="meus-projetos/:projectId" element={<UserProjectDetailPage />} />
         <Route path="novo-projeto" element={<UserNewProjectPage />} />
+        <Route path="configuracoes" element={<SettingsPage />} />
       </Route>
       <Route
         path="/admin"
@@ -140,6 +144,7 @@ function App() {
                 <DashboardLayout
                   session={session}
                   onLogout={handleLogout}
+                  onSessionUpdate={setSession}
                   items={
                     session.role === 'superadmin'
                       ? [
@@ -161,6 +166,7 @@ function App() {
         <Route path="projetos" element={<AdminProjectsPage />} />
         <Route path="projetos/:projectId" element={<AdminProjectDetailPage />} />
         <Route path="historico" element={<AdminProjectHistoryPage />} />
+        <Route path="configuracoes" element={<SettingsPage />} />
       </Route>
       <Route
         path="/super"
@@ -173,6 +179,7 @@ function App() {
                 <DashboardLayout
                   session={session}
                   onLogout={handleLogout}
+                  onSessionUpdate={setSession}
                   items={[
                     { label: 'Usuarios', to: '/super/usuarios', icon: Users },
                     { label: 'Novo Usuario', to: '/super/usuarios/novo', icon: UserPlus },
@@ -186,7 +193,9 @@ function App() {
         <Route index element={<Navigate to="usuarios" replace />} />
         <Route path="usuarios" element={<SuperUsersPage />} />
         <Route path="usuarios/novo" element={<SuperNewUserPage />} />
+        <Route path="disciplinas" element={<SuperDisciplinesPage />} />
         <Route path="historico" element={<SuperHistoryPage />} />
+        <Route path="configuracoes" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to={session ? defaultPath : '/login'} replace />} />
     </Routes>

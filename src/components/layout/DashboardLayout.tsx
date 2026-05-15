@@ -1,11 +1,10 @@
 import type { LucideIcon } from 'lucide-react'
 import { ChevronRight, LogOut, Menu, Settings, UserRound, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import type { AuthSession } from '../../App'
-import { logoutSession, updateMyAvatar } from '../../auth/appAuth'
+import { logoutSession } from '../../auth/appAuth'
 import { Button } from '../ui/button'
-import { Input } from '../ui/input'
 import { ThemeToggle } from '../ui/theme-toggle'
 import { cn } from '../../lib/utils'
 
@@ -19,30 +18,32 @@ type DashboardLayoutProps = {
   session: AuthSession
   items: SidebarItem[]
   onLogout: () => void
+  onSessionUpdate: (next: AuthSession) => void
 }
 
-export function DashboardLayout({ session, items, onLogout }: DashboardLayoutProps) {
+const settingsPathForRole = (role: AuthSession['role']) => {
+  if (role === 'superadmin') return '/super/configuracoes'
+  if (role === 'admin') return '/admin/configuracoes'
+  return '/usuario/configuracoes'
+}
+
+export function DashboardLayout({
+  session,
+  items,
+  onLogout,
+  onSessionUpdate,
+}: DashboardLayoutProps) {
   const SIDEBAR_COLLAPSED_KEY = 'dashboard_sidebar_collapsed'
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(session.avatar_url ?? null)
-  const [avatarDraft, setAvatarDraft] = useState(session.avatar_url ?? '')
-  const [isSavingAvatar, setIsSavingAvatar] = useState(false)
-  const [avatarError, setAvatarError] = useState('')
   const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState(() => {
     return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1'
   })
   const location = useLocation()
+  const navigate = useNavigate()
 
   useEffect(() => {
     setIsMobileSidebarOpen(false)
-    setIsSettingsOpen(false)
   }, [location.pathname])
-
-  useEffect(() => {
-    setAvatarUrl(session.avatar_url ?? null)
-    setAvatarDraft(session.avatar_url ?? '')
-  }, [session.avatar_url])
 
   const handleLogout = async () => {
     await logoutSession()
@@ -53,27 +54,12 @@ export function DashboardLayout({ session, items, onLogout }: DashboardLayoutPro
     setIsDesktopSidebarCollapsed((current) => {
       const next = !current
       localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? '1' : '0')
-      if (next) {
-        setIsSettingsOpen(false)
-      }
       return next
     })
   }
 
-  const handleSaveAvatar = async () => {
-    setAvatarError('')
-    setIsSavingAvatar(true)
-    try {
-      const nextAvatar = await updateMyAvatar(avatarDraft)
-      setAvatarUrl(nextAvatar)
-      setAvatarDraft(nextAvatar ?? '')
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Falha ao salvar foto.'
-      setAvatarError(message)
-    } finally {
-      setIsSavingAvatar(false)
-    }
-  }
+  const settingsPath = settingsPathForRole(session.role)
+  const avatarUrl = session.avatar_url ?? null
 
   return (
     <main className="block relative min-h-screen h-screen overflow-hidden bg-background max-md:h-auto max-md:overflow-visible">
@@ -175,58 +161,36 @@ export function DashboardLayout({ session, items, onLogout }: DashboardLayoutPro
             </div>
           </div>
 
-          <div className="relative">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className={cn(
-                'w-full',
-                'border-[hsl(var(--sidebar-link-border))] bg-[hsl(var(--sidebar-link-bg))] text-[hsl(var(--sidebar-text))]',
-                'hover:not-disabled:bg-[hsl(var(--sidebar-link-hover-bg))] hover:not-disabled:text-[hsl(var(--sidebar-text))]',
-                isDesktopSidebarCollapsed && 'md:justify-center md:[&>span]:hidden',
-              )}
-              onClick={() => setIsSettingsOpen((state) => !state)}
-              title="Configuracoes"
-            >
-              <Settings size={14} />
-              <span>Configuracoes</span>
-            </Button>
-
-            {isSettingsOpen && !isDesktopSidebarCollapsed && (
-              <div className="flex flex-col gap-2 mt-2 border border-[hsl(var(--sidebar-link-border))] rounded-[calc(var(--radius)-2px)] p-2 bg-[hsl(var(--sidebar-surface-bg))]">
-                <label className="flex flex-col gap-1.5">
-                  <span className="text-[0.72rem] text-[hsl(var(--sidebar-muted))] font-bold">
-                    URL da foto
-                  </span>
-                  <Input
-                    value={avatarDraft}
-                    onChange={(event) => setAvatarDraft(event.target.value)}
-                    placeholder="https://..."
-                    disabled={isSavingAvatar}
-                  />
-                </label>
-                {avatarError && (
-                  <p className="m-0 text-destructive text-[0.78rem] font-semibold">{avatarError}</p>
-                )}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="border-[hsl(var(--sidebar-link-border))] bg-[hsl(var(--sidebar-link-bg))] text-[hsl(var(--sidebar-text))] hover:not-disabled:bg-[hsl(var(--sidebar-link-hover-bg))] hover:not-disabled:text-[hsl(var(--sidebar-text))]"
-                  onClick={handleSaveAvatar}
-                  disabled={isSavingAvatar}
-                >
-                  <span>{isSavingAvatar ? 'Salvando...' : 'Salvar foto'}</span>
-                </Button>
-                <ThemeToggle />
-                <Button type="button" variant="destructive" size="sm" onClick={handleLogout}>
-                  <LogOut size={14} />
-                  <span>Logout</span>
-                </Button>
-              </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className={cn(
+              'w-full',
+              'border-[hsl(var(--sidebar-link-border))] bg-[hsl(var(--sidebar-link-bg))] text-[hsl(var(--sidebar-text))]',
+              'hover:not-disabled:bg-[hsl(var(--sidebar-link-hover-bg))] hover:not-disabled:text-[hsl(var(--sidebar-text))]',
+              isDesktopSidebarCollapsed && 'md:justify-center md:[&>span]:hidden',
             )}
-          </div>
+            onClick={() => navigate(settingsPath)}
+            title="Configuracoes"
+          >
+            <Settings size={14} />
+            <span>Configuracoes</span>
+          </Button>
+
+          <ThemeToggle />
+
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            onClick={handleLogout}
+            className={cn(isDesktopSidebarCollapsed && 'md:justify-center md:[&>span]:hidden')}
+            title="Logout"
+          >
+            <LogOut size={14} />
+            <span>Logout</span>
+          </Button>
         </div>
       </aside>
 
@@ -252,7 +216,7 @@ export function DashboardLayout({ session, items, onLogout }: DashboardLayoutPro
             <span>Menu</span>
           </Button>
         </header>
-        <Outlet />
+        <Outlet context={{ session, onSessionUpdate }} />
       </section>
     </main>
   )

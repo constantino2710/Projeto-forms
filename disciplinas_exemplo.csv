@@ -1,0 +1,21 @@
+PER,Docente,Cursos,Disciplina,COD de extensao
+1,Maria Silva,Engenharia de Software,Introducao a Programacao,EXT001
+1,Joao Pereira,Ciencia da Computacao,Logica de Programacao,EXT002
+2,Ana Costa,Sistemas de Informacao,Algoritmos e Estruturas de Dados,EXT003
+2,Carlos Souza,Engenharia Civil,Calculo Diferencial e Integral I,EXT004
+3,Beatriz Lima,Engenharia de Software,Banco de Dados I,EXT005
+3,Rafael Almeida,Ciencia da Computacao,Programacao Orientada a Objetos,EXT006
+4,Patricia Mendes,Sistemas de Informacao,Engenharia de Requisitos,EXT007
+4,Lucas Ferreira,Engenharia Eletrica,Circuitos Eletricos,EXT008
+5,Fernanda Oliveira,Engenharia de Software,Engenharia de Software I,EXT009
+5,Marcos Antunes,Ciencia da Computacao,Redes de Computadores,EXT010
+6,Juliana Ramos,Sistemas de Informacao,Sistemas Operacionais,EXT011
+6,Ricardo Tavares,Engenharia Civil,Resistencia dos Materiais,EXT012
+7,Camila Nogueira,Engenharia de Software,Inteligencia Artificial,EXT013
+7,Eduardo Vieira,Ciencia da Computacao,Compiladores,EXT014
+8,Larissa Pinto,Sistemas de Informacao,Gestao de Projetos de TI,EXT015
+8,Henrique Carvalho,Engenharia Mecanica,Termodinamica Aplicada,EXT016
+2,Sandra Macedo,Engenharia de Producao,Estatistica Aplicada,EXT017
+4,Gustavo Barros,Engenharia de Software,Programacao Web,EXT018
+6,Tatiane Rocha,Ciencia da Computacao,Aprendizado de Maquina,EXT019
+8,Felipe Andrade,Sistemas de Informacao,Seguranca da Informacao,EXT020

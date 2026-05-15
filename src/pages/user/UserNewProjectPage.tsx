@@ -1,9 +1,13 @@
-import { type ChangeEvent, type FormEvent, useState } from 'react'
+import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ExtensionProjectFields } from '../../components/projects/ExtensionProjectFields'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Textarea } from '../../components/ui/textarea'
+import {
+  type DisciplineRow,
+  listDisciplines,
+} from '../../features/disciplines/disciplines'
 import { uploadProjectAttachment } from '../../features/projects/projectAttachments'
 import {
   createEmptyExtensionPlan,
@@ -15,7 +19,7 @@ import {
   extensionFormSchema,
 } from '../../features/projects/projectSchemas'
 import { createUserProject } from '../../features/projects/userProjects'
-import { projectFormLabelClass } from '../../lib/formStyles'
+import { projectFormLabelClass, selectInputClass } from '../../lib/formStyles'
 import {
   attachmentActionsClass,
   attachmentItemClass,
@@ -80,6 +84,74 @@ export function UserNewProjectPage() {
   const [error, setError] = useState('')
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   const [message, setMessage] = useState('')
+  const [catalog, setCatalog] = useState<DisciplineRow[]>([])
+  const [catalogError, setCatalogError] = useState('')
+  const [isCatalogLoading, setIsCatalogLoading] = useState(true)
+
+  useEffect(() => {
+    const load = async () => {
+      setIsCatalogLoading(true)
+      setCatalogError('')
+      try {
+        const data = await listDisciplines()
+        setCatalog(data)
+      } catch (err) {
+        setCatalogError(err instanceof Error ? err.message : 'Falha ao carregar catalogo.')
+      } finally {
+        setIsCatalogLoading(false)
+      }
+    }
+    load()
+  }, [])
+
+  const uniqueOptions = useMemo(() => {
+    const codigos = new Set<string>()
+    const disciplinas = new Set<string>()
+    const cursos = new Set<string>()
+    const periodos = new Set<string>()
+    for (const row of catalog) {
+      codigos.add(row.codigo)
+      disciplinas.add(row.disciplina)
+      cursos.add(row.curso)
+      periodos.add(row.periodo)
+    }
+    const sorted = (set: Set<string>) => Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR'))
+    return {
+      codigos: sorted(codigos),
+      disciplinas: sorted(disciplinas),
+      cursos: sorted(cursos),
+      periodos: sorted(periodos),
+    }
+  }, [catalog])
+
+  const applyCatalogAutofill = (
+    field: 'codigo' | 'disciplina' | 'curso' | 'periodo',
+    value: string,
+  ) => {
+    setDisciplineForm((prev) => {
+      const fieldMap = {
+        codigo: 'codigoDisciplina',
+        disciplina: 'title',
+        curso: 'course',
+        periodo: 'semestreLetivo',
+      } as const
+      const next: DisciplineFormData = { ...prev, [fieldMap[field]]: value }
+
+      if (!value) {
+        return next
+      }
+
+      const matches = catalog.filter((row) => row[field] === value)
+      if (matches.length === 1) {
+        const row = matches[0]
+        next.codigoDisciplina = row.codigo
+        next.title = row.disciplina
+        next.course = row.curso
+        next.semestreLetivo = row.periodo
+      }
+      return next
+    })
+  }
 
   const formatAttachmentSize = (size: number) => {
     if (size < 1024) {
@@ -206,14 +278,71 @@ export function UserNewProjectPage() {
           <ExtensionProjectFields form={extensionForm} onChange={setExtensionForm} disabled={isSubmitting} />
         ) : (
           <>
-            <label className={projectFormLabelClass}>
-              Titulo
-              <Input
-                value={disciplineForm.title}
-                onChange={(event) => setDisciplineForm((prev) => ({ ...prev, title: event.target.value }))}
-                required
-              />
-            </label>
+            {!isCatalogLoading && catalog.length === 0 && !catalogError && (
+              <p className="m-0 text-[0.88rem] text-muted-foreground border border-border rounded-[calc(var(--radius)-3px)] bg-muted/35 p-2.5">
+                Catalogo de disciplinas vazio. Peca ao superadmin para importar a planilha para
+                habilitar autofill e dropdowns.
+              </p>
+            )}
+            {catalogError && (
+              <p className="m-0 text-destructive font-semibold">{catalogError}</p>
+            )}
+
+            <div className={projectGrid2Class}>
+              <label className={projectFormLabelClass}>
+                Disciplina
+                {catalog.length > 0 ? (
+                  <select
+                    className={selectInputClass}
+                    value={disciplineForm.title}
+                    onChange={(event) => applyCatalogAutofill('disciplina', event.target.value)}
+                    required
+                  >
+                    <option value="">Selecione</option>
+                    {uniqueOptions.disciplinas.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <Input
+                    value={disciplineForm.title}
+                    onChange={(event) => setDisciplineForm((prev) => ({ ...prev, title: event.target.value }))}
+                    required
+                  />
+                )}
+              </label>
+
+              <label className={projectFormLabelClass}>
+                Codigo da Disciplina
+                {catalog.length > 0 ? (
+                  <select
+                    className={selectInputClass}
+                    value={disciplineForm.codigoDisciplina}
+                    onChange={(event) => applyCatalogAutofill('codigo', event.target.value)}
+                    required
+                  >
+                    <option value="">Selecione</option>
+                    {uniqueOptions.codigos.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <Input
+                    type="text"
+                    placeholder="Ex: IF976"
+                    value={disciplineForm.codigoDisciplina}
+                    onChange={(event) =>
+                      setDisciplineForm((prev) => ({ ...prev, codigoDisciplina: event.target.value }))
+                    }
+                    required
+                  />
+                )}
+              </label>
+            </div>
 
             <label className={projectFormLabelClass}>
               Area tematica
@@ -228,39 +357,57 @@ export function UserNewProjectPage() {
 
             <div className={projectGrid2Class}>
               <label className={projectFormLabelClass}>
-                Codigo da Disciplina
-                <Input
-                  type="text"
-                  placeholder="Ex: IF976"
-                  value={disciplineForm.codigoDisciplina}
-                  onChange={(event) =>
-                    setDisciplineForm((prev) => ({ ...prev, codigoDisciplina: event.target.value }))
-                  }
-                  required
-                />
+                Curso
+                {catalog.length > 0 ? (
+                  <select
+                    className={selectInputClass}
+                    value={disciplineForm.course}
+                    onChange={(event) => applyCatalogAutofill('curso', event.target.value)}
+                  >
+                    <option value="">Selecione</option>
+                    {uniqueOptions.cursos.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <Input
+                    value={disciplineForm.course}
+                    onChange={(event) => setDisciplineForm((prev) => ({ ...prev, course: event.target.value }))}
+                  />
+                )}
               </label>
 
               <label className={projectFormLabelClass}>
                 Semestre Letivo
-                <Input
-                  type="text"
-                  placeholder="Ex: 2026.1"
-                  value={disciplineForm.semestreLetivo}
-                  onChange={(event) =>
-                    setDisciplineForm((prev) => ({ ...prev, semestreLetivo: event.target.value }))
-                  }
-                  required
-                />
+                {catalog.length > 0 ? (
+                  <select
+                    className={selectInputClass}
+                    value={disciplineForm.semestreLetivo}
+                    onChange={(event) => applyCatalogAutofill('periodo', event.target.value)}
+                    required
+                  >
+                    <option value="">Selecione</option>
+                    {uniqueOptions.periodos.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <Input
+                    type="text"
+                    placeholder="Ex: 2026.1"
+                    value={disciplineForm.semestreLetivo}
+                    onChange={(event) =>
+                      setDisciplineForm((prev) => ({ ...prev, semestreLetivo: event.target.value }))
+                    }
+                    required
+                  />
+                )}
               </label>
             </div>
-
-            <label className={projectFormLabelClass}>
-              Curso
-              <Input
-                value={disciplineForm.course}
-                onChange={(event) => setDisciplineForm((prev) => ({ ...prev, course: event.target.value }))}
-              />
-            </label>
 
             <div className={projectGrid2Class}>
               <label className={projectFormLabelClass}>
