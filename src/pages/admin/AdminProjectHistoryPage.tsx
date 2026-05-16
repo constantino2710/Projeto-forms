@@ -6,6 +6,7 @@ import { Input } from '../../components/ui/input'
 import { Spinner } from '../../components/ui/spinner'
 import { PageHeader } from '../../components/layout/PageHeader'
 import { ProjectFiltersBar } from '../../components/projects/ProjectFiltersBar'
+import { ReportButton } from '../../components/reports/ReportButton'
 import {
   emptyProjectFilters,
   type ProjectFilterState,
@@ -13,8 +14,18 @@ import {
 import {
   consumePrefetchedAdminProjectHistory,
   listAdminProjectHistory,
+  listAdminProjects,
   type AdminProjectHistoryCard,
 } from '../../features/projects/adminProjects'
+import {
+  adminProjectsToReportRows,
+  buildReportData,
+  buildReportFilename,
+  downloadBlob,
+  generateReport,
+  type ReportFormat,
+  type ReportPeriod,
+} from '../../features/reports/projectReports'
 import { projectStatusLabel } from '../../features/projects/userProjects'
 import {
   dashboardNoteClass,
@@ -65,6 +76,18 @@ export function AdminProjectHistoryPage() {
   const [schoolOptions, setSchoolOptions] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(0)
   const hasUsedPrefetchRef = useRef(false)
+
+  const handleGenerateReport = async (format: ReportFormat, period: ReportPeriod) => {
+    const REPORT_PAGE_LIMIT = 5000
+    const [pending, history] = await Promise.all([
+      listAdminProjects({ limit: REPORT_PAGE_LIMIT, offset: 0 }),
+      listAdminProjectHistory({ limit: REPORT_PAGE_LIMIT, offset: 0 }),
+    ])
+    const rows = adminProjectsToReportRows(pending.rows, history.rows)
+    const data = buildReportData(rows, period)
+    const blob = generateReport(data, format)
+    downloadBlob(blob, buildReportFilename(format, period))
+  }
 
   useEffect(() => {
     const handle = setTimeout(() => setDebouncedQuery(query.trim()), SEARCH_DEBOUNCE_MS)
@@ -131,6 +154,7 @@ export function AdminProjectHistoryPage() {
       <PageHeader
         title="Historico de Projetos"
         subtitle="Projetos que voce aprovou, recusou ou enviou para ajustes."
+        actions={<ReportButton onGenerate={handleGenerateReport} />}
       />
       <article className={dashboardPanelClass}>
         <div className={projectsToolbarClass}>

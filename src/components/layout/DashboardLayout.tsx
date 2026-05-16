@@ -2,11 +2,25 @@ import type { LucideIcon } from 'lucide-react'
 import { ChevronsLeft, ChevronsRight, Menu, Settings, UserRound, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { LayoutGroup, motion } from 'motion/react'
 import type { AuthSession } from '../../App'
 import { logoutSession } from '../../auth/appAuth'
 import { Button } from '../ui/button'
 import { ThemeToggle } from '../ui/theme-toggle'
 import { cn } from '../../lib/utils'
+
+const SIDEBAR_INDICATOR_ID = 'sidebar-active-indicator'
+
+function SidebarActiveIndicator() {
+  return (
+    <motion.span
+      layoutId={SIDEBAR_INDICATOR_ID}
+      aria-hidden
+      className="absolute left-0 top-1 bottom-1 w-[5px] rounded-r-full bg-[hsl(var(--primary))]"
+      transition={{ type: 'spring', stiffness: 500, damping: 38, mass: 0.6 }}
+    />
+  )
+}
 
 type SidebarItem = {
   label: string
@@ -114,48 +128,60 @@ export function DashboardLayout({
             </button>
           </div>
 
-          <nav className="flex flex-col gap-0.5">
-            {items.map((item) => {
-              const Icon = item.icon
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    cn(
-                      'relative flex items-center gap-3 no-underline pl-5 pr-3 py-2.5 font-medium text-[0.9rem]',
-                      'transition-[color] duration-150 ease-in-out',
-                      isActive
-                        ? 'text-[hsl(var(--sidebar-link-active-text))] font-semibold before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[5px] before:rounded-r-full before:bg-[hsl(var(--primary))]'
-                        : 'text-[hsl(var(--sidebar-text))] hover:text-[hsl(var(--sidebar-link-active-text))]',
-                      isDesktopSidebarCollapsed && 'max-md:justify-start max-md:p-2.5 max-md:pl-5 md:justify-center md:pl-2 md:pr-2 md:[&>span]:hidden',
-                    )
-                  }
-                  title={item.label}
-                >
-                  <Icon size={20} />
-                  <span>{item.label}</span>
-                </NavLink>
-              )
-            })}
-            <NavLink
-              to={settingsPath}
-              className={({ isActive }) =>
-                cn(
-                  'relative flex items-center gap-3 no-underline pl-5 pr-3 py-2.5 font-medium text-[0.9rem]',
-                  'transition-[color] duration-150 ease-in-out',
-                  isActive
-                    ? 'text-[hsl(var(--sidebar-link-active-text))] font-semibold before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[5px] before:rounded-r-full before:bg-[hsl(var(--primary))]'
-                    : 'text-[hsl(var(--sidebar-text))] hover:text-[hsl(var(--sidebar-link-active-text))]',
-                  isDesktopSidebarCollapsed && 'max-md:justify-start max-md:p-2.5 max-md:pl-5 md:justify-center md:pl-2 md:pr-2 md:[&>span]:hidden',
+          <LayoutGroup>
+            <nav className="flex flex-col gap-0.5">
+              {items.map((item) => {
+                const Icon = item.icon
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={({ isActive }) =>
+                      cn(
+                        'relative flex items-center gap-3 no-underline pl-5 pr-3 py-2.5 font-medium text-[0.9rem]',
+                        'transition-[color] duration-150 ease-in-out',
+                        isActive
+                          ? 'text-[hsl(var(--sidebar-link-active-text))] font-semibold'
+                          : 'text-[hsl(var(--sidebar-text))] hover:text-[hsl(var(--sidebar-link-active-text))]',
+                        isDesktopSidebarCollapsed && 'max-md:justify-start max-md:p-2.5 max-md:pl-5 md:justify-center md:pl-2 md:pr-2 md:[&>span]:hidden',
+                      )
+                    }
+                    title={item.label}
+                  >
+                    {({ isActive }) => (
+                      <>
+                        {isActive && <SidebarActiveIndicator />}
+                        <Icon size={20} />
+                        <span>{item.label}</span>
+                      </>
+                    )}
+                  </NavLink>
                 )
-              }
-              title="Configuracoes"
-            >
-              <Settings size={20} />
-              <span>Configuracoes</span>
-            </NavLink>
-          </nav>
+              })}
+              <NavLink
+                to={settingsPath}
+                className={({ isActive }) =>
+                  cn(
+                    'relative flex items-center gap-3 no-underline pl-5 pr-3 py-2.5 font-medium text-[0.9rem]',
+                    'transition-[color] duration-150 ease-in-out',
+                    isActive
+                      ? 'text-[hsl(var(--sidebar-link-active-text))] font-semibold'
+                      : 'text-[hsl(var(--sidebar-text))] hover:text-[hsl(var(--sidebar-link-active-text))]',
+                    isDesktopSidebarCollapsed && 'max-md:justify-start max-md:p-2.5 max-md:pl-5 md:justify-center md:pl-2 md:pr-2 md:[&>span]:hidden',
+                  )
+                }
+                title="Configuracoes"
+              >
+                {({ isActive }) => (
+                  <>
+                    {isActive && <SidebarActiveIndicator />}
+                    <Settings size={20} />
+                    <span>Configuracoes</span>
+                  </>
+                )}
+              </NavLink>
+            </nav>
+          </LayoutGroup>
         </div>
 
         <div

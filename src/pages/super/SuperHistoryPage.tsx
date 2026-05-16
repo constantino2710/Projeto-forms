@@ -11,7 +11,17 @@ import {
   emptyProjectFilters,
   type ProjectFilterState,
 } from '../../features/projects/projectFilters'
+import { ReportButton } from '../../components/reports/ReportButton'
 import { listSuperHistory, type SuperHistoryRow } from '../../features/super/superAdmin'
+import {
+  buildReportData,
+  buildReportFilename,
+  downloadBlob,
+  generateReport,
+  superHistoryToReportRows,
+  type ReportFormat,
+  type ReportPeriod,
+} from '../../features/reports/projectReports'
 import { projectStatusLabel } from '../../features/projects/userProjects'
 import {
   activeToggleButtonClass,
@@ -109,11 +119,20 @@ export function SuperHistoryPage() {
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
+  const handleGenerateReport = async (format: ReportFormat, period: ReportPeriod) => {
+    const { rows: allRows } = await listSuperHistory({ limit: 5000, offset: 0 })
+    const reportRows = superHistoryToReportRows(allRows)
+    const data = buildReportData(reportRows, period)
+    const blob = generateReport(data, format)
+    downloadBlob(blob, buildReportFilename(format, period))
+  }
+
   return (
     <>
       <PageHeader
         title="Historico Geral de Projetos"
         subtitle="Todos os projetos submetidos na plataforma, independente do revisor."
+        actions={<ReportButton onGenerate={handleGenerateReport} />}
       />
       <article className={dashboardPanelClass}>
         <div className={cn(viewToggleClass, 'flex-wrap mb-3')}>
