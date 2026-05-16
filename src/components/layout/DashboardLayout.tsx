@@ -219,7 +219,9 @@ export function DashboardLayout({
             <span>Menu</span>
           </Button>
         </header>
-        <Outlet context={{ session, onSessionUpdate, onLogout: handleLogout }} />
+        <div key={location.pathname} className="animate-fade-in-up">
+          <Outlet context={{ session, onSessionUpdate, onLogout: handleLogout }} />
+        </div>
       </section>
     </main>
   )

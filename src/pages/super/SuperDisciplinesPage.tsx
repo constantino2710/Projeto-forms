@@ -33,7 +33,7 @@ const PAGE_SIZE = 10
 type UploadMode = 'replace' | 'upsert'
 
 const importModalClass =
-  'w-[min(720px,100%)] max-h-[min(90vh,720px)] overflow-y-auto rounded-[1.5rem] bg-card text-foreground shadow-[0_22px_64px_hsl(var(--overlay)/0.45)] p-6 flex flex-col gap-3'
+  'w-[min(720px,100%)] max-h-[min(90vh,720px)] overflow-y-auto rounded-[1.5rem] bg-card text-foreground shadow-[0_22px_64px_hsl(var(--overlay)/0.45)] p-6 flex flex-col gap-3 animate-fade-in-scale'
 
 const modalHeaderClass =
   'flex items-start justify-between gap-3 [&_h2]:m-0 [&_h2]:text-[1.1rem] [&_p]:m-0 [&_p]:mt-1 [&_p]:text-muted-foreground [&_p]:text-[0.85rem]'

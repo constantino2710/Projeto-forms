@@ -177,10 +177,10 @@ export const draftDeleteIconBtnClass =
   'w-[2.3rem] h-[2.3rem] rounded-full border border-[hsl(var(--destructive)/0.55)] bg-card text-destructive inline-flex items-center justify-center cursor-pointer transition-[transform,background-color,border-color] duration-150 ease-in-out hover:not-disabled:-translate-y-px hover:not-disabled:bg-muted hover:not-disabled:border-[hsl(var(--destructive)/0.7)] disabled:opacity-60 disabled:cursor-not-allowed'
 
 export const confirmModalBackdropClass =
-  'fixed inset-0 z-[70] bg-[hsl(var(--overlay)/0.7)] grid place-items-center p-4'
+  'fixed inset-0 z-[70] bg-[hsl(var(--overlay)/0.7)] grid place-items-center p-4 animate-fade-in'
 
 export const confirmModalClass =
-  'w-[min(460px,100%)] rounded-[1.5rem] bg-card text-card-foreground shadow-[0_22px_64px_hsl(var(--overlay)/0.45)] p-6 [&_h2]:m-0 [&_h2]:text-[1.15rem] [&_h2]:font-semibold [&_h2]:text-foreground [&>p]:mt-2.5 [&>p]:m-0 [&>p]:text-muted-foreground'
+  'w-[min(460px,100%)] rounded-[1.5rem] bg-card text-card-foreground shadow-[0_22px_64px_hsl(var(--overlay)/0.45)] p-6 animate-fade-in-scale [&_h2]:m-0 [&_h2]:text-[1.15rem] [&_h2]:font-semibold [&_h2]:text-foreground [&>p]:mt-2.5 [&>p]:m-0 [&>p]:text-muted-foreground'
 
 export const confirmModalActionsClass =
   'mt-4 flex justify-end gap-2'
