@@ -3,6 +3,7 @@ import { FileSpreadsheet, RefreshCw, Trash2, Upload, X } from 'lucide-react'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Spinner } from '../../components/ui/spinner'
+import { disciplineManagerialLabel } from '../../features/disciplines/disciplineProjectMetadata'
 import {
   type DisciplineImportRow,
   type SuperDisciplineRow,
@@ -199,10 +200,12 @@ export function SuperDisciplinesPage() {
         <div>
           <h1>Catalogo de Disciplinas</h1>
           <p>
-            Importe uma planilha (CSV ou Excel) com as colunas <strong>PER</strong>,{' '}
-            <strong>Docente</strong>, <strong>Cursos</strong>, <strong>Disciplina</strong> e{' '}
-            <strong>COD de extensao</strong>. Esses dados ajudam os professores a preencher os
-            formularios via dropdown e autofill.
+            Importe uma planilha (CSV ou Excel) com os campos do fluxo real do Jotform:
+            <strong> Periodo</strong>, <strong>Codigo Extensao</strong>, <strong>Docente</strong>,
+            <strong> Curso</strong>, <strong>Nome da Disciplina</strong>,{' '}
+            <strong>Carga Horaria</strong>, <strong>Codigo da Disciplina</strong>,{' '}
+            <strong>Codigo da Turma</strong>, <strong>Disciplina Gerencial</strong> e{' '}
+            <strong>Cursos Gerenciados</strong>.
           </p>
         </div>
         <div className={cn(viewToggleClass, 'max-md:w-full max-md:flex-col')}>
@@ -248,7 +251,7 @@ export function SuperDisciplinesPage() {
         <Input
           value={searchInput}
           onChange={(event) => setSearchInput(event.target.value)}
-          placeholder="Buscar por COD, disciplina, curso, docente ou periodo"
+          placeholder="Buscar por codigo extensao, disciplina, curso, docente, turma ou periodo"
         />
         <Button type="submit" variant="outline" size="sm">
           Buscar
@@ -271,11 +274,16 @@ export function SuperDisciplinesPage() {
             <table className={dataTableClass}>
               <thead>
                 <tr>
-                  <th>COD</th>
-                  <th>Disciplina</th>
+                  <th>Codigo Extensao</th>
+                  <th>Nome da Disciplina</th>
                   <th>Curso</th>
                   <th>Docente</th>
-                  <th>PER</th>
+                  <th>Periodo</th>
+                  <th>CH Ext.</th>
+                  <th>Cod. Disciplina</th>
+                  <th>Turma</th>
+                  <th>Gerencial</th>
+                  <th>Cursos Gerenciados</th>
                 </tr>
               </thead>
               <tbody>
@@ -286,6 +294,11 @@ export function SuperDisciplinesPage() {
                     <td>{row.curso}</td>
                     <td>{row.docente}</td>
                     <td className={periodoCellClass}>{row.periodo}</td>
+                    <td>{row.carga_horaria}h</td>
+                    <td>{row.codigo_disciplina}</td>
+                    <td>{row.codigo_turma}</td>
+                    <td>{disciplineManagerialLabel(row.disciplina_gerencial)}</td>
+                    <td>{row.cursos_gerenciados || '-'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -334,7 +347,7 @@ export function SuperDisciplinesPage() {
                 <h2 id="import-modal-title" className="flex items-center gap-2">
                   <FileSpreadsheet size={18} /> Importar planilha
                 </h2>
-                <p>Selecione um arquivo .csv, .xls ou .xlsx com as colunas obrigatorias.</p>
+                <p>Selecione um arquivo .csv, .xls ou .xlsx com as colunas do fluxo real.</p>
               </div>
               <Button
                 type="button"
@@ -374,7 +387,7 @@ export function SuperDisciplinesPage() {
             <p className={dashboardNoteClass}>
               {mode === 'replace'
                 ? 'Substituir: apaga TODO o catalogo atual e insere apenas as linhas validas da nova planilha.'
-                : 'Mesclar: atualiza linhas existentes com o mesmo COD e adiciona novas. Linhas antigas nao listadas sao mantidas.'}
+                : 'Mesclar: atualiza linhas existentes com o mesmo Codigo Extensao e adiciona novas. Linhas antigas nao listadas sao mantidas.'}
             </p>
 
             <label className={formLabelClass}>
@@ -408,11 +421,15 @@ export function SuperDisciplinesPage() {
                   <table className={previewTableClass}>
                     <thead>
                       <tr>
-                        <th>COD</th>
-                        <th>Disciplina</th>
+                        <th>Codigo Extensao</th>
+                        <th>Nome da Disciplina</th>
                         <th>Curso</th>
                         <th>Docente</th>
-                        <th>PER</th>
+                        <th>Periodo</th>
+                        <th>CH Ext.</th>
+                        <th>Cod. Disciplina</th>
+                        <th>Turma</th>
+                        <th>Gerencial</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -423,6 +440,10 @@ export function SuperDisciplinesPage() {
                           <td>{row.curso}</td>
                           <td>{row.docente}</td>
                           <td>{row.periodo}</td>
+                          <td>{row.carga_horaria}h</td>
+                          <td>{row.codigo_disciplina}</td>
+                          <td>{row.codigo_turma}</td>
+                          <td>{disciplineManagerialLabel(row.disciplina_gerencial)}</td>
                         </tr>
                       ))}
                     </tbody>

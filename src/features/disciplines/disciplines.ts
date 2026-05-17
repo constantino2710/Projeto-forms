@@ -8,6 +8,11 @@ export type DisciplineRow = {
   curso: string
   docente: string
   periodo: string
+  carga_horaria: string
+  codigo_disciplina: string
+  codigo_turma: string
+  disciplina_gerencial: boolean
+  cursos_gerenciados: string | null
 }
 
 export type SuperDisciplineRow = DisciplineRow & {
@@ -22,6 +27,11 @@ export type DisciplineImportRow = {
   curso: string
   docente: string
   periodo: string
+  carga_horaria: string
+  codigo_disciplina: string
+  codigo_turma: string
+  disciplina_gerencial: boolean
+  cursos_gerenciados: string
 }
 
 const getTokenOrThrow = () => {

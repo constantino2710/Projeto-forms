@@ -51,8 +51,8 @@ describe('UserNewProjectPage', () => {
   it('alternar para disciplina renderiza form simples', async () => {
     renderPage()
     await userEvent.click(screen.getByRole('button', { name: 'Disciplina Extensionista' }))
-    expect(screen.getByLabelText('Codigo da Disciplina')).toBeInTheDocument()
-    expect(screen.getByLabelText('Orcamento')).toBeInTheDocument()
+    expect(screen.getByLabelText('Codigo Extensao')).toBeInTheDocument()
+    expect(screen.getByLabelText('Carga horaria de Extensao da Disciplina')).toBeInTheDocument()
   })
 
   it('submeter disciplina vazia mostra lista de erros de validacao', async () => {
@@ -74,24 +74,60 @@ describe('UserNewProjectPage', () => {
     })
     renderPage()
     await userEvent.click(screen.getByRole('button', { name: 'Disciplina Extensionista' }))
-    await userEvent.type(screen.getByLabelText('Disciplina'), 'Disc')
-    await userEvent.type(screen.getByLabelText('Area tematica'), 'TIC')
+    await userEvent.type(screen.getByLabelText('Titulo da Iniciativa'), 'Projeto Integrador em Dados')
+    await userEvent.selectOptions(screen.getByLabelText('Programa Unicap'), 'UNICAP - TIC - Tecnologia, Inovação e Comunicação')
+    await userEvent.type(screen.getByLabelText('Nome da Disciplina'), 'Disc')
+    await userEvent.type(screen.getByLabelText('Codigo Extensao'), '2025.2001')
     await userEvent.type(screen.getByLabelText('Codigo da Disciplina'), 'CS1')
-    await userEvent.type(screen.getByLabelText('Semestre Letivo'), '2025.1')
-    await userEvent.type(screen.getByLabelText('Curso'), 'CC')
+    await userEvent.type(screen.getByLabelText('Codigo da Turma'), 'T01')
+    await userEvent.selectOptions(screen.getByLabelText('Disciplina Gerencial'), 'Nao')
+    await userEvent.type(screen.getByLabelText('Periodo de realizacao da disciplina'), '2025.1')
+    await userEvent.type(screen.getByLabelText('Curso em que a disciplina esta vinculada'), 'CC')
     fireEvent.change(screen.getByLabelText('Inicio'), { target: { value: '2025-01-01' } })
     fireEvent.change(screen.getByLabelText('Fim'), { target: { value: '2025-06-30' } })
-    await userEvent.type(screen.getByLabelText('Publico-alvo'), 'Comunidade')
-    await userEvent.type(screen.getByLabelText('Orcamento'), '500')
-    await userEvent.type(screen.getByLabelText('Descricao'), 'Descricao do projeto')
+    await userEvent.type(screen.getByLabelText('Carga horaria de Extensao da Disciplina'), '60')
+    await userEvent.type(screen.getByLabelText('Objetivo de Aprendizagem 1'), 'Obj 1')
+    await userEvent.type(screen.getByLabelText('Objetivo de Aprendizagem 2'), 'Obj 2')
+    await userEvent.type(screen.getByLabelText('Objetivo de Aprendizagem 3'), 'Obj 3')
+    await userEvent.selectOptions(screen.getByLabelText('Competencia Transversal 1'), 'Comunicacao')
+    await userEvent.selectOptions(screen.getByLabelText('Competencia Transversal 2'), 'Lideranca')
+    await userEvent.selectOptions(screen.getByLabelText('Competencia Transversal 3'), 'Trabalho em equipe')
+    await userEvent.type(screen.getByLabelText('Servico a ser oferecido'), 'Servico')
+    await userEvent.type(screen.getByLabelText('Atividade 1'), 'Ativ 1')
+    await userEvent.type(screen.getByLabelText('Atividade 2'), 'Ativ 2')
+    await userEvent.type(screen.getByLabelText('Atividade 3'), 'Ativ 3')
+    await userEvent.type(screen.getByLabelText('Local de realizacao'), 'Campus')
+    await userEvent.type(screen.getByLabelText('Publico que sera atendido'), 'Comunidade')
+    await userEvent.type(screen.getByLabelText('Procedimentos Metodologicos'), 'Procedimentos')
+    await userEvent.type(screen.getByLabelText('Problema ou Necessidade a ser respondido'), 'Problema')
+    await userEvent.selectOptions(
+      screen.getByLabelText('Principal Objetivo de Desenvolvimento Sustentavel Impactado'),
+      'ODS 4 - Educacao de Qualidade',
+    )
+    await userEvent.type(screen.getByLabelText('Meta 1'), 'Meta 1')
+    await userEvent.type(screen.getByLabelText('Meta 2'), 'Meta 2')
+    await userEvent.type(screen.getByLabelText('Meta 3'), 'Meta 3')
+    await userEvent.type(screen.getByLabelText('Estrategias de Divulgacao da Atividade'), 'Divulgacao')
+    await userEvent.type(
+      screen.getByLabelText('Texto breve com uma apresentacao/resumo do projeto'),
+      'Resumo',
+    )
+    await userEvent.type(screen.getByLabelText('Estrategias de Reflexao'), 'Reflexao')
+    await userEvent.type(screen.getByLabelText('Estrategias de Avaliacao'), 'Avaliacao')
+    await userEvent.type(screen.getByLabelText('Feedback do Publico Parceiro'), 'Feedback')
+    const disciplineTerms = screen.getAllByRole('checkbox')
+    for (const checkbox of disciplineTerms) {
+      await userEvent.click(checkbox)
+    }
     await userEvent.click(screen.getByRole('button', { name: /Criar projeto/ }))
 
     await waitFor(() => {
       expect(createUserProject).toHaveBeenCalledWith(
         expect.objectContaining({
-          title: 'Disc',
+          title: 'Projeto Integrador em Dados',
           type: 'disciplina',
-          budget: 500,
+          budget: 60,
+          targetAudience: 'Disc',
         }),
       )
     })
@@ -101,18 +137,53 @@ describe('UserNewProjectPage', () => {
     vi.mocked(createUserProject).mockRejectedValue(new Error('Token expirado'))
     renderPage()
     await userEvent.click(screen.getByRole('button', { name: 'Disciplina Extensionista' }))
-    await userEvent.type(screen.getByLabelText('Disciplina'), 'T')
-    await userEvent.type(screen.getByLabelText('Area tematica'), 'A')
+    await userEvent.type(screen.getByLabelText('Titulo da Iniciativa'), 'T')
+    await userEvent.selectOptions(screen.getByLabelText('Programa Unicap'), 'UNICAP - TIC - Tecnologia, Inovação e Comunicação')
+    await userEvent.type(screen.getByLabelText('Nome da Disciplina'), 'Disc')
+    await userEvent.type(screen.getByLabelText('Codigo Extensao'), '2025.2001')
     await userEvent.type(screen.getByLabelText('Codigo da Disciplina'), 'CS1')
-    await userEvent.type(screen.getByLabelText('Semestre Letivo'), '2025.1')
+    await userEvent.type(screen.getByLabelText('Codigo da Turma'), 'T01')
+    await userEvent.selectOptions(screen.getByLabelText('Disciplina Gerencial'), 'Nao')
+    await userEvent.type(screen.getByLabelText('Periodo de realizacao da disciplina'), '2025.1')
+    await userEvent.type(screen.getByLabelText('Curso em que a disciplina esta vinculada'), 'CC')
     fireEvent.change(screen.getByLabelText('Inicio'), { target: { value: '2025-01-01' } })
     fireEvent.change(screen.getByLabelText('Fim'), { target: { value: '2025-06-30' } })
-    await userEvent.type(screen.getByLabelText('Publico-alvo'), 'X')
-    await userEvent.type(screen.getByLabelText('Orcamento'), '100')
-    await userEvent.type(screen.getByLabelText('Descricao'), 'D')
+    await userEvent.type(screen.getByLabelText('Carga horaria de Extensao da Disciplina'), '60')
+    await userEvent.type(screen.getByLabelText('Objetivo de Aprendizagem 1'), 'Obj 1')
+    await userEvent.type(screen.getByLabelText('Objetivo de Aprendizagem 2'), 'Obj 2')
+    await userEvent.type(screen.getByLabelText('Objetivo de Aprendizagem 3'), 'Obj 3')
+    await userEvent.selectOptions(screen.getByLabelText('Competencia Transversal 1'), 'Comunicacao')
+    await userEvent.selectOptions(screen.getByLabelText('Competencia Transversal 2'), 'Lideranca')
+    await userEvent.selectOptions(screen.getByLabelText('Competencia Transversal 3'), 'Trabalho em equipe')
+    await userEvent.type(screen.getByLabelText('Servico a ser oferecido'), 'Servico')
+    await userEvent.type(screen.getByLabelText('Atividade 1'), 'Ativ 1')
+    await userEvent.type(screen.getByLabelText('Atividade 2'), 'Ativ 2')
+    await userEvent.type(screen.getByLabelText('Atividade 3'), 'Ativ 3')
+    await userEvent.type(screen.getByLabelText('Local de realizacao'), 'Campus')
+    await userEvent.type(screen.getByLabelText('Publico que sera atendido'), 'Comunidade')
+    await userEvent.type(screen.getByLabelText('Procedimentos Metodologicos'), 'Procedimentos')
+    await userEvent.type(screen.getByLabelText('Problema ou Necessidade a ser respondido'), 'Problema')
+    await userEvent.selectOptions(
+      screen.getByLabelText('Principal Objetivo de Desenvolvimento Sustentavel Impactado'),
+      'ODS 4 - Educacao de Qualidade',
+    )
+    await userEvent.type(screen.getByLabelText('Meta 1'), 'Meta 1')
+    await userEvent.type(screen.getByLabelText('Meta 2'), 'Meta 2')
+    await userEvent.type(screen.getByLabelText('Meta 3'), 'Meta 3')
+    await userEvent.type(screen.getByLabelText('Estrategias de Divulgacao da Atividade'), 'Divulgacao')
+    await userEvent.type(
+      screen.getByLabelText('Texto breve com uma apresentacao/resumo do projeto'),
+      'Resumo',
+    )
+    await userEvent.type(screen.getByLabelText('Estrategias de Reflexao'), 'Reflexao')
+    await userEvent.type(screen.getByLabelText('Estrategias de Avaliacao'), 'Avaliacao')
+    await userEvent.type(screen.getByLabelText('Feedback do Publico Parceiro'), 'Feedback')
+    const disciplineTerms = screen.getAllByRole('checkbox')
+    for (const checkbox of disciplineTerms) {
+      await userEvent.click(checkbox)
+    }
     await userEvent.click(screen.getByRole('button', { name: /Criar projeto/ }))
 
     expect(await screen.findByText('Token expirado')).toBeInTheDocument()
   })
 })
-

@@ -1,21 +1,9 @@
-PER,Docente,Cursos,Disciplina,COD de extensao
-1,Maria Silva,Engenharia de Software,Introducao a Programacao,EXT001
-1,Joao Pereira,Ciencia da Computacao,Logica de Programacao,EXT002
-2,Ana Costa,Sistemas de Informacao,Algoritmos e Estruturas de Dados,EXT003
-2,Carlos Souza,Engenharia Civil,Calculo Diferencial e Integral I,EXT004
-3,Beatriz Lima,Engenharia de Software,Banco de Dados I,EXT005
-3,Rafael Almeida,Ciencia da Computacao,Programacao Orientada a Objetos,EXT006
-4,Patricia Mendes,Sistemas de Informacao,Engenharia de Requisitos,EXT007
-4,Lucas Ferreira,Engenharia Eletrica,Circuitos Eletricos,EXT008
-5,Fernanda Oliveira,Engenharia de Software,Engenharia de Software I,EXT009
-5,Marcos Antunes,Ciencia da Computacao,Redes de Computadores,EXT010
-6,Juliana Ramos,Sistemas de Informacao,Sistemas Operacionais,EXT011
-6,Ricardo Tavares,Engenharia Civil,Resistencia dos Materiais,EXT012
-7,Camila Nogueira,Engenharia de Software,Inteligencia Artificial,EXT013
-7,Eduardo Vieira,Ciencia da Computacao,Compiladores,EXT014
-8,Larissa Pinto,Sistemas de Informacao,Gestao de Projetos de TI,EXT015
-8,Henrique Carvalho,Engenharia Mecanica,Termodinamica Aplicada,EXT016
-2,Sandra Macedo,Engenharia de Producao,Estatistica Aplicada,EXT017
-4,Gustavo Barros,Engenharia de Software,Programacao Web,EXT018
-6,Tatiane Rocha,Ciencia da Computacao,Aprendizado de Maquina,EXT019
-8,Felipe Andrade,Sistemas de Informacao,Seguranca da Informacao,EXT020
+Período de realização da disciplina,Código Extensão,Nome do Docente Responsável pela Atividade Extensionista,Curso em que a disciplina está vinculada,Nome da Disciplina,Carga horária de Extensão da Disciplina,Código da Disciplina,Código da Turma,Disciplina Gerencial,Cursos Gerenciados
+2025.1,2025.2001,Mariana Costa,CIÊNCIA DA COMPUTAÇÃO - BACHARELADO,"COMPUTACAO, SOCIEDADE E SUSTENTABILIDADE",60,CCO401,T01,Nao,
+2025.1,2025.2002,Roberto Lima,SISTEMAS PARA INTERNET - TECNOLÓGICO,PROJETO INTEGRADOR I,45,SPI301,T02,Nao,
+2025.1,2025.2003,Ana Paula Souza,ADMINISTRAÇÃO - BACHARELADO,EMPREENDEDORISMO NA EDUCACAO,30,ADM210,T03,Sim,ADMINISTRAÇÃO - BACHARELADO; GESTÃO DE RECURSOS HUMANOS - TECNOLÓGICO
+2025.2,2025.2148,Camila Ribeiro,CIÊNCIA DA COMPUTAÇÃO - BACHARELADO,PROJETO INTEGRADOR II,60,CCO402,T01,Nao,
+2025.2,2025.2149,Joao Henrique Mendes,ENGENHARIA CIVIL - BACHARELADO,TOPOGRAFIA,30,ECV315,T04,Nao,
+2025.2,2025.2150,Fernanda Rocha,PEDAGOGIA - LICENCIATURA,EDUCACAO E PRATICAS INCLUSIVAS,45,PED420,T05,Sim,PEDAGOGIA - LICENCIATURA; LETRAS PORTUGUÊS - LICENCIATURA
+2025.2,2025.2151,Lucas Araujo,JORNALISMO - BACHARELADO,ROBOTICA INCLUSIVA,30,JOR390,T02,Nao,
+2025.2,2025.2152,Patricia Farias,PSICOLOGIA - BACHARELADO,PSICOLOGIA ETICA E DIREITOS HUMANOS,60,PSI440,T06,Nao,

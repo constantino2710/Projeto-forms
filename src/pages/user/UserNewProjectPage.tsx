@@ -4,18 +4,25 @@ import { ExtensionProjectFields } from '../../components/projects/ExtensionProje
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Spinner } from '../../components/ui/spinner'
-import { Textarea } from '../../components/ui/textarea'
 import {
   type DisciplineRow,
   listDisciplines,
 } from '../../features/disciplines/disciplines'
+import {
+  buildDisciplineExtensionForm,
+  buildDisciplineMetadataDescription,
+  type DisciplineManagerialOption,
+} from '../../features/disciplines/disciplineProjectMetadata'
 import { uploadProjectAttachment } from '../../features/projects/projectAttachments'
 import {
   createEmptyExtensionPlan,
+  DISCIPLINE_ACKNOWLEDGEMENT_OPTIONS,
+  UNICAP_PROGRAM_OPTIONS,
   type ExtensionPlanData,
 } from '../../features/projects/extensionPlan'
 import {
   collectFormErrors,
+  disciplineExtensionAxesSchema,
   disciplineFormSchema,
   extensionFormSchema,
 } from '../../features/projects/projectSchemas'
@@ -55,33 +62,44 @@ const projectTypeOptionActiveClass =
 type DisciplineFormData = {
   title: string
   thematicArea: string
+  codigoExtensao: string
+  disciplineName: string
   codigoDisciplina: string
+  codigoTurma: string
+  disciplinaGerencial: DisciplineManagerialOption
+  managedCourses: string
   semestreLetivo: string
   course: string
   periodStart: string
   periodEnd: string
-  targetAudience: string
   budget: string
-  description: string
 }
 
 const createEmptyDisciplineForm = (): DisciplineFormData => ({
   title: '',
   thematicArea: '',
+  codigoExtensao: '',
+  disciplineName: '',
   codigoDisciplina: '',
+  codigoTurma: '',
+  disciplinaGerencial: 'Nao',
+  managedCourses: '',
   semestreLetivo: '',
   course: '',
   periodStart: '',
   periodEnd: '',
-  targetAudience: '',
   budget: '',
-  description: '',
 })
+
+const DISCIPLINE_MANAGERIAL_OPTIONS: DisciplineManagerialOption[] = ['Sim', 'Nao']
 
 export function UserNewProjectPage() {
   const navigate = useNavigate()
   const [projectType, setProjectType] = useState<'extensao' | 'disciplina'>('extensao')
   const [extensionForm, setExtensionForm] = useState<ExtensionPlanData>(() => createEmptyExtensionPlan())
+  const [disciplineExtensionForm, setDisciplineExtensionForm] = useState<ExtensionPlanData>(() =>
+    createEmptyExtensionPlan(),
+  )
   const [disciplineForm, setDisciplineForm] = useState<DisciplineFormData>(() => createEmptyDisciplineForm())
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -109,35 +127,52 @@ export function UserNewProjectPage() {
   }, [])
 
   const uniqueOptions = useMemo(() => {
-    const codigos = new Set<string>()
+    const codigosExtensao = new Set<string>()
     const disciplinas = new Set<string>()
     const cursos = new Set<string>()
     const periodos = new Set<string>()
+    const cargasHorarias = new Set<string>()
+    const codigosDisciplina = new Set<string>()
+    const codigosTurma = new Set<string>()
     for (const row of catalog) {
-      codigos.add(row.codigo)
+      codigosExtensao.add(row.codigo)
       disciplinas.add(row.disciplina)
       cursos.add(row.curso)
       periodos.add(row.periodo)
+      cargasHorarias.add(row.carga_horaria)
+      codigosDisciplina.add(row.codigo_disciplina)
+      codigosTurma.add(row.codigo_turma)
     }
     const sorted = (set: Set<string>) => Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR'))
     return {
-      codigos: sorted(codigos),
+      codigosExtensao: sorted(codigosExtensao),
       disciplinas: sorted(disciplinas),
       cursos: sorted(cursos),
       periodos: sorted(periodos),
+      cargasHorarias: sorted(cargasHorarias),
+      codigosDisciplina: sorted(codigosDisciplina),
+      codigosTurma: sorted(codigosTurma),
     }
   }, [catalog])
 
   const applyCatalogAutofill = (
-    field: 'codigo' | 'disciplina' | 'curso' | 'periodo',
+    field:
+      | 'codigo'
+      | 'disciplina'
+      | 'curso'
+      | 'periodo'
+      | 'codigo_disciplina'
+      | 'codigo_turma',
     value: string,
   ) => {
     setDisciplineForm((prev) => {
       const fieldMap = {
-        codigo: 'codigoDisciplina',
-        disciplina: 'title',
+        codigo: 'codigoExtensao',
+        disciplina: 'disciplineName',
         curso: 'course',
         periodo: 'semestreLetivo',
+        codigo_disciplina: 'codigoDisciplina',
+        codigo_turma: 'codigoTurma',
       } as const
       const next: DisciplineFormData = { ...prev, [fieldMap[field]]: value }
 
@@ -148,10 +183,15 @@ export function UserNewProjectPage() {
       const matches = catalog.filter((row) => row[field] === value)
       if (matches.length === 1) {
         const row = matches[0]
-        next.codigoDisciplina = row.codigo
-        next.title = row.disciplina
+        next.codigoExtensao = row.codigo
+        next.disciplineName = row.disciplina
         next.course = row.curso
         next.semestreLetivo = row.periodo
+        next.budget = row.carga_horaria
+        next.codigoDisciplina = row.codigo_disciplina
+        next.codigoTurma = row.codigo_turma
+        next.disciplinaGerencial = row.disciplina_gerencial ? 'Sim' : 'Nao'
+        next.managedCourses = row.cursos_gerenciados ?? ''
       }
       return next
     })
@@ -187,13 +227,20 @@ export function UserNewProjectPage() {
     setError('')
     setValidationErrors([])
 
-    const parseResult =
+    const parseResults =
       projectType === 'extensao'
-        ? extensionFormSchema.safeParse(extensionForm)
-        : disciplineFormSchema.safeParse(disciplineForm)
+        ? [extensionFormSchema.safeParse(extensionForm)]
+        : [
+            disciplineFormSchema.safeParse(disciplineForm),
+            disciplineExtensionAxesSchema.safeParse(disciplineExtensionForm),
+          ]
 
-    if (!parseResult.success) {
-      setValidationErrors(collectFormErrors(parseResult.error.issues))
+    const failedResults = parseResults.filter((result) => !result.success)
+
+    if (failedResults.length > 0) {
+      setValidationErrors(
+        collectFormErrors(failedResults.flatMap((result) => (!result.success ? result.error.issues : []))),
+      )
       return
     }
 
@@ -219,15 +266,22 @@ export function UserNewProjectPage() {
           : await createUserProject({
               title: disciplineForm.title,
               thematicArea: disciplineForm.thematicArea,
-              course: disciplineForm.course,
+              course: null,
               periodStart: disciplineForm.periodStart,
               periodEnd: disciplineForm.periodEnd,
-              targetAudience: disciplineForm.targetAudience,
+              targetAudience: disciplineForm.disciplineName,
               budget: parsedBudget,
-              description: disciplineForm.description,
+              description: buildDisciplineMetadataDescription({
+                codigoExtensao: disciplineForm.codigoExtensao,
+                codigoDisciplina: disciplineForm.codigoDisciplina,
+                codigoTurma: disciplineForm.codigoTurma,
+                disciplinaGerencial: disciplineForm.disciplinaGerencial,
+                cursosGerenciados: disciplineForm.managedCourses,
+              }),
               type: 'disciplina',
               codigo_disciplina: disciplineForm.codigoDisciplina,
               semestre_letivo: disciplineForm.semestreLetivo,
+              extensionForm: buildDisciplineExtensionForm(disciplineForm, disciplineExtensionForm),
             })
 
       if (pendingFiles.length > 0) {
@@ -298,13 +352,41 @@ export function UserNewProjectPage() {
               <p className="m-0 text-destructive font-semibold">{catalogError}</p>
             )}
 
+            <label className={projectFormLabelClass}>
+              Titulo da Iniciativa
+              <Input
+                value={disciplineForm.title}
+                onChange={(event) => setDisciplineForm((prev) => ({ ...prev, title: event.target.value }))}
+                required
+              />
+            </label>
+
+            <label className={projectFormLabelClass}>
+              Programa Unicap
+              <select
+                className={selectInputClass}
+                value={disciplineForm.thematicArea}
+                onChange={(event) =>
+                  setDisciplineForm((prev) => ({ ...prev, thematicArea: event.target.value }))
+                }
+                required
+              >
+                <option value="">Selecione</option>
+                {UNICAP_PROGRAM_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+
             <div className={projectGrid2Class}>
               <label className={projectFormLabelClass}>
-                Disciplina
+                Nome da Disciplina
                 {catalog.length > 0 ? (
                   <select
                     className={selectInputClass}
-                    value={disciplineForm.title}
+                    value={disciplineForm.disciplineName}
                     onChange={(event) => applyCatalogAutofill('disciplina', event.target.value)}
                     required
                   >
@@ -317,24 +399,26 @@ export function UserNewProjectPage() {
                   </select>
                 ) : (
                   <Input
-                    value={disciplineForm.title}
-                    onChange={(event) => setDisciplineForm((prev) => ({ ...prev, title: event.target.value }))}
+                    value={disciplineForm.disciplineName}
+                    onChange={(event) =>
+                      setDisciplineForm((prev) => ({ ...prev, disciplineName: event.target.value }))
+                    }
                     required
                   />
                 )}
               </label>
 
               <label className={projectFormLabelClass}>
-                Codigo da Disciplina
+                Codigo Extensao
                 {catalog.length > 0 ? (
                   <select
                     className={selectInputClass}
-                    value={disciplineForm.codigoDisciplina}
+                    value={disciplineForm.codigoExtensao}
                     onChange={(event) => applyCatalogAutofill('codigo', event.target.value)}
                     required
                   >
                     <option value="">Selecione</option>
-                    {uniqueOptions.codigos.map((opt) => (
+                    {uniqueOptions.codigosExtensao.map((opt) => (
                       <option key={opt} value={opt}>
                         {opt}
                       </option>
@@ -343,10 +427,10 @@ export function UserNewProjectPage() {
                 ) : (
                   <Input
                     type="text"
-                    placeholder="Ex: IF976"
-                    value={disciplineForm.codigoDisciplina}
+                    placeholder="Ex: 2025.2001"
+                    value={disciplineForm.codigoExtensao}
                     onChange={(event) =>
-                      setDisciplineForm((prev) => ({ ...prev, codigoDisciplina: event.target.value }))
+                      setDisciplineForm((prev) => ({ ...prev, codigoExtensao: event.target.value }))
                     }
                     required
                   />
@@ -354,20 +438,9 @@ export function UserNewProjectPage() {
               </label>
             </div>
 
-            <label className={projectFormLabelClass}>
-              Area tematica
-              <Input
-                value={disciplineForm.thematicArea}
-                onChange={(event) =>
-                  setDisciplineForm((prev) => ({ ...prev, thematicArea: event.target.value }))
-                }
-                required
-              />
-            </label>
-
             <div className={projectGrid2Class}>
               <label className={projectFormLabelClass}>
-                Curso
+                Curso em que a disciplina esta vinculada
                 {catalog.length > 0 ? (
                   <select
                     className={selectInputClass}
@@ -390,7 +463,7 @@ export function UserNewProjectPage() {
               </label>
 
               <label className={projectFormLabelClass}>
-                Semestre Letivo
+                Periodo de realizacao da disciplina
                 {catalog.length > 0 ? (
                   <select
                     className={selectInputClass}
@@ -408,7 +481,7 @@ export function UserNewProjectPage() {
                 ) : (
                   <Input
                     type="text"
-                    placeholder="Ex: 2026.1"
+                    placeholder="Ex: 2025.2"
                     value={disciplineForm.semestreLetivo}
                     onChange={(event) =>
                       setDisciplineForm((prev) => ({ ...prev, semestreLetivo: event.target.value }))
@@ -418,6 +491,128 @@ export function UserNewProjectPage() {
                 )}
               </label>
             </div>
+
+            <div className={projectGrid2Class}>
+              <label className={projectFormLabelClass}>
+                Carga horaria de Extensao da Disciplina
+                {catalog.length > 0 ? (
+                  <select
+                    className={selectInputClass}
+                    value={disciplineForm.budget}
+                    onChange={(event) =>
+                      setDisciplineForm((prev) => ({ ...prev, budget: event.target.value }))
+                    }
+                    required
+                  >
+                    <option value="">Selecione</option>
+                    {uniqueOptions.cargasHorarias.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <Input
+                    type="number"
+                    min={0}
+                    step="1"
+                    value={disciplineForm.budget}
+                    onChange={(event) => setDisciplineForm((prev) => ({ ...prev, budget: event.target.value }))}
+                    required
+                  />
+                )}
+              </label>
+
+              <label className={projectFormLabelClass}>
+                Codigo da Disciplina
+                {catalog.length > 0 ? (
+                  <select
+                    className={selectInputClass}
+                    value={disciplineForm.codigoDisciplina}
+                    onChange={(event) => applyCatalogAutofill('codigo_disciplina', event.target.value)}
+                    required
+                  >
+                    <option value="">Selecione</option>
+                    {uniqueOptions.codigosDisciplina.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <Input
+                    type="text"
+                    placeholder="Ex: CCO401"
+                    value={disciplineForm.codigoDisciplina}
+                    onChange={(event) =>
+                      setDisciplineForm((prev) => ({ ...prev, codigoDisciplina: event.target.value }))
+                    }
+                    required
+                  />
+                )}
+              </label>
+            </div>
+
+            <div className={projectGrid2Class}>
+              <label className={projectFormLabelClass}>
+                Codigo da Turma
+                {catalog.length > 0 ? (
+                  <select
+                    className={selectInputClass}
+                    value={disciplineForm.codigoTurma}
+                    onChange={(event) => applyCatalogAutofill('codigo_turma', event.target.value)}
+                    required
+                  >
+                    <option value="">Selecione</option>
+                    {uniqueOptions.codigosTurma.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <Input
+                    value={disciplineForm.codigoTurma}
+                    onChange={(event) =>
+                      setDisciplineForm((prev) => ({ ...prev, codigoTurma: event.target.value }))
+                    }
+                    required
+                  />
+                )}
+              </label>
+
+              <label className={projectFormLabelClass}>
+                Disciplina Gerencial
+                <select
+                  className={selectInputClass}
+                  value={disciplineForm.disciplinaGerencial}
+                  onChange={(event) =>
+                    setDisciplineForm((prev) => ({
+                      ...prev,
+                      disciplinaGerencial: event.target.value as DisciplineManagerialOption,
+                    }))
+                  }
+                  required
+                >
+                  {DISCIPLINE_MANAGERIAL_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <label className={projectFormLabelClass}>
+              Cursos Gerenciados
+              <Input
+                value={disciplineForm.managedCourses}
+                onChange={(event) =>
+                  setDisciplineForm((prev) => ({ ...prev, managedCourses: event.target.value }))
+                }
+                placeholder="Preencha quando a disciplina for gerencial"
+              />
+            </label>
 
             <div className={projectGrid2Class}>
               <label className={projectFormLabelClass}>
@@ -448,41 +643,13 @@ export function UserNewProjectPage() {
               </label>
             </div>
 
-            <label className={projectFormLabelClass}>
-              Publico-alvo
-              <Input
-                value={disciplineForm.targetAudience}
-                onChange={(event) =>
-                  setDisciplineForm((prev) => ({ ...prev, targetAudience: event.target.value }))
-                }
-                required
-              />
-            </label>
-
-            <label className={projectFormLabelClass}>
-              Orcamento
-              <Input
-                type="number"
-                min={0}
-                step="0.01"
-                value={disciplineForm.budget}
-                onChange={(event) => setDisciplineForm((prev) => ({ ...prev, budget: event.target.value }))}
-                required
-              />
-            </label>
-
-            <label className={projectFormLabelClass}>
-              Descricao
-              <Textarea
-                value={disciplineForm.description}
-                onChange={(event) =>
-                  setDisciplineForm((prev) => ({ ...prev, description: event.target.value }))
-                }
-                placeholder="Descreva o que sera feito no projeto"
-                rows={5}
-                required
-              />
-            </label>
+            <ExtensionProjectFields
+              form={disciplineExtensionForm}
+              onChange={setDisciplineExtensionForm}
+              disabled={isSubmitting}
+              mode="axes-only"
+              acknowledgementOptions={DISCIPLINE_ACKNOWLEDGEMENT_OPTIONS}
+            />
           </>
         )}
 

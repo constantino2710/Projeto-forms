@@ -5,10 +5,19 @@ import { ExtensionProjectFields } from "../../components/projects/ExtensionProje
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Spinner } from "../../components/ui/spinner";
-import { Textarea } from "../../components/ui/textarea";
+import {
+  buildDisciplineExtensionForm,
+  buildDisciplineMetadataDescription,
+  disciplineManagerialLabel,
+  parseDisciplineMetadataDescription,
+  type DisciplineManagerialOption,
+} from "../../features/disciplines/disciplineProjectMetadata";
 import {
   ACKNOWLEDGEMENT_OPTIONS,
+  areAcknowledgementsComplete,
   createExtensionPlanFromProject,
+  DISCIPLINE_ACKNOWLEDGEMENT_OPTIONS,
+  UNICAP_PROGRAM_OPTIONS,
   isExtensionPlanComplete,
   type ExtensionPlanData,
 } from "../../features/projects/extensionPlan";
@@ -83,13 +92,18 @@ type EditFormState = {
   course: string;
   periodStart: string;
   periodEnd: string;
-  targetAudience: string;
   budget: string;
-  description: string;
+  disciplineName: string;
+  codigoExtensao: string;
   codigoDisciplina: string;
+  codigoTurma: string;
+  disciplinaGerencial: DisciplineManagerialOption;
+  managedCourses: string;
   semestreLetivo: string;
   extensionForm: ExtensionPlanData;
 };
+
+const DISCIPLINE_MANAGERIAL_OPTIONS: DisciplineManagerialOption[] = ["Sim", "Nao"];
 
 export function UserProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -172,19 +186,24 @@ export function UserProjectDetailPage() {
     }
 
     setIsEditing(true);
+    const disciplineMetadata = parseDisciplineMetadataDescription(project.description);
+    const disciplineExtensionForm = createExtensionPlanFromProject(project);
     setEditForm({
       type: project.tipo,
       title: project.title,
       thematicArea: project.thematic_area,
-      course: project.course ?? "",
+      course: project.course ?? disciplineExtensionForm.linkedCourse ?? "",
       periodStart: project.period_start,
       periodEnd: project.period_end,
-      targetAudience: project.target_audience,
       budget: String(project.budget),
-      description: project.description ?? "",
-      codigoDisciplina: project.codigo_disciplina ?? "",
+      disciplineName: project.target_audience,
+      codigoExtensao: disciplineMetadata.codigoExtensao,
+      codigoDisciplina: project.codigo_disciplina ?? disciplineMetadata.codigoDisciplina,
+      codigoTurma: disciplineMetadata.codigoTurma,
+      disciplinaGerencial: disciplineMetadata.disciplinaGerencial,
+      managedCourses: disciplineMetadata.cursosGerenciados,
       semestreLetivo: project.semestre_letivo ?? "",
-      extensionForm: createExtensionPlanFromProject(project),
+      extensionForm: disciplineExtensionForm,
     });
   };
 
@@ -202,10 +221,15 @@ export function UserProjectDetailPage() {
     setError("");
     setIsSubmitting(true);
 
-    if (
-      editForm.type === "extensao" &&
-      !isExtensionPlanComplete(editForm.extensionForm)
-    ) {
+    const hasRequiredAcknowledgements =
+      editForm.type === "extensao"
+        ? isExtensionPlanComplete(editForm.extensionForm)
+        : areAcknowledgementsComplete(
+            editForm.extensionForm.acknowledgements,
+            DISCIPLINE_ACKNOWLEDGEMENT_OPTIONS,
+          )
+
+    if (!hasRequiredAcknowledgements) {
       setError("Marque todos os itens de confirmacao da conclusao para continuar.");
       setIsSubmitting(false);
       return;
@@ -219,7 +243,7 @@ export function UserProjectDetailPage() {
           editForm.type === "extensao"
             ? editForm.extensionForm.unicapProgram
             : editForm.thematicArea,
-        course: editForm.type === "extensao" ? null : editForm.course,
+        course: null,
         periodStart:
           editForm.type === "extensao"
             ? editForm.extensionForm.periodStart
@@ -229,16 +253,25 @@ export function UserProjectDetailPage() {
         targetAudience:
           editForm.type === "extensao"
             ? editForm.extensionForm.targetAudience
-            : editForm.targetAudience,
+            : editForm.disciplineName,
         budget: editForm.type === "extensao" ? 0 : Number(editForm.budget || 0),
         description:
           editForm.type === "extensao"
             ? editForm.extensionForm.projectSummary
-            : editForm.description,
+            : buildDisciplineMetadataDescription({
+                codigoExtensao: editForm.codigoExtensao,
+                codigoDisciplina: editForm.codigoDisciplina,
+                codigoTurma: editForm.codigoTurma,
+                disciplinaGerencial: editForm.disciplinaGerencial,
+                cursosGerenciados: editForm.managedCourses,
+              }),
         type: editForm.type,
         codigoDisciplina: editForm.type === "disciplina" ? editForm.codigoDisciplina : null,
         semestreLetivo: editForm.type === "disciplina" ? editForm.semestreLetivo : null,
-        extensionForm: editForm.type === "extensao" ? editForm.extensionForm : null,
+        extensionForm:
+          editForm.type === "extensao"
+            ? editForm.extensionForm
+            : buildDisciplineExtensionForm(editForm, editForm.extensionForm),
       });
 
       cancelEdit();
@@ -335,6 +368,13 @@ export function UserProjectDetailPage() {
       : timeline?.rejected_at !== null
         ? "Recusado"
         : "Pendente";
+  const disciplineMetadata = project?.tipo === "disciplina"
+    ? parseDisciplineMetadataDescription(project.description)
+    : null;
+  const disciplineExtensionForm =
+    project?.tipo === "disciplina" && project.extension_form
+      ? createExtensionPlanFromProject(project)
+      : null
   const latestTimelineIndex = timelineSteps.reduce(
     (latest, step, index) => (step.date ? index : latest),
     -1,
@@ -363,91 +403,99 @@ export function UserProjectDetailPage() {
     }
   };
 
-  const renderExtensionSummary = (extensionForm: ExtensionPlanData) => (
+  const renderExtensionSummary = (
+    extensionForm: ExtensionPlanData,
+    acknowledgementOptions: readonly { id: string; label: string }[] = ACKNOWLEDGEMENT_OPTIONS,
+    mode: "full" | "axes-only" = "full",
+  ) => (
     <div className={projectSectionsStackClass}>
-      <section className={projectInfoSectionClass}>
-        <h3>Identificacao da Iniciativa Extensionista</h3>
-        <div className={projectInfoGridClass}>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Titulo da Iniciativa</p>
-            <p className={projectInfoValueClass}>{extensionForm.title}</p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Carga horaria total</p>
-            <p className={projectInfoValueClass}>{extensionForm.totalWorkload}</p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Programa Unicap</p>
-            <p className={projectInfoValueClass}>{extensionForm.unicapProgram}</p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Periodo</p>
-            <p className={projectInfoValueClass}>
-              {extensionForm.periodStart} ate {extensionForm.periodEnd}
-            </p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Curso ou programa vinculado</p>
-            <p className={projectInfoValueClass}>{extensionForm.linkedCourse}</p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Curso</p>
-            <p className={projectInfoValueClass}>{extensionForm.courseName}</p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>E-mail da Coordenacao</p>
-            <p className={projectInfoValueClass}>{extensionForm.coordinationEmail}</p>
-          </div>
-        </div>
-      </section>
+      {mode === "full" && (
+        <>
+          <section className={projectInfoSectionClass}>
+            <h3>Identificacao da Iniciativa Extensionista</h3>
+            <div className={projectInfoGridClass}>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Titulo da Iniciativa</p>
+                <p className={projectInfoValueClass}>{extensionForm.title}</p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Carga horaria total</p>
+                <p className={projectInfoValueClass}>{extensionForm.totalWorkload}</p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Programa Unicap</p>
+                <p className={projectInfoValueClass}>{extensionForm.unicapProgram}</p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Periodo</p>
+                <p className={projectInfoValueClass}>
+                  {extensionForm.periodStart} ate {extensionForm.periodEnd}
+                </p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Curso ou programa vinculado</p>
+                <p className={projectInfoValueClass}>{extensionForm.linkedCourse}</p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Curso</p>
+                <p className={projectInfoValueClass}>{extensionForm.courseName}</p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>E-mail da Coordenacao</p>
+                <p className={projectInfoValueClass}>{extensionForm.coordinationEmail}</p>
+              </div>
+            </div>
+          </section>
 
-      <section className={projectInfoSectionClass}>
-        <h3>Docentes</h3>
-        <div className={projectInfoGridClass}>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Nome do docente coordenador</p>
-            <p className={projectInfoValueClass}>{extensionForm.coordinatorName}</p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>E-mail do docente coordenador</p>
-            <p className={projectInfoValueClass}>{extensionForm.coordinatorEmail}</p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>CPF do docente coordenador</p>
-            <p className={projectInfoValueClass}>{extensionForm.coordinatorCpf}</p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Telefone (WhatsApp)</p>
-            <p className={projectInfoValueClass}>{extensionForm.coordinatorPhone}</p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Carga Horaria Semanal - Coordenador</p>
-            <p className={projectInfoValueClass}>{extensionForm.coordinatorWeeklyHours}</p>
-          </div>
-          <div className={projectInfoItemFullClass}>
-            <p className={projectInfoLabelClass}>Forma de participacao do Coordenador</p>
-            <p className={projectInfoValueClass}>{extensionForm.coordinatorParticipation}</p>
-          </div>
-          <div className={projectInfoItemFullClass}>
-            <p className={projectInfoLabelClass}>Outros docentes colaboradores voluntarios</p>
-            <p className={projectInfoValueClass}>{extensionForm.otherVolunteerTeachers || "-"}</p>
-          </div>
-        </div>
-      </section>
+          <section className={projectInfoSectionClass}>
+            <h3>Docentes</h3>
+            <div className={projectInfoGridClass}>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Nome do docente coordenador</p>
+                <p className={projectInfoValueClass}>{extensionForm.coordinatorName}</p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>E-mail do docente coordenador</p>
+                <p className={projectInfoValueClass}>{extensionForm.coordinatorEmail}</p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>CPF do docente coordenador</p>
+                <p className={projectInfoValueClass}>{extensionForm.coordinatorCpf}</p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Telefone (WhatsApp)</p>
+                <p className={projectInfoValueClass}>{extensionForm.coordinatorPhone}</p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Carga Horaria Semanal - Coordenador</p>
+                <p className={projectInfoValueClass}>{extensionForm.coordinatorWeeklyHours}</p>
+              </div>
+              <div className={projectInfoItemFullClass}>
+                <p className={projectInfoLabelClass}>Forma de participacao do Coordenador</p>
+                <p className={projectInfoValueClass}>{extensionForm.coordinatorParticipation}</p>
+              </div>
+              <div className={projectInfoItemFullClass}>
+                <p className={projectInfoLabelClass}>Outros docentes colaboradores voluntarios</p>
+                <p className={projectInfoValueClass}>{extensionForm.otherVolunteerTeachers || "-"}</p>
+              </div>
+            </div>
+          </section>
 
-      <section className={projectInfoSectionClass}>
-        <h3>Estudantes voluntarios</h3>
-        <div className={projectInfoGridClass}>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Carga Horaria Semanal - Estudantes</p>
-            <p className={projectInfoValueClass}>{extensionForm.studentWeeklyHours}</p>
-          </div>
-          <div className={projectInfoItemFullClass}>
-            <p className={projectInfoLabelClass}>Estudantes participantes</p>
-            <p className={projectInfoValueClass}>{extensionForm.studentParticipants}</p>
-          </div>
-        </div>
-      </section>
+          <section className={projectInfoSectionClass}>
+            <h3>Estudantes voluntarios</h3>
+            <div className={projectInfoGridClass}>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Carga Horaria Semanal - Estudantes</p>
+                <p className={projectInfoValueClass}>{extensionForm.studentWeeklyHours}</p>
+              </div>
+              <div className={projectInfoItemFullClass}>
+                <p className={projectInfoLabelClass}>Estudantes participantes</p>
+                <p className={projectInfoValueClass}>{extensionForm.studentParticipants}</p>
+              </div>
+            </div>
+          </section>
+        </>
+      )}
 
       <section className={projectInfoSectionClass}>
         <h3>Eixo Aprendizagem</h3>
@@ -545,7 +593,7 @@ export function UserProjectDetailPage() {
           <div className={projectInfoItemFullClass}>
             <p className={projectInfoLabelClass}>Compreendi que...</p>
             <p className={projectInfoValueClass}>
-              {ACKNOWLEDGEMENT_OPTIONS.filter((item) =>
+              {acknowledgementOptions.filter((item) =>
                 extensionForm.acknowledgements.includes(item.id),
               )
                 .map((item) => item.label)
@@ -603,34 +651,76 @@ export function UserProjectDetailPage() {
                   {project.tipo === "extensao" ? (
                     renderExtensionSummary(createExtensionPlanFromProject(project))
                   ) : (
-                    <section className={projectInfoGridClass}>
-                      <div className={projectInfoItemClass}>
-                        <p className={projectInfoLabelClass}>Area</p>
-                        <p className={projectInfoValueClass}>{project.thematic_area}</p>
-                      </div>
-                      <div className={projectInfoItemClass}>
-                        <p className={projectInfoLabelClass}>Curso</p>
-                        <p className={projectInfoValueClass}>{project.course || "-"}</p>
-                      </div>
-                      <div className={projectInfoItemClass}>
-                        <p className={projectInfoLabelClass}>Periodo</p>
-                        <p className={projectInfoValueClass}>
-                          {project.period_start} ate {project.period_end}
-                        </p>
-                      </div>
-                      <div className={projectInfoItemClass}>
-                        <p className={projectInfoLabelClass}>Publico-alvo</p>
-                        <p className={projectInfoValueClass}>{project.target_audience}</p>
-                      </div>
-                      <div className={projectInfoItemClass}>
-                        <p className={projectInfoLabelClass}>Orcamento</p>
-                        <p className={projectInfoValueClass}>R$ {Number(project.budget).toFixed(2)}</p>
-                      </div>
-                      <div className={projectInfoItemFullClass}>
-                        <p className={projectInfoLabelClass}>Descricao</p>
-                        <p className={projectInfoValueClass}>{project.description}</p>
-                      </div>
-                    </section>
+                    <div className={projectSectionsStackClass}>
+                      <section className={projectInfoGridClass}>
+                        <div className={projectInfoItemClass}>
+                          <p className={projectInfoLabelClass}>Titulo da Iniciativa</p>
+                          <p className={projectInfoValueClass}>{project.title}</p>
+                        </div>
+                        <div className={projectInfoItemClass}>
+                          <p className={projectInfoLabelClass}>Programa Unicap</p>
+                          <p className={projectInfoValueClass}>{project.thematic_area}</p>
+                        </div>
+                        <div className={projectInfoItemClass}>
+                          <p className={projectInfoLabelClass}>Nome da Disciplina</p>
+                          <p className={projectInfoValueClass}>{project.target_audience}</p>
+                        </div>
+                        <div className={projectInfoItemClass}>
+                          <p className={projectInfoLabelClass}>Curso Vinculado</p>
+                          <p className={projectInfoValueClass}>
+                            {project.course || disciplineExtensionForm?.linkedCourse || "-"}
+                          </p>
+                        </div>
+                        <div className={projectInfoItemClass}>
+                          <p className={projectInfoLabelClass}>Periodo de realizacao da disciplina</p>
+                          <p className={projectInfoValueClass}>{project.semestre_letivo || "-"}</p>
+                        </div>
+                        <div className={projectInfoItemClass}>
+                          <p className={projectInfoLabelClass}>Carga horaria de Extensao</p>
+                          <p className={projectInfoValueClass}>{Number(project.budget).toFixed(0)}h</p>
+                        </div>
+                        <div className={projectInfoItemClass}>
+                          <p className={projectInfoLabelClass}>Codigo Extensao</p>
+                          <p className={projectInfoValueClass}>{disciplineMetadata?.codigoExtensao || "-"}</p>
+                        </div>
+                        <div className={projectInfoItemClass}>
+                          <p className={projectInfoLabelClass}>Codigo da Disciplina</p>
+                          <p className={projectInfoValueClass}>
+                            {project.codigo_disciplina || disciplineMetadata?.codigoDisciplina || "-"}
+                          </p>
+                        </div>
+                        <div className={projectInfoItemClass}>
+                          <p className={projectInfoLabelClass}>Codigo da Turma</p>
+                          <p className={projectInfoValueClass}>{disciplineMetadata?.codigoTurma || "-"}</p>
+                        </div>
+                        <div className={projectInfoItemClass}>
+                          <p className={projectInfoLabelClass}>Disciplina Gerencial</p>
+                          <p className={projectInfoValueClass}>
+                            {disciplineMetadata
+                              ? disciplineManagerialLabel(disciplineMetadata.disciplinaGerencial)
+                              : "-"}
+                          </p>
+                        </div>
+                        <div className={projectInfoItemFullClass}>
+                          <p className={projectInfoLabelClass}>Cursos Gerenciados</p>
+                          <p className={projectInfoValueClass}>
+                            {disciplineMetadata?.cursosGerenciados || "-"}
+                          </p>
+                        </div>
+                        <div className={projectInfoItemClass}>
+                          <p className={projectInfoLabelClass}>Datas no sistema</p>
+                          <p className={projectInfoValueClass}>
+                            {project.period_start} ate {project.period_end}
+                          </p>
+                        </div>
+                      </section>
+                      {project.extension_form &&
+                        renderExtensionSummary(
+                          createExtensionPlanFromProject(project),
+                          DISCIPLINE_ACKNOWLEDGEMENT_OPTIONS,
+                          "axes-only",
+                        )}
+                    </div>
                   )}
                   {project.admin_message && (
                     <div className={projectFeedbackNoteClass}>
@@ -772,11 +862,11 @@ export function UserProjectDetailPage() {
                         )
                       }
                       disabled={isSubmitting}
-                    />
+                      />
                   ) : (
                     <>
                       <label className={projectFormLabelClass}>
-                        Titulo
+                        Titulo da Iniciativa
                         <Input
                           value={editForm?.title ?? ""}
                           onChange={(event) =>
@@ -789,8 +879,9 @@ export function UserProjectDetailPage() {
                       </label>
 
                       <label className={projectFormLabelClass}>
-                        Area tematica
-                        <Input
+                        Programa Unicap
+                        <select
+                          className="ui-input ui-select"
                           value={editForm?.thematicArea ?? ""}
                           onChange={(event) =>
                             setEditForm((prev) =>
@@ -800,11 +891,65 @@ export function UserProjectDetailPage() {
                             )
                           }
                           required
-                        />
+                        >
+                          <option value="">Selecione</option>
+                          {UNICAP_PROGRAM_OPTIONS.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
                       </label>
 
                       <label className={projectFormLabelClass}>
-                        Curso
+                        Nome da Disciplina
+                        <Input
+                          value={editForm?.disciplineName ?? ""}
+                          onChange={(event) =>
+                            setEditForm((prev) =>
+                              prev
+                                ? { ...prev, disciplineName: event.target.value }
+                                : prev,
+                            )
+                          }
+                          required
+                        />
+                      </label>
+
+                      <div className={projectGrid2Class}>
+                        <label className={projectFormLabelClass}>
+                          Codigo Extensao
+                          <Input
+                            value={editForm?.codigoExtensao ?? ""}
+                            onChange={(event) =>
+                              setEditForm((prev) =>
+                                prev
+                                  ? { ...prev, codigoExtensao: event.target.value }
+                                  : prev,
+                              )
+                            }
+                            required
+                          />
+                        </label>
+
+                        <label className={projectFormLabelClass}>
+                          Codigo da Disciplina
+                          <Input
+                            value={editForm?.codigoDisciplina ?? ""}
+                            onChange={(event) =>
+                              setEditForm((prev) =>
+                                prev
+                                  ? { ...prev, codigoDisciplina: event.target.value }
+                                  : prev,
+                              )
+                            }
+                            required
+                          />
+                        </label>
+                      </div>
+
+                      <label className={projectFormLabelClass}>
+                        Curso em que a disciplina esta vinculada
                         <Input
                           value={editForm?.course ?? ""}
                           onChange={(event) =>
@@ -812,6 +957,110 @@ export function UserProjectDetailPage() {
                               prev ? { ...prev, course: event.target.value } : prev,
                             )
                           }
+                          required
+                        />
+                      </label>
+
+                      <div className={projectGrid2Class}>
+                        <label className={projectFormLabelClass}>
+                          Periodo de realizacao da disciplina
+                          <Input
+                            value={editForm?.semestreLetivo ?? ""}
+                            onChange={(event) =>
+                              setEditForm((prev) =>
+                                prev
+                                  ? { ...prev, semestreLetivo: event.target.value }
+                                  : prev,
+                              )
+                            }
+                            required
+                          />
+                        </label>
+
+                        <label className={projectFormLabelClass}>
+                          Carga horaria de Extensao
+                          <Input
+                            type="number"
+                            min={0}
+                            step="1"
+                            value={editForm?.budget ?? ""}
+                            onChange={(event) =>
+                              setEditForm((prev) =>
+                                prev ? { ...prev, budget: event.target.value } : prev,
+                              )
+                            }
+                            required
+                          />
+                        </label>
+                      </div>
+
+                      <ExtensionProjectFields
+                        form={editForm!.extensionForm}
+                        onChange={(nextForm) =>
+                          setEditForm((prev) =>
+                            prev ? { ...prev, extensionForm: nextForm } : prev,
+                          )
+                        }
+                        disabled={isSubmitting}
+                        mode="axes-only"
+                        acknowledgementOptions={DISCIPLINE_ACKNOWLEDGEMENT_OPTIONS}
+                      />
+
+                      <div className={projectGrid2Class}>
+                        <label className={projectFormLabelClass}>
+                          Codigo da Turma
+                          <Input
+                            value={editForm?.codigoTurma ?? ""}
+                            onChange={(event) =>
+                              setEditForm((prev) =>
+                                prev
+                                  ? { ...prev, codigoTurma: event.target.value }
+                                  : prev,
+                              )
+                            }
+                            required
+                          />
+                        </label>
+
+                        <label className={projectFormLabelClass}>
+                          Disciplina Gerencial
+                          <select
+                            className="ui-input ui-select"
+                            value={editForm?.disciplinaGerencial ?? "Nao"}
+                            onChange={(event) =>
+                              setEditForm((prev) =>
+                                prev
+                                  ? {
+                                      ...prev,
+                                      disciplinaGerencial:
+                                        event.target.value as DisciplineManagerialOption,
+                                    }
+                                  : prev,
+                              )
+                            }
+                            required
+                          >
+                            {DISCIPLINE_MANAGERIAL_OPTIONS.map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      </div>
+
+                      <label className={projectFormLabelClass}>
+                        Cursos Gerenciados
+                        <Input
+                          value={editForm?.managedCourses ?? ""}
+                          onChange={(event) =>
+                            setEditForm((prev) =>
+                              prev
+                                ? { ...prev, managedCourses: event.target.value }
+                                : prev,
+                            )
+                          }
+                          placeholder="Preencha quando a disciplina for gerencial"
                         />
                       </label>
 
@@ -847,53 +1096,6 @@ export function UserProjectDetailPage() {
                           />
                         </label>
                       </div>
-
-                      <label className={projectFormLabelClass}>
-                        Publico-alvo
-                        <Input
-                          value={editForm?.targetAudience ?? ""}
-                          onChange={(event) =>
-                            setEditForm((prev) =>
-                              prev
-                                ? { ...prev, targetAudience: event.target.value }
-                                : prev,
-                            )
-                          }
-                          required
-                        />
-                      </label>
-
-                      <label className={projectFormLabelClass}>
-                        Orcamento
-                        <Input
-                          type="number"
-                          min={0}
-                          step="0.01"
-                          value={editForm?.budget ?? ""}
-                          onChange={(event) =>
-                            setEditForm((prev) =>
-                              prev ? { ...prev, budget: event.target.value } : prev,
-                            )
-                          }
-                          required
-                        />
-                      </label>
-
-                      <label className={projectFormLabelClass}>
-                        Descricao
-                        <Textarea
-                          value={editForm?.description ?? ""}
-                          onChange={(event) =>
-                            setEditForm((prev) =>
-                              prev
-                                ? { ...prev, description: event.target.value }
-                                : prev,
-                            )
-                          }
-                          rows={6}
-                          required
-                        />
-                      </label>
                     </>
                   )}
 

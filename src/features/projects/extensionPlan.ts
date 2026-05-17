@@ -125,6 +125,24 @@ export const ACKNOWLEDGEMENT_OPTIONS = [
   },
 ] as const
 
+export const DISCIPLINE_ACKNOWLEDGEMENT_OPTIONS = [
+  {
+    id: 'approval_required',
+    label:
+      'esse Plano de Trabalho somente tera validade apos a aprovacao da Assessoria de Extensao e da coordenacao do curso ao qual esta vinculado',
+  },
+  {
+    id: 'final_report_required',
+    label:
+      'ao final da experiencia de extensao, devo enviar o Relatorio Final de Extensao conforme modelo vigente.',
+  },
+  {
+    id: 'corrections_may_be_requested',
+    label:
+      'caso julguem necessario a Assessoria de Extensao ou a Coordenacao de curso, poderao solicitar alteracao ou correcao de algum item do plano.',
+  },
+] as const
+
 export type ExtensionPlanData = {
   title: string
   totalWorkload: string
@@ -274,5 +292,10 @@ export const createExtensionPlanFromProject = (project: {
   }
 }
 
+export const areAcknowledgementsComplete = (
+  acknowledgements: string[],
+  options: readonly { id: string }[] = ACKNOWLEDGEMENT_OPTIONS,
+) => options.every((item) => acknowledgements.includes(item.id))
+
 export const isExtensionPlanComplete = (form: ExtensionPlanData) =>
-  ACKNOWLEDGEMENT_OPTIONS.every((item) => form.acknowledgements.includes(item.id))
+  areAcknowledgementsComplete(form.acknowledgements)

@@ -5,8 +5,13 @@ import { Button } from '../../components/ui/button'
 import { Spinner } from '../../components/ui/spinner'
 import { Textarea } from '../../components/ui/textarea'
 import {
+  disciplineManagerialLabel,
+  parseDisciplineMetadataDescription,
+} from '../../features/disciplines/disciplineProjectMetadata'
+import {
   ACKNOWLEDGEMENT_OPTIONS,
   createExtensionPlanFromProject,
+  DISCIPLINE_ACKNOWLEDGEMENT_OPTIONS,
   type ExtensionPlanData,
 } from '../../features/projects/extensionPlan'
 import { sendProjectStatusEmail } from '../../features/notifications/projectEmails'
@@ -157,70 +162,86 @@ export function AdminProjectDetailPage() {
       : project?.status === 'reprovado'
         ? timeline?.rejected_at ?? null
         : null
+  const disciplineMetadata =
+    project?.tipo === 'disciplina'
+      ? parseDisciplineMetadataDescription(project.description)
+      : null
+  const disciplineExtensionForm =
+    project?.tipo === 'disciplina' && project.extension_form
+      ? createExtensionPlanFromProject(project)
+      : null
 
-  const renderExtensionSummary = (extensionForm: ExtensionPlanData) => (
+  const renderExtensionSummary = (
+    extensionForm: ExtensionPlanData,
+    acknowledgementOptions: readonly { id: string; label: string }[] = ACKNOWLEDGEMENT_OPTIONS,
+    mode: 'full' | 'axes-only' = 'full',
+  ) => (
     <div className={projectSectionsStackClass}>
-      <section className={projectInfoSectionClass}>
-        <h3>Identificacao da Iniciativa Extensionista</h3>
-        <div className={projectInfoGridClass}>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Titulo da Iniciativa</p>
-            <p className={projectInfoValueClass}>{extensionForm.title}</p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Carga horaria total</p>
-            <p className={projectInfoValueClass}>{extensionForm.totalWorkload}</p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Programa Unicap</p>
-            <p className={projectInfoValueClass}>{extensionForm.unicapProgram}</p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Periodo</p>
-            <p className={projectInfoValueClass}>
-              {extensionForm.periodStart} ate {extensionForm.periodEnd}
-            </p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Curso ou programa vinculado</p>
-            <p className={projectInfoValueClass}>{extensionForm.linkedCourse}</p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Curso</p>
-            <p className={projectInfoValueClass}>{extensionForm.courseName}</p>
-          </div>
-        </div>
-      </section>
+      {mode === 'full' && (
+        <>
+          <section className={projectInfoSectionClass}>
+            <h3>Identificacao da Iniciativa Extensionista</h3>
+            <div className={projectInfoGridClass}>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Titulo da Iniciativa</p>
+                <p className={projectInfoValueClass}>{extensionForm.title}</p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Carga horaria total</p>
+                <p className={projectInfoValueClass}>{extensionForm.totalWorkload}</p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Programa Unicap</p>
+                <p className={projectInfoValueClass}>{extensionForm.unicapProgram}</p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Periodo</p>
+                <p className={projectInfoValueClass}>
+                  {extensionForm.periodStart} ate {extensionForm.periodEnd}
+                </p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Curso ou programa vinculado</p>
+                <p className={projectInfoValueClass}>{extensionForm.linkedCourse}</p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Curso</p>
+                <p className={projectInfoValueClass}>{extensionForm.courseName}</p>
+              </div>
+            </div>
+          </section>
 
-      <section className={projectInfoSectionClass}>
-        <h3>Docentes</h3>
-        <div className={projectInfoGridClass}>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Professor</p>
-            <p className={projectInfoValueClass}>{project?.professor}</p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Nome do docente coordenador</p>
-            <p className={projectInfoValueClass}>{extensionForm.coordinatorName}</p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>E-mail do docente coordenador</p>
-            <p className={projectInfoValueClass}>{extensionForm.coordinatorEmail}</p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>CPF do docente coordenador</p>
-            <p className={projectInfoValueClass}>{extensionForm.coordinatorCpf}</p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Telefone (WhatsApp)</p>
-            <p className={projectInfoValueClass}>{extensionForm.coordinatorPhone}</p>
-          </div>
-          <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Participacao do Coordenador</p>
-            <p className={projectInfoValueClass}>{extensionForm.coordinatorParticipation}</p>
-          </div>
-        </div>
-      </section>
+          <section className={projectInfoSectionClass}>
+            <h3>Docentes</h3>
+            <div className={projectInfoGridClass}>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Professor</p>
+                <p className={projectInfoValueClass}>{project?.professor}</p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Nome do docente coordenador</p>
+                <p className={projectInfoValueClass}>{extensionForm.coordinatorName}</p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>E-mail do docente coordenador</p>
+                <p className={projectInfoValueClass}>{extensionForm.coordinatorEmail}</p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>CPF do docente coordenador</p>
+                <p className={projectInfoValueClass}>{extensionForm.coordinatorCpf}</p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Telefone (WhatsApp)</p>
+                <p className={projectInfoValueClass}>{extensionForm.coordinatorPhone}</p>
+              </div>
+              <div className={projectInfoItemClass}>
+                <p className={projectInfoLabelClass}>Participacao do Coordenador</p>
+                <p className={projectInfoValueClass}>{extensionForm.coordinatorParticipation}</p>
+              </div>
+            </div>
+          </section>
+        </>
+      )}
 
       <section className={projectInfoSectionClass}>
         <h3>Conteudo do Plano</h3>
@@ -260,7 +281,7 @@ export function AdminProjectDetailPage() {
           <div className={projectInfoItemFullClass}>
             <p className={projectInfoLabelClass}>Confirmacoes marcadas</p>
             <p className={projectInfoValueClass}>
-              {ACKNOWLEDGEMENT_OPTIONS.filter((item) =>
+              {acknowledgementOptions.filter((item) =>
                 extensionForm.acknowledgements.includes(item.id),
               )
                 .map((item) => item.label)
@@ -306,38 +327,80 @@ export function AdminProjectDetailPage() {
                     {renderExtensionSummary(createExtensionPlanFromProject(project))}
                   </div>
                 ) : (
-                  <>
+                  <div className={projectSectionsStackClass}>
+                    <section className={projectInfoGridClass}>
                     <div className={projectInfoItemClass}>
                       <p className={projectInfoLabelClass}>Professor</p>
                       <p className={projectInfoValueClass}>{project.professor}</p>
                     </div>
                     <div className={projectInfoItemClass}>
-                      <p className={projectInfoLabelClass}>Disciplina</p>
+                      <p className={projectInfoLabelClass}>Titulo da Iniciativa</p>
+                      <p className={projectInfoValueClass}>{project.title}</p>
+                    </div>
+                    <div className={projectInfoItemClass}>
+                      <p className={projectInfoLabelClass}>Programa Unicap</p>
                       <p className={projectInfoValueClass}>{project.discipline}</p>
                     </div>
                     <div className={projectInfoItemClass}>
-                      <p className={projectInfoLabelClass}>Curso</p>
-                      <p className={projectInfoValueClass}>{project.course}</p>
+                      <p className={projectInfoLabelClass}>Nome da Disciplina</p>
+                      <p className={projectInfoValueClass}>{project.target_audience}</p>
                     </div>
                     <div className={projectInfoItemClass}>
-                      <p className={projectInfoLabelClass}>Periodo</p>
+                      <p className={projectInfoLabelClass}>Curso Vinculado</p>
+                      <p className={projectInfoValueClass}>
+                        {project.course || disciplineExtensionForm?.linkedCourse || '-'}
+                      </p>
+                    </div>
+                    <div className={projectInfoItemClass}>
+                      <p className={projectInfoLabelClass}>Periodo de realizacao da disciplina</p>
+                      <p className={projectInfoValueClass}>{project.semestre_letivo || '-'}</p>
+                    </div>
+                    <div className={projectInfoItemClass}>
+                      <p className={projectInfoLabelClass}>Carga horaria de Extensao</p>
+                      <p className={projectInfoValueClass}>{Number(project.budget).toFixed(0)}h</p>
+                    </div>
+                    <div className={projectInfoItemClass}>
+                      <p className={projectInfoLabelClass}>Codigo Extensao</p>
+                      <p className={projectInfoValueClass}>{disciplineMetadata?.codigoExtensao || '-'}</p>
+                    </div>
+                    <div className={projectInfoItemClass}>
+                      <p className={projectInfoLabelClass}>Codigo da Disciplina</p>
+                      <p className={projectInfoValueClass}>
+                        {disciplineMetadata?.codigoDisciplina || '-'}
+                      </p>
+                    </div>
+                    <div className={projectInfoItemClass}>
+                      <p className={projectInfoLabelClass}>Codigo da Turma</p>
+                      <p className={projectInfoValueClass}>{disciplineMetadata?.codigoTurma || '-'}</p>
+                    </div>
+                    <div className={projectInfoItemClass}>
+                      <p className={projectInfoLabelClass}>Disciplina Gerencial</p>
+                      <p className={projectInfoValueClass}>
+                        {disciplineMetadata
+                          ? disciplineManagerialLabel(disciplineMetadata.disciplinaGerencial)
+                          : '-'}
+                      </p>
+                    </div>
+                    <div className={projectInfoItemFullClass}>
+                      <p className={projectInfoLabelClass}>Cursos Gerenciados</p>
+                      <p className={projectInfoValueClass}>
+                        {disciplineMetadata?.cursosGerenciados || '-'}
+                      </p>
+                    </div>
+                    <div className={projectInfoItemClass}>
+                      <p className={projectInfoLabelClass}>Datas no sistema</p>
                       <p className={projectInfoValueClass}>
                         {project.period_start} ate {project.period_end}
                       </p>
                     </div>
-                    <div className={projectInfoItemClass}>
-                      <p className={projectInfoLabelClass}>Publico-alvo</p>
-                      <p className={projectInfoValueClass}>{project.target_audience}</p>
-                    </div>
-                    <div className={projectInfoItemClass}>
-                      <p className={projectInfoLabelClass}>Orcamento</p>
-                      <p className={projectInfoValueClass}>R$ {Number(project.budget).toFixed(2)}</p>
-                    </div>
-                    <div className={projectInfoItemFullClass}>
-                      <p className={projectInfoLabelClass}>Descricao</p>
-                      <p className={projectInfoValueClass}>{project.description}</p>
-                    </div>
-                  </>
+                    </section>
+                    {project.extension_form &&
+                      renderExtensionSummary(
+                        createExtensionPlanFromProject(project),
+                        DISCIPLINE_ACKNOWLEDGEMENT_OPTIONS,
+                        'axes-only',
+                      )}
+                  </div>
                 )}
               </section>
 

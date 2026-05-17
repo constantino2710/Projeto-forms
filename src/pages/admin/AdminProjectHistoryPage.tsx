@@ -105,11 +105,10 @@ export function AdminProjectHistoryPage() {
     request
       .then(({ rows, total: totalCount }) => {
         if (cancelled) return
-        const filtered = rows.filter((row) => row.status !== 'em_avaliacao')
-        setProjects(filtered)
-        setTotal(totalCount - (rows.length - filtered.length))
-        setCourseOptions((current) => mergeUniqueSorted(current, filtered.map((p) => p.course)))
-        setSchoolOptions((current) => mergeUniqueSorted(current, filtered.map((p) => p.school)))
+        setProjects(rows)
+        setTotal(totalCount)
+        setCourseOptions((current) => mergeUniqueSorted(current, rows.map((p) => p.course)))
+        setSchoolOptions((current) => mergeUniqueSorted(current, rows.map((p) => p.school)))
       })
       .catch((err) => {
         if (cancelled) return
@@ -188,7 +187,9 @@ export function AdminProjectHistoryPage() {
                   {project.period_start} – {project.period_end}
                 </span>
                 <span className={cn(historyCardMetaClass, 'font-semibold')}>
-                  R$ {Number(project.budget).toFixed(2)}
+                  {project.tipo === 'disciplina'
+                    ? `${Number(project.budget).toFixed(0)}h de extensao`
+                    : `R$ ${Number(project.budget).toFixed(2)}`}
                 </span>
                 <span className={cn(statusBadgeBaseClass, statusColorMap[project.status])}>
                   {projectStatusLabel[project.status]}

@@ -20,6 +20,8 @@ type ExtensionProjectFieldsProps = {
   form: ExtensionPlanData
   onChange: (next: ExtensionPlanData) => void
   disabled?: boolean
+  mode?: 'full' | 'axes-only'
+  acknowledgementOptions?: readonly { id: string; label: string }[]
 }
 
 const sectionClass =
@@ -35,6 +37,8 @@ export function ExtensionProjectFields({
   form,
   onChange,
   disabled = false,
+  mode = 'full',
+  acknowledgementOptions = ACKNOWLEDGEMENT_OPTIONS,
 }: ExtensionProjectFieldsProps) {
   const setField = <K extends keyof ExtensionPlanData>(field: K, value: ExtensionPlanData[K]) => {
     onChange({
@@ -53,264 +57,268 @@ export function ExtensionProjectFields({
 
   return (
     <div className="flex flex-col gap-[18px]">
-      <section className={sectionClass}>
-        <div className={sectionHeadingClass}>
-          <h2 className="m-0 text-base text-foreground">Identificacao da Iniciativa Extensionista</h2>
-          <p className="m-0 text-muted-foreground">Replica dos campos principais do plano de trabalho voluntario.</p>
-        </div>
+      {mode === 'full' && (
+        <>
+          <section className={sectionClass}>
+            <div className={sectionHeadingClass}>
+              <h2 className="m-0 text-base text-foreground">Identificacao da Iniciativa Extensionista</h2>
+              <p className="m-0 text-muted-foreground">Replica dos campos principais do plano de trabalho voluntario.</p>
+            </div>
 
-        <div className={grid2}>
-          <label className={projectFormLabelClass}>
-            Titulo da Iniciativa
-            <Input
-              value={form.title}
-              onChange={(event) => setField('title', event.target.value)}
-              required
-              disabled={disabled}
-            />
-          </label>
+            <div className={grid2}>
+              <label className={projectFormLabelClass}>
+                Titulo da Iniciativa
+                <Input
+                  value={form.title}
+                  onChange={(event) => setField('title', event.target.value)}
+                  required
+                  disabled={disabled}
+                />
+              </label>
 
-          <label className={projectFormLabelClass}>
-            Carga horaria total da iniciativa
-            <Input
-              type="number"
-              min={1}
-              value={form.totalWorkload}
-              onChange={(event) => setField('totalWorkload', event.target.value)}
-              required
-              disabled={disabled}
-            />
-          </label>
-        </div>
+              <label className={projectFormLabelClass}>
+                Carga horaria total da iniciativa
+                <Input
+                  type="number"
+                  min={1}
+                  value={form.totalWorkload}
+                  onChange={(event) => setField('totalWorkload', event.target.value)}
+                  required
+                  disabled={disabled}
+                />
+              </label>
+            </div>
 
-        <label className={projectFormLabelClass}>
-          Programa Unicap
-          <select
-            className={selectInputClass}
-            value={form.unicapProgram}
-            onChange={(event) => setField('unicapProgram', event.target.value)}
-            required
-            disabled={disabled}
-          >
-            <option value="">Selecione uma opcao</option>
-            {UNICAP_PROGRAM_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
+            <label className={projectFormLabelClass}>
+              Programa Unicap
+              <select
+                className={selectInputClass}
+                value={form.unicapProgram}
+                onChange={(event) => setField('unicapProgram', event.target.value)}
+                required
+                disabled={disabled}
+              >
+                <option value="">Selecione uma opcao</option>
+                {UNICAP_PROGRAM_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-        <div className={grid2}>
-          <label className={projectFormLabelClass}>
-            Data de realizacao - Inicio
-            <Input
-              type="date"
-              value={form.periodStart}
-              onChange={(event) => setField('periodStart', event.target.value)}
-              required
-              disabled={disabled}
-            />
-          </label>
+            <div className={grid2}>
+              <label className={projectFormLabelClass}>
+                Data de realizacao - Inicio
+                <Input
+                  type="date"
+                  value={form.periodStart}
+                  onChange={(event) => setField('periodStart', event.target.value)}
+                  required
+                  disabled={disabled}
+                />
+              </label>
 
-          <label className={projectFormLabelClass}>
-            Data de realizacao - Termino
-            <Input
-              type="date"
-              value={form.periodEnd}
-              onChange={(event) => setField('periodEnd', event.target.value)}
-              required
-              disabled={disabled}
-            />
-          </label>
-        </div>
+              <label className={projectFormLabelClass}>
+                Data de realizacao - Termino
+                <Input
+                  type="date"
+                  value={form.periodEnd}
+                  onChange={(event) => setField('periodEnd', event.target.value)}
+                  required
+                  disabled={disabled}
+                />
+              </label>
+            </div>
 
-        <label className={projectFormLabelClass}>
-          Curso ou Programa de Pos-Graduacao ao qual a disciplina esta vinculada
-          <select
-            className={selectInputClass}
-            value={form.linkedCourse}
-            onChange={(event) => setField('linkedCourse', event.target.value)}
-            required
-            disabled={disabled}
-          >
-            <option value="">Favor selecionar</option>
-            {LINKED_COURSE_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
+            <label className={projectFormLabelClass}>
+              Curso ou Programa de Pos-Graduacao ao qual a disciplina esta vinculada
+              <select
+                className={selectInputClass}
+                value={form.linkedCourse}
+                onChange={(event) => setField('linkedCourse', event.target.value)}
+                required
+                disabled={disabled}
+              >
+                <option value="">Favor selecionar</option>
+                {LINKED_COURSE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-        <div className={grid2}>
-          <label className={projectFormLabelClass}>
-            Curso
-            <Input
-              value={form.courseName}
-              onChange={(event) => setField('courseName', event.target.value)}
-              required
-              disabled={disabled}
-            />
-          </label>
+            <div className={grid2}>
+              <label className={projectFormLabelClass}>
+                Curso
+                <Input
+                  value={form.courseName}
+                  onChange={(event) => setField('courseName', event.target.value)}
+                  required
+                  disabled={disabled}
+                />
+              </label>
 
-          <label className={projectFormLabelClass}>
-            E-mail da Coordenacao
-            <Input
-              type="email"
-              value={form.coordinationEmail}
-              onChange={(event) => setField('coordinationEmail', event.target.value)}
-              required
-              disabled={disabled}
-            />
-          </label>
-        </div>
-      </section>
+              <label className={projectFormLabelClass}>
+                E-mail da Coordenacao
+                <Input
+                  type="email"
+                  value={form.coordinationEmail}
+                  onChange={(event) => setField('coordinationEmail', event.target.value)}
+                  required
+                  disabled={disabled}
+                />
+              </label>
+            </div>
+          </section>
 
-      <section className={sectionClass}>
-        <div className={sectionHeadingClass}>
-          <h2 className="m-0 text-base text-foreground">Docentes</h2>
-          <p className="m-0 text-muted-foreground">Dados do coordenador e docentes colaboradores.</p>
-        </div>
+          <section className={sectionClass}>
+            <div className={sectionHeadingClass}>
+              <h2 className="m-0 text-base text-foreground">Docentes</h2>
+              <p className="m-0 text-muted-foreground">Dados do coordenador e docentes colaboradores.</p>
+            </div>
 
-        <div className={grid2}>
-          <label className={projectFormLabelClass}>
-            Nome do docente coordenador
-            <Input
-              value={form.coordinatorName}
-              onChange={(event) => setField('coordinatorName', event.target.value)}
-              required
-              disabled={disabled}
-            />
-          </label>
+            <div className={grid2}>
+              <label className={projectFormLabelClass}>
+                Nome do docente coordenador
+                <Input
+                  value={form.coordinatorName}
+                  onChange={(event) => setField('coordinatorName', event.target.value)}
+                  required
+                  disabled={disabled}
+                />
+              </label>
 
-          <label className={projectFormLabelClass}>
-            E-mail do docente coordenador
-            <Input
-              type="email"
-              value={form.coordinatorEmail}
-              onChange={(event) => setField('coordinatorEmail', event.target.value)}
-              required
-              disabled={disabled}
-            />
-          </label>
-        </div>
+              <label className={projectFormLabelClass}>
+                E-mail do docente coordenador
+                <Input
+                  type="email"
+                  value={form.coordinatorEmail}
+                  onChange={(event) => setField('coordinatorEmail', event.target.value)}
+                  required
+                  disabled={disabled}
+                />
+              </label>
+            </div>
 
-        <div className={grid3}>
-          <label className={projectFormLabelClass}>
-            CPF do docente coordenador
-            <Input
-              value={form.coordinatorCpf}
-              onChange={(event) =>
-                setField('coordinatorCpf', event.target.value.replace(/\D/g, '').slice(0, 11))
-              }
-              inputMode="numeric"
-              maxLength={11}
-              placeholder="Apenas numeros"
-              required
-              disabled={disabled}
-            />
-          </label>
+            <div className={grid3}>
+              <label className={projectFormLabelClass}>
+                CPF do docente coordenador
+                <Input
+                  value={form.coordinatorCpf}
+                  onChange={(event) =>
+                    setField('coordinatorCpf', event.target.value.replace(/\D/g, '').slice(0, 11))
+                  }
+                  inputMode="numeric"
+                  maxLength={11}
+                  placeholder="Apenas numeros"
+                  required
+                  disabled={disabled}
+                />
+              </label>
 
-          <label className={projectFormLabelClass}>
-            Telefone (WhatsApp)
-            <Input
-              value={form.coordinatorPhone}
-              onChange={(event) =>
-                setField('coordinatorPhone', event.target.value.replace(/\D/g, '').slice(0, 13))
-              }
-              inputMode="tel"
-              maxLength={13}
-              placeholder="Apenas numeros (DDD + numero)"
-              required
-              disabled={disabled}
-            />
-          </label>
+              <label className={projectFormLabelClass}>
+                Telefone (WhatsApp)
+                <Input
+                  value={form.coordinatorPhone}
+                  onChange={(event) =>
+                    setField('coordinatorPhone', event.target.value.replace(/\D/g, '').slice(0, 13))
+                  }
+                  inputMode="tel"
+                  maxLength={13}
+                  placeholder="Apenas numeros (DDD + numero)"
+                  required
+                  disabled={disabled}
+                />
+              </label>
 
-          <label className={projectFormLabelClass}>
-            Carga Horaria Semanal - Coordenador
-            <select
-              className={selectInputClass}
-              value={form.coordinatorWeeklyHours}
-              onChange={(event) => setField('coordinatorWeeklyHours', event.target.value)}
-              required
-              disabled={disabled}
-            >
-              <option value="">Favor selecionar</option>
-              {WEEKLY_HOURS_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
+              <label className={projectFormLabelClass}>
+                Carga Horaria Semanal - Coordenador
+                <select
+                  className={selectInputClass}
+                  value={form.coordinatorWeeklyHours}
+                  onChange={(event) => setField('coordinatorWeeklyHours', event.target.value)}
+                  required
+                  disabled={disabled}
+                >
+                  <option value="">Favor selecionar</option>
+                  {WEEKLY_HOURS_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
 
-        <label className={projectFormLabelClass}>
-          Forma de participacao do Coordenador
-          <select
-            className={selectInputClass}
-            value={form.coordinatorParticipation}
-            onChange={(event) => setField('coordinatorParticipation', event.target.value)}
-            required
-            disabled={disabled}
-          >
-            <option value="">Favor selecionar</option>
-            {COORDINATOR_PARTICIPATION_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
+            <label className={projectFormLabelClass}>
+              Forma de participacao do Coordenador
+              <select
+                className={selectInputClass}
+                value={form.coordinatorParticipation}
+                onChange={(event) => setField('coordinatorParticipation', event.target.value)}
+                required
+                disabled={disabled}
+              >
+                <option value="">Favor selecionar</option>
+                {COORDINATOR_PARTICIPATION_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-        <label className={projectFormLabelClass}>
-          Outros docentes colaboradores voluntarios na atividade
-          <Textarea
-            value={form.otherVolunteerTeachers}
-            onChange={(event) => setField('otherVolunteerTeachers', event.target.value)}
-            rows={4}
-            disabled={disabled}
-          />
-        </label>
-      </section>
+            <label className={projectFormLabelClass}>
+              Outros docentes colaboradores voluntarios na atividade
+              <Textarea
+                value={form.otherVolunteerTeachers}
+                onChange={(event) => setField('otherVolunteerTeachers', event.target.value)}
+                rows={4}
+                disabled={disabled}
+              />
+            </label>
+          </section>
 
-      <section className={sectionClass}>
-        <div className={sectionHeadingClass}>
-          <h2 className="m-0 text-base text-foreground">Estudantes voluntarios</h2>
-        </div>
+          <section className={sectionClass}>
+            <div className={sectionHeadingClass}>
+              <h2 className="m-0 text-base text-foreground">Estudantes voluntarios</h2>
+            </div>
 
-        <div className={grid2}>
-          <label className={projectFormLabelClass}>
-            Carga Horaria Semanal - Estudantes
-            <select
-              className={selectInputClass}
-              value={form.studentWeeklyHours}
-              onChange={(event) => setField('studentWeeklyHours', event.target.value)}
-              required
-              disabled={disabled}
-            >
-              <option value="">Favor selecionar</option>
-              {WEEKLY_HOURS_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
+            <div className={grid2}>
+              <label className={projectFormLabelClass}>
+                Carga Horaria Semanal - Estudantes
+                <select
+                  className={selectInputClass}
+                  value={form.studentWeeklyHours}
+                  onChange={(event) => setField('studentWeeklyHours', event.target.value)}
+                  required
+                  disabled={disabled}
+                >
+                  <option value="">Favor selecionar</option>
+                  {WEEKLY_HOURS_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-          <label className={projectFormLabelClass}>
-            Estudantes participantes
-            <Textarea
-              value={form.studentParticipants}
-              onChange={(event) => setField('studentParticipants', event.target.value)}
-              rows={4}
-              required
-              disabled={disabled}
-            />
-          </label>
-        </div>
-      </section>
+              <label className={projectFormLabelClass}>
+                Estudantes participantes
+                <Textarea
+                  value={form.studentParticipants}
+                  onChange={(event) => setField('studentParticipants', event.target.value)}
+                  rows={4}
+                  required
+                  disabled={disabled}
+                />
+              </label>
+            </div>
+          </section>
+        </>
+      )}
 
       <section className={sectionClass}>
         <div className={sectionHeadingClass}>
@@ -559,8 +567,8 @@ export function ExtensionProjectFields({
         </label>
 
         <div className="flex flex-col items-start gap-2.5">
-          <p className="m-0 font-bold text-foreground">Compreendi que...</p>
-          {ACKNOWLEDGEMENT_OPTIONS.map((item) => (
+          <p className="m-0 font-bold text-foreground">Compreendi que....</p>
+          {acknowledgementOptions.map((item) => (
             <label key={item.id} className={checkboxItemClass}>
               <input
                 type="checkbox"

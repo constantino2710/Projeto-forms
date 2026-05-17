@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
-import { ACKNOWLEDGEMENT_OPTIONS } from './extensionPlan'
+import { ACKNOWLEDGEMENT_OPTIONS, DISCIPLINE_ACKNOWLEDGEMENT_OPTIONS } from './extensionPlan'
 import {
   collectFormErrors,
+  disciplineExtensionAxesSchema,
   disciplineFormSchema,
   extensionFormSchema,
 } from './projectSchemas'
@@ -10,14 +11,37 @@ import {
 const validDiscipline = {
   title: 'Projeto X',
   thematicArea: 'TIC',
+  codigoExtensao: '2025.2001',
+  disciplineName: 'Projeto Integrador',
   codigoDisciplina: 'CS101',
+  codigoTurma: 'T01',
+  disciplinaGerencial: 'Nao',
+  managedCourses: '',
   semestreLetivo: '2025.1',
   course: 'Ciencia da Computacao',
   periodStart: '2025-01-01',
   periodEnd: '2025-06-30',
+  budget: '60',
+}
+
+const validDisciplineAxes = {
+  learningObjectives: ['Obj 1', 'Obj 2', 'Obj 3'],
+  transversalCompetencies: ['Comunicacao', 'Lideranca', 'Trabalho em equipe'],
+  serviceOffered: 'Oficinas',
+  activities: ['Ativ 1', 'Ativ 2', 'Ativ 3'],
+  executionLocation: 'Campus',
   targetAudience: 'Comunidade',
-  budget: '500',
-  description: 'Resumo da disciplina',
+  methodologicalProcedures: 'Procedimento metodologico',
+  problemStatement: 'Necessidade X',
+  sustainableDevelopmentGoal: 'ODS 4',
+  goals: ['Meta 1', 'Meta 2', 'Meta 3'],
+  disseminationStrategies: 'Redes sociais',
+  projectSummary: 'Resumo do projeto',
+  reflectionStrategies: 'Reflexao',
+  evaluationStrategies: 'Avaliacao',
+  partnerFeedback: 'Feedback',
+  additionalInformation: '',
+  acknowledgements: DISCIPLINE_ACKNOWLEDGEMENT_OPTIONS.map((item) => item.id),
 }
 
 const validExtension = {
@@ -102,6 +126,21 @@ describe('disciplineFormSchema', () => {
   it('aceita budget igual a zero', () => {
     const result = disciplineFormSchema.safeParse({ ...validDiscipline, budget: '0' })
     expect(result.success).toBe(true)
+  })
+})
+
+describe('disciplineExtensionAxesSchema', () => {
+  it('aceita objeto valido com os termos da disciplina', () => {
+    const result = disciplineExtensionAxesSchema.safeParse(validDisciplineAxes)
+    expect(result.success).toBe(true)
+  })
+
+  it('rejeita quando faltam termos da disciplina', () => {
+    const result = disciplineExtensionAxesSchema.safeParse({
+      ...validDisciplineAxes,
+      acknowledgements: [DISCIPLINE_ACKNOWLEDGEMENT_OPTIONS[0].id],
+    })
+    expect(result.success).toBe(false)
   })
 })
 

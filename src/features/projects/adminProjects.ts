@@ -43,6 +43,8 @@ export type AdminProjectDetail = {
   professor: string
   professor_avatar_url: string | null
   discipline: string
+  codigo_disciplina?: string | null
+  semestre_letivo?: string | null
   course: string
   period_start: string
   period_end: string
