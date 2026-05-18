@@ -15,6 +15,9 @@ import {
 import { PageHeader } from '../../components/layout/PageHeader'
 import { checkboxItemClass, formLabelClass } from '../../lib/formStyles'
 import {
+  confirmModalActionsClass,
+  confirmModalBackdropClass,
+  confirmModalClass,
   dashboardNoteClass,
   dashboardPanelClass,
   errorTextClass,
@@ -60,9 +63,6 @@ type DeleteState = {
   user: SuperUserRow
 }
 
-const settingsMenuClass =
-  'mt-6 p-5 flex flex-col gap-2 rounded-[1.25rem] bg-card shadow-[0_4px_18px_hsl(var(--foreground)/0.06)]'
-
 const passwordToggleClass =
   'absolute right-[0.45rem] top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-8 h-8 p-0 border-none bg-transparent text-muted-foreground cursor-pointer rounded-[calc(var(--radius)-4px)] transition-[color,background-color] duration-150 ease-in-out hover:text-foreground hover:bg-accent/60 focus-visible:outline-none focus-visible:text-foreground focus-visible:shadow-[0_0_0_2px_hsl(var(--ring)/0.4)]'
 
@@ -83,6 +83,26 @@ export function SuperUsersPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [showResetPassword, setShowResetPassword] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
+
+  const closeAllPanels = () => {
+    setEditing(null)
+    setResetting(null)
+    setRemoving(null)
+  }
+
+  useEffect(() => {
+    if (!editing && !resetting && !removing) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeAllPanels()
+    }
+    document.addEventListener('keydown', onKey)
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = prevOverflow
+    }
+  }, [editing, resetting, removing])
 
   const load = async () => {
     setError('')
@@ -359,123 +379,164 @@ export function SuperUsersPage() {
       )}
 
       {editing && (
-        <div className={settingsMenuClass}>
-          <h2 className="flex items-center gap-2">
-            <ShieldCheck size={16} /> Editar {editing.user.display_name}
-          </h2>
-          <label className={formLabelClass}>
-            Nome
-            <Input
-              value={editing.display_name}
-              onChange={(event) => setEditing({ ...editing, display_name: event.target.value })}
-            />
-          </label>
-          <label className={formLabelClass}>
-            E-mail
-            <Input
-              value={editing.email}
-              onChange={(event) => setEditing({ ...editing, email: event.target.value })}
-              placeholder="opcional"
-            />
-          </label>
-          <label className={checkboxItemClass}>
-            <input
-              type="checkbox"
-              className="m-0 w-4 h-4 self-start justify-self-start mt-0.5"
-              checked={editing.is_active}
-              onChange={(event) => setEditing({ ...editing, is_active: event.target.checked })}
-            />
-            <span className="block leading-[1.45]">Ativo</span>
-          </label>
-          <div className={viewToggleClass}>
-            <Button type="button" variant="outline" size="sm" onClick={() => setEditing(null)}>
-              Cancelar
-            </Button>
-            <Button type="button" size="sm" onClick={handleSaveEdit} disabled={isSaving}>
-              {isSaving && <Spinner size="sm" />}
-              <span>Salvar</span>
-            </Button>
+        <div
+          className={confirmModalBackdropClass}
+          onClick={() => setEditing(null)}
+          role="presentation"
+        >
+          <div
+            className={cn(confirmModalClass, 'flex flex-col gap-3')}
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-editar-title"
+          >
+            <h2 id="modal-editar-title" className="flex items-center gap-2">
+              <ShieldCheck size={18} className="text-primary" /> Editar {editing.user.display_name}
+            </h2>
+            <label className={formLabelClass}>
+              Nome
+              <Input
+                value={editing.display_name}
+                onChange={(event) => setEditing({ ...editing, display_name: event.target.value })}
+              />
+            </label>
+            <label className={formLabelClass}>
+              E-mail
+              <Input
+                value={editing.email}
+                onChange={(event) => setEditing({ ...editing, email: event.target.value })}
+                placeholder="opcional"
+              />
+            </label>
+            <label className={checkboxItemClass}>
+              <input
+                type="checkbox"
+                className="m-0 w-4 h-4 self-start justify-self-start mt-0.5"
+                checked={editing.is_active}
+                onChange={(event) => setEditing({ ...editing, is_active: event.target.checked })}
+              />
+              <span className="block leading-[1.45]">Ativo</span>
+            </label>
+            <div className={confirmModalActionsClass}>
+              <Button type="button" variant="outline" size="sm" onClick={() => setEditing(null)}>
+                Cancelar
+              </Button>
+              <Button type="button" size="sm" onClick={handleSaveEdit} disabled={isSaving}>
+                {isSaving && <Spinner size="sm" />}
+                <span>Salvar</span>
+              </Button>
+            </div>
           </div>
         </div>
       )}
 
       {resetting && (
-        <div className={settingsMenuClass}>
-          <h2 className="flex items-center gap-2">
-            <KeyRound size={16} /> Redefinir senha de {resetting.user.display_name}
-          </h2>
-          <label className={formLabelClass}>
-            Nova senha
-            <div className="relative block">
-              <Input
-                type={showResetPassword ? 'text' : 'password'}
-                value={resetting.password}
-                onChange={(event) => setResetting({ ...resetting, password: event.target.value })}
-                placeholder="minimo 6 caracteres"
-                className="pr-[2.6rem]"
-              />
-              <button
-                type="button"
-                className={passwordToggleClass}
-                onClick={() => setShowResetPassword((value) => !value)}
-                aria-label={showResetPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                title={showResetPassword ? 'Ocultar senha' : 'Mostrar senha'}
-              >
-                {showResetPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
+        <div
+          className={confirmModalBackdropClass}
+          onClick={() => setResetting(null)}
+          role="presentation"
+        >
+          <div
+            className={cn(confirmModalClass, 'flex flex-col gap-3')}
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-reset-title"
+          >
+            <h2 id="modal-reset-title" className="flex items-center gap-2">
+              <KeyRound size={18} className="text-primary" /> Redefinir senha de {resetting.user.display_name}
+            </h2>
+            <label className={formLabelClass}>
+              Nova senha
+              <div className="relative block">
+                <Input
+                  type={showResetPassword ? 'text' : 'password'}
+                  value={resetting.password}
+                  onChange={(event) => setResetting({ ...resetting, password: event.target.value })}
+                  placeholder="minimo 6 caracteres"
+                  className="pr-[2.6rem]"
+                />
+                <button
+                  type="button"
+                  className={passwordToggleClass}
+                  onClick={() => setShowResetPassword((value) => !value)}
+                  aria-label={showResetPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  title={showResetPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                >
+                  {showResetPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </label>
+            <label className={formLabelClass}>
+              Confirmar senha
+              <div className="relative block">
+                <Input
+                  type={showResetConfirm ? 'text' : 'password'}
+                  value={resetting.confirm}
+                  onChange={(event) => setResetting({ ...resetting, confirm: event.target.value })}
+                  className="pr-[2.6rem]"
+                />
+                <button
+                  type="button"
+                  className={passwordToggleClass}
+                  onClick={() => setShowResetConfirm((value) => !value)}
+                  aria-label={showResetConfirm ? 'Ocultar senha' : 'Mostrar senha'}
+                  title={showResetConfirm ? 'Ocultar senha' : 'Mostrar senha'}
+                >
+                  {showResetConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </label>
+            <div className={confirmModalActionsClass}>
+              <Button type="button" variant="outline" size="sm" onClick={() => setResetting(null)}>
+                Cancelar
+              </Button>
+              <Button type="button" size="sm" onClick={handleResetPassword} disabled={isSaving}>
+                {isSaving && <Spinner size="sm" />}
+                <span>Aplicar</span>
+              </Button>
             </div>
-          </label>
-          <label className={formLabelClass}>
-            Confirmar senha
-            <div className="relative block">
-              <Input
-                type={showResetConfirm ? 'text' : 'password'}
-                value={resetting.confirm}
-                onChange={(event) => setResetting({ ...resetting, confirm: event.target.value })}
-                className="pr-[2.6rem]"
-              />
-              <button
-                type="button"
-                className={passwordToggleClass}
-                onClick={() => setShowResetConfirm((value) => !value)}
-                aria-label={showResetConfirm ? 'Ocultar senha' : 'Mostrar senha'}
-                title={showResetConfirm ? 'Ocultar senha' : 'Mostrar senha'}
-              >
-                {showResetConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </label>
-          <div className={viewToggleClass}>
-            <Button type="button" variant="outline" size="sm" onClick={() => setResetting(null)}>
-              Cancelar
-            </Button>
-            <Button type="button" size="sm" onClick={handleResetPassword} disabled={isSaving}>
-              {isSaving && <Spinner size="sm" />}
-              <span>Aplicar</span>
-            </Button>
           </div>
         </div>
       )}
 
       {removing && (
-        <div className={settingsMenuClass}>
-          <h2 className="flex items-center gap-2">
-            <Trash2 size={16} /> Remover {removing.user.display_name}
-          </h2>
-          <p className={dashboardNoteClass}>
-            Esta acao remove o usuario da plataforma e encerra as sessoes ativas dele.
-          </p>
-          <p className={dashboardNoteClass}>
-            Se esse usuario tiver projetos vinculados, a remocao sera bloqueada para preservar os dados.
-          </p>
-          <div className={viewToggleClass}>
-            <Button type="button" variant="outline" size="sm" onClick={() => setRemoving(null)}>
-              Cancelar
-            </Button>
-            <Button type="button" variant="destructive" size="sm" onClick={handleDeleteUser} disabled={isSaving}>
-              {isSaving && <Spinner size="sm" />}
-              <span>Confirmar remocao</span>
-            </Button>
+        <div
+          className={confirmModalBackdropClass}
+          onClick={() => setRemoving(null)}
+          role="presentation"
+        >
+          <div
+            className={cn(confirmModalClass, 'flex flex-col gap-3')}
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-remover-title"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-full bg-destructive/15 text-destructive grid place-items-center shrink-0">
+                <Trash2 size={20} />
+              </div>
+              <h2 id="modal-remover-title" className="flex-1">
+                Remover {removing.user.display_name}
+              </h2>
+            </div>
+            <p className={dashboardNoteClass}>
+              Esta acao remove o usuario da plataforma e encerra as sessoes ativas dele.
+            </p>
+            <p className={dashboardNoteClass}>
+              Se esse usuario tiver projetos vinculados, a remocao sera bloqueada para preservar os dados.
+            </p>
+            <div className={confirmModalActionsClass}>
+              <Button type="button" variant="outline" size="sm" onClick={() => setRemoving(null)}>
+                Cancelar
+              </Button>
+              <Button type="button" variant="destructive" size="sm" onClick={handleDeleteUser} disabled={isSaving}>
+                {isSaving && <Spinner size="sm" />}
+                <span>Confirmar remocao</span>
+              </Button>
+            </div>
           </div>
         </div>
       )}

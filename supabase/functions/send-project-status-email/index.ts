@@ -102,9 +102,13 @@ Deno.serve(async (req) => {
       p_token: appSessionToken,
     })
 
-    if (sessionError || !sessionUser || sessionUser.role !== 'admin') {
+    if (
+      sessionError ||
+      !sessionUser ||
+      (sessionUser.role !== 'admin' && sessionUser.role !== 'superadmin')
+    ) {
       return new Response(
-        JSON.stringify({ error: 'Somente admin pode enviar notificacao de status.' }),
+        JSON.stringify({ error: 'Somente admin ou superadmin pode enviar notificacao de status.' }),
         {
           status: 403,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
