@@ -80,7 +80,7 @@ describe('UserProjectDetailPage', () => {
   it('renderiza titulo do projeto', async () => {
     vi.mocked(getMyProjectDetail).mockResolvedValue(mockProject)
     renderPage()
-    expect(await screen.findByText('Projeto Detalhe')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Projeto Detalhe' })).toBeInTheDocument()
   })
 
   it('mostra erro quando getMyProjectDetail lanca', async () => {

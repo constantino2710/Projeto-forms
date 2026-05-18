@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import * as XLSX from 'xlsx'
+import * as XLSX from 'xlsx-js-style'
 import type {
   AdminProjectCard,
   AdminProjectHistoryCard,
@@ -205,19 +205,6 @@ export const buildReportData = (
   }
 }
 
-const summaryRows = (data: ReportData): string[][] => [
-  ['Relatório de Projetos'],
-  [`Gerado em: ${data.generatedAt.toLocaleString('pt-BR')}`],
-  [`Período: ${data.rangeLabel}`],
-  [],
-  ['Indicador', 'Quantidade'],
-  ['Total enviados', String(data.stats.enviados)],
-  ['Submetidos (aguardando análise)', String(data.stats.submetidos)],
-  ['Em análise', String(data.stats.emAnalise)],
-  ['Aprovados', String(data.stats.aprovados)],
-  ['Recusados', String(data.stats.recusados)],
-]
-
 const detailHeader = [
   'Título',
   'Tipo',
@@ -230,6 +217,27 @@ const detailHeader = [
   'Criado em',
 ]
 
+type StatusKey = ReportProject['status']
+
+const statusPalette: Record<StatusKey, { fill: string; text: string }> = {
+  submetido: { fill: 'DBEAFE', text: '1E3A8A' },
+  em_avaliacao: { fill: 'FEF3C7', text: '92400E' },
+  em_ajustes: { fill: 'FFEDD5', text: '9A3412' },
+  aprovado: { fill: 'DCFCE7', text: '166534' },
+  reprovado: { fill: 'FEE2E2', text: '991B1B' },
+}
+
+const indicatorPalette: Array<{ label: string; key: keyof ReportStats; fill: string; text: string }> = [
+  { label: 'Total enviados', key: 'enviados', fill: '6366F1', text: 'FFFFFF' },
+  { label: 'Submetidos (aguardando análise)', key: 'submetidos', fill: '0EA5E9', text: 'FFFFFF' },
+  { label: 'Em análise', key: 'emAnalise', fill: 'F59E0B', text: 'FFFFFF' },
+  { label: 'Aprovados', key: 'aprovados', fill: '22C55E', text: 'FFFFFF' },
+  { label: 'Recusados', key: 'recusados', fill: 'EF4444', text: 'FFFFFF' },
+]
+
+const formatCurrencyBr = (value: number): string =>
+  `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+
 const detailRows = (data: ReportData): (string | number)[][] =>
   data.projects.map((p) => [
     p.title,
@@ -239,7 +247,7 @@ const detailRows = (data: ReportData): (string | number)[][] =>
     projectStatusLabel[p.status],
     formatBr(p.period_start),
     formatBr(p.period_end),
-    Number(p.budget).toFixed(2),
+    Number(p.budget),
     p.created_at ? formatBr(p.created_at) : '-',
   ])
 
@@ -249,45 +257,264 @@ export const generateCsv = (data: ReportData): Blob => {
     if (/[",\n;]/.test(str)) return `"${str.replace(/"/g, '""')}"`
     return str
   }
+
+  const totalOrcamento = data.projects.reduce((acc, p) => acc + Number(p.budget || 0), 0)
+  const sep = ';'
+  const divider = '='.repeat(80)
+  const subDivider = '-'.repeat(80)
+
   const lines: string[] = []
-  for (const row of summaryRows(data)) lines.push(row.map(escape).join(';'))
+  lines.push(divider)
+  lines.push('RELATÓRIO DE PROJETOS')
+  lines.push(divider)
+  lines.push(`Gerado em${sep}${data.generatedAt.toLocaleString('pt-BR')}`)
+  lines.push(`Período${sep}${data.rangeLabel}`)
   lines.push('')
-  lines.push('Detalhamento dos projetos')
-  lines.push(detailHeader.map(escape).join(';'))
-  for (const row of detailRows(data)) lines.push(row.map(escape).join(';'))
+
+  lines.push(subDivider)
+  lines.push('RESUMO')
+  lines.push(subDivider)
+  lines.push(['Indicador', 'Quantidade'].map(escape).join(sep))
+  for (const ind of indicatorPalette) {
+    lines.push([ind.label, String(data.stats[ind.key])].map(escape).join(sep))
+  }
+  lines.push(['Orçamento total', formatCurrencyBr(totalOrcamento)].map(escape).join(sep))
+  lines.push('')
+
+  lines.push(subDivider)
+  lines.push(`DETALHAMENTO DOS PROJETOS (${data.projects.length})`)
+  lines.push(subDivider)
+  lines.push(detailHeader.map(escape).join(sep))
+  for (const row of detailRows(data)) {
+    const formatted = row.map((cell, idx) =>
+      idx === 7 ? formatCurrencyBr(Number(cell)) : String(cell),
+    )
+    lines.push(formatted.map(escape).join(sep))
+  }
+
   const bom = '﻿'
   return new Blob([bom + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
 }
 
+type CellStyle = {
+  font?: { name?: string; sz?: number; bold?: boolean; color?: { rgb: string } }
+  fill?: { fgColor: { rgb: string } }
+  alignment?: { horizontal?: 'left' | 'center' | 'right'; vertical?: 'top' | 'center' | 'bottom'; wrapText?: boolean }
+  border?: {
+    top?: { style: 'thin' | 'medium'; color?: { rgb: string } }
+    bottom?: { style: 'thin' | 'medium'; color?: { rgb: string } }
+    left?: { style: 'thin' | 'medium'; color?: { rgb: string } }
+    right?: { style: 'thin' | 'medium'; color?: { rgb: string } }
+  }
+  numFmt?: string
+}
+
+const setCell = (
+  sheet: XLSX.WorkSheet,
+  row: number,
+  col: number,
+  value: string | number | null,
+  style?: CellStyle,
+  type?: 'n' | 's',
+): void => {
+  const ref = XLSX.utils.encode_cell({ r: row, c: col })
+  const cellType = type ?? (typeof value === 'number' ? 'n' : 's')
+  const cell: XLSX.CellObject = { t: cellType, v: value as XLSX.CellObject['v'] }
+  if (style) (cell as XLSX.CellObject & { s?: CellStyle }).s = style
+  sheet[ref] = cell
+}
+
+const thinBorder = (color = 'E5E7EB'): CellStyle['border'] => ({
+  top: { style: 'thin', color: { rgb: color } },
+  bottom: { style: 'thin', color: { rgb: color } },
+  left: { style: 'thin', color: { rgb: color } },
+  right: { style: 'thin', color: { rgb: color } },
+})
+
+const buildSummarySheet = (data: ReportData): XLSX.WorkSheet => {
+  const sheet: XLSX.WorkSheet = {}
+  const colCount = 4
+  let row = 0
+
+  setCell(sheet, row, 0, 'RELATÓRIO DE PROJETOS', {
+    font: { name: 'Calibri', sz: 20, bold: true, color: { rgb: 'FFFFFF' } },
+    fill: { fgColor: { rgb: '1E293B' } },
+    alignment: { horizontal: 'left', vertical: 'center' },
+  })
+  for (let c = 1; c < colCount; c += 1) {
+    setCell(sheet, row, c, '', { fill: { fgColor: { rgb: '1E293B' } } })
+  }
+  row += 1
+
+  setCell(sheet, row, 0, `Gerado em ${data.generatedAt.toLocaleString('pt-BR')}  •  Período: ${data.rangeLabel}`, {
+    font: { name: 'Calibri', sz: 11, color: { rgb: 'FFFFFF' } },
+    fill: { fgColor: { rgb: '334155' } },
+    alignment: { horizontal: 'left', vertical: 'center' },
+  })
+  for (let c = 1; c < colCount; c += 1) {
+    setCell(sheet, row, c, '', { fill: { fgColor: { rgb: '334155' } } })
+  }
+  row += 2
+
+  setCell(sheet, row, 0, 'INDICADORES', {
+    font: { name: 'Calibri', sz: 13, bold: true, color: { rgb: '0F172A' } },
+    alignment: { horizontal: 'left', vertical: 'center' },
+  })
+  row += 1
+
+  const headerStyle: CellStyle = {
+    font: { name: 'Calibri', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
+    fill: { fgColor: { rgb: '0F172A' } },
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border: thinBorder('0F172A'),
+  }
+  setCell(sheet, row, 0, 'Indicador', { ...headerStyle, alignment: { horizontal: 'left', vertical: 'center' } })
+  setCell(sheet, row, 1, 'Quantidade', headerStyle)
+  setCell(sheet, row, 2, '', headerStyle)
+  setCell(sheet, row, 3, '', headerStyle)
+  row += 1
+
+  for (const ind of indicatorPalette) {
+    setCell(sheet, row, 0, ind.label, {
+      font: { name: 'Calibri', sz: 11, color: { rgb: '0F172A' } },
+      alignment: { horizontal: 'left', vertical: 'center' },
+      border: thinBorder(),
+    })
+    setCell(sheet, row, 1, data.stats[ind.key], {
+      font: { name: 'Calibri', sz: 14, bold: true, color: { rgb: ind.text } },
+      fill: { fgColor: { rgb: ind.fill } },
+      alignment: { horizontal: 'center', vertical: 'center' },
+      border: thinBorder(ind.fill),
+      numFmt: '0',
+    })
+    setCell(sheet, row, 2, '', { border: thinBorder() })
+    setCell(sheet, row, 3, '', { border: thinBorder() })
+    row += 1
+  }
+
+  row += 1
+  const totalOrcamento = data.projects.reduce((acc, p) => acc + Number(p.budget || 0), 0)
+  setCell(sheet, row, 0, 'ORÇAMENTO TOTAL', {
+    font: { name: 'Calibri', sz: 12, bold: true, color: { rgb: 'FFFFFF' } },
+    fill: { fgColor: { rgb: '7C3AED' } },
+    alignment: { horizontal: 'left', vertical: 'center' },
+    border: thinBorder('7C3AED'),
+  })
+  setCell(sheet, row, 1, totalOrcamento, {
+    font: { name: 'Calibri', sz: 14, bold: true, color: { rgb: 'FFFFFF' } },
+    fill: { fgColor: { rgb: '7C3AED' } },
+    alignment: { horizontal: 'right', vertical: 'center' },
+    border: thinBorder('7C3AED'),
+    numFmt: '"R$ "#,##0.00',
+  })
+  setCell(sheet, row, 2, '', { fill: { fgColor: { rgb: '7C3AED' } } })
+  setCell(sheet, row, 3, '', { fill: { fgColor: { rgb: '7C3AED' } } })
+
+  sheet['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: row, c: colCount - 1 } })
+  sheet['!cols'] = [{ wch: 38 }, { wch: 18 }, { wch: 2 }, { wch: 2 }]
+  sheet['!rows'] = [{ hpt: 32 }, { hpt: 22 }]
+  sheet['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: colCount - 1 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: colCount - 1 } },
+    { s: { r: 3, c: 0 }, e: { r: 3, c: colCount - 1 } },
+  ]
+  return sheet
+}
+
+const buildDetailSheet = (data: ReportData): XLSX.WorkSheet => {
+  const sheet: XLSX.WorkSheet = {}
+  const rows = detailRows(data)
+  const colCount = detailHeader.length
+
+  const titleStyle: CellStyle = {
+    font: { name: 'Calibri', sz: 16, bold: true, color: { rgb: 'FFFFFF' } },
+    fill: { fgColor: { rgb: '1E293B' } },
+    alignment: { horizontal: 'left', vertical: 'center' },
+  }
+  setCell(sheet, 0, 0, `PROJETOS (${rows.length})`, titleStyle)
+  for (let c = 1; c < colCount; c += 1) {
+    setCell(sheet, 0, c, '', { fill: { fgColor: { rgb: '1E293B' } } })
+  }
+
+  const headerRowIdx = 1
+  const headerStyle: CellStyle = {
+    font: { name: 'Calibri', sz: 11, bold: true, color: { rgb: 'FFFFFF' } },
+    fill: { fgColor: { rgb: '0F172A' } },
+    alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+    border: thinBorder('0F172A'),
+  }
+  detailHeader.forEach((h, idx) => {
+    setCell(sheet, headerRowIdx, idx, h, headerStyle)
+  })
+
+  const numFmtCurrency = '"R$ "#,##0.00'
+  rows.forEach((rowVals, rIdx) => {
+    const r = headerRowIdx + 1 + rIdx
+    const zebra = rIdx % 2 === 1 ? 'F8FAFC' : 'FFFFFF'
+    const statusKey = data.projects[rIdx]?.status as StatusKey | undefined
+    const statusPal = statusKey ? statusPalette[statusKey] : undefined
+
+    rowVals.forEach((val, cIdx) => {
+      const isNumber = cIdx === 7
+      const isStatus = cIdx === 4
+      const isCenter = cIdx === 1 || cIdx === 5 || cIdx === 6 || cIdx === 8
+
+      const baseStyle: CellStyle = {
+        font: { name: 'Calibri', sz: 10, color: { rgb: '0F172A' } },
+        fill: { fgColor: { rgb: zebra } },
+        alignment: {
+          horizontal: isNumber ? 'right' : isCenter || isStatus ? 'center' : 'left',
+          vertical: 'center',
+          wrapText: cIdx === 0,
+        },
+        border: thinBorder(),
+      }
+
+      if (isStatus && statusPal) {
+        baseStyle.fill = { fgColor: { rgb: statusPal.fill } }
+        baseStyle.font = { name: 'Calibri', sz: 10, bold: true, color: { rgb: statusPal.text } }
+      }
+      if (isNumber) {
+        baseStyle.numFmt = numFmtCurrency
+      }
+
+      setCell(sheet, r, cIdx, val, baseStyle, isNumber ? 'n' : 's')
+    })
+  })
+
+  const lastRow = headerRowIdx + rows.length
+  sheet['!ref'] = XLSX.utils.encode_range({
+    s: { r: 0, c: 0 },
+    e: { r: Math.max(lastRow, headerRowIdx), c: colCount - 1 },
+  })
+  sheet['!cols'] = [
+    { wch: 42 },
+    { wch: 14 },
+    { wch: 22 },
+    { wch: 22 },
+    { wch: 16 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 16 },
+    { wch: 14 },
+  ]
+  sheet['!rows'] = [{ hpt: 28 }, { hpt: 24 }]
+  sheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: colCount - 1 } }]
+  sheet['!autofilter'] = {
+    ref: XLSX.utils.encode_range({
+      s: { r: headerRowIdx, c: 0 },
+      e: { r: Math.max(lastRow, headerRowIdx), c: colCount - 1 },
+    }),
+  }
+  ;(sheet as XLSX.WorkSheet & { '!freeze'?: unknown })['!freeze'] = { xSplit: 0, ySplit: headerRowIdx + 1 }
+
+  return sheet
+}
+
 export const generateXlsx = (data: ReportData): Blob => {
   const wb = XLSX.utils.book_new()
-
-  const summaryAoa = summaryRows(data)
-  const summarySheet = XLSX.utils.aoa_to_sheet(summaryAoa)
-  summarySheet['!cols'] = [{ wch: 28 }, { wch: 16 }]
-  summarySheet['!merges'] = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 1 } },
-    { s: { r: 1, c: 0 }, e: { r: 1, c: 1 } },
-    { s: { r: 2, c: 0 }, e: { r: 2, c: 1 } },
-  ]
-  XLSX.utils.book_append_sheet(wb, summarySheet, 'Resumo')
-
-  const detailAoa: (string | number)[][] = [detailHeader, ...detailRows(data)]
-  const detailSheet = XLSX.utils.aoa_to_sheet(detailAoa)
-  detailSheet['!cols'] = [
-    { wch: 38 },
-    { wch: 14 },
-    { wch: 22 },
-    { wch: 22 },
-    { wch: 14 },
-    { wch: 12 },
-    { wch: 12 },
-    { wch: 14 },
-    { wch: 12 },
-  ]
-  detailSheet['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: 0, c: detailHeader.length - 1 } }) }
-  XLSX.utils.book_append_sheet(wb, detailSheet, 'Projetos')
-
+  XLSX.utils.book_append_sheet(wb, buildSummarySheet(data), 'Resumo')
+  XLSX.utils.book_append_sheet(wb, buildDetailSheet(data), 'Projetos')
   const arrayBuffer = XLSX.write(wb, { type: 'array', bookType: 'xlsx' }) as ArrayBuffer
   return new Blob([arrayBuffer], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

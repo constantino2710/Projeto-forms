@@ -18,7 +18,11 @@
       "Bash(npx supabase *)",
       "Bash(grep -n \"button svg\\\\|btn svg\\\\|^svg\\\\|\\\\\\\\[&_svg\\\\\\\\]\" src/index.css)",
       "Bash(grep -nE \"\\\\\\\\*\\\\\\\\s*\\\\\\\\{|^[a-z\\\\\\\\.]\\\\\\\\S*\\\\\\\\s*\\\\\\\\{|@layer\" src/index.css)",
-      "Bash(xargs grep -l \"ThemeToggle\\\\|Configuracoes\\\\|Logout\\\\|DashboardLayout\")"
+      "Bash(xargs grep -l \"ThemeToggle\\\\|Configuracoes\\\\|Logout\\\\|DashboardLayout\")",
+      "Bash(git rebase *)",
+      "Bash(Get-Content .gitignore)",
+      "Bash(Select-String -Pattern \"claude|settings.local\" -SimpleMatch)",
+      "Bash(git push *)"
     ]
   }
 }
