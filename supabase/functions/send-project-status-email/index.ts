@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
     }
 
     const cleanMessage = adminMessage?.trim() || null
-    const normalizedBaseUrl = (appBaseUrl?.trim() || 'http://localhost:5173').replace(/\/+$/, '')
+    const normalizedBaseUrl = (appBaseUrl?.trim() || 'https://projetoforms-two.vercel.app/http://localhost:5173').replace(/\/+$/, '')
     const projectUrl = `${normalizedBaseUrl}/usuario/meus-projetos/${projectId}`
     const safeRecipientName = escapeHtml(recipientName?.trim() || 'Professor(a)')
     const safeProjectTitle = escapeHtml(projectTitle.trim())
