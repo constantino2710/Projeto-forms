@@ -111,7 +111,7 @@ export function ProjectFiltersBar({
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 max-md:right-auto max-md:left-0 top-[calc(100%+8px)] min-w-[240px] rounded-[1.25rem] bg-card p-4 flex flex-col items-stretch gap-2.5 z-40 shadow-[0_18px_48px_hsl(var(--foreground)/0.14)] origin-top animate-slide-down-fade">
+        <div className="absolute right-0 top-[calc(100%+8px)] min-w-[240px] rounded-[1.25rem] bg-card p-4 flex flex-col items-stretch gap-2.5 z-40 shadow-[0_18px_48px_hsl(var(--foreground)/0.14)] origin-top animate-slide-down-fade">
           {hasStatusFilter && (
             <div className="flex flex-col gap-1 text-[0.78rem] font-semibold text-muted-foreground">
               <span className="uppercase tracking-[0.04em]">Status</span>
