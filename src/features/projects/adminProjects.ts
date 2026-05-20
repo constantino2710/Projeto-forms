@@ -21,6 +21,7 @@ export type AdminProjectCard = {
   budget: number
   status: AdminProjectStatus
   created_at: string
+  analyzing_by_name: string | null
 }
 
 export type AdminProjectHistoryCard = {
@@ -55,6 +56,8 @@ export type AdminProjectDetail = {
   status: AdminProjectStatus
   created_at: string
   updated_at: string
+  analyzing_by_name: string | null
+  reviewed_by_name: string | null
 }
 
 export type AdminProjectDecisionResult = {

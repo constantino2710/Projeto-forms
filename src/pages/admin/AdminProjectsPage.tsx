@@ -224,9 +224,16 @@ export function AdminProjectsPage() {
                       {project.tipo === 'disciplina' ? 'Disciplina Extensionista' : 'Projeto de Extensão'}
                     </span>
                   </div>
-                  <span className={cn(statusBadgeBaseClass, statusColorMap[project.status])}>
-                    {projectStatusLabel[project.status]}
-                  </span>
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <span className={cn(statusBadgeBaseClass, statusColorMap[project.status])}>
+                      {projectStatusLabel[project.status]}
+                    </span>
+                    {project.status === 'em_avaliacao' && project.analyzing_by_name && (
+                      <span className="inline-flex items-center rounded-full bg-accent/60 px-2 py-0.5 text-[0.72rem] font-semibold text-foreground whitespace-nowrap">
+                        por {project.analyzing_by_name}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <p className={projectCardMetaClass}>
                   Periodo: {project.period_start} ate {project.period_end}

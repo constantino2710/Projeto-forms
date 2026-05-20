@@ -162,6 +162,29 @@ export function AdminProjectDetailPage() {
       : project?.status === 'reprovado'
         ? timeline?.rejected_at ?? null
         : null
+
+  const decisionVerb =
+    project?.status === 'aprovado'
+      ? 'Aprovado'
+      : project?.status === 'reprovado'
+        ? 'Recusado'
+        : project?.status === 'em_ajustes'
+          ? 'Enviado para ajustes'
+          : null
+  const analyzingName = project?.analyzing_by_name ?? null
+  const reviewedName = project?.reviewed_by_name ?? null
+  let analysisHighlight: string | null = null
+  let decisionHighlight: string | null = null
+  if (project) {
+    if (decisionVerb && reviewedName) {
+      decisionHighlight = `${decisionVerb} por ${reviewedName}`
+      if (analyzingName && analyzingName !== reviewedName) {
+        analysisHighlight = `Analisado por ${analyzingName}`
+      }
+    } else if (project.status === 'em_avaliacao' && analyzingName) {
+      analysisHighlight = `Em analise por ${analyzingName}`
+    }
+  }
   const disciplineMetadata =
     project?.tipo === 'disciplina'
       ? parseDisciplineMetadataDescription(project.description)
@@ -464,14 +487,27 @@ export function AdminProjectDetailPage() {
                 : step.date
                   ? timelineRowClass
                   : cn(timelineRowClass, timelineRowFutureClass)
+              const highlightText =
+                step.key === 'analysis'
+                  ? analysisHighlight
+                  : step.key === 'approval_status'
+                    ? decisionHighlight
+                    : null
 
               return (
-                <p key={step.key} className={rowClass}>
-                  <strong>{step.label}:</strong>{' '}
-                  {step.key === 'approval_status'
-                    ? `${approvalStatusLabel}${step.date ? ` (${formatTimelineDate(step.date)})` : ''}`
-                    : formatTimelineDate(step.date)}
-                </p>
+                <div key={step.key}>
+                  <p className={rowClass}>
+                    <strong>{step.label}:</strong>{' '}
+                    {step.key === 'approval_status'
+                      ? `${approvalStatusLabel}${step.date ? ` (${formatTimelineDate(step.date)})` : ''}`
+                      : formatTimelineDate(step.date)}
+                  </p>
+                  {highlightText && (
+                    <p className="mt-1.5! ml-2 inline-flex max-w-full items-center rounded-full bg-accent/60 px-2.5 py-0.5 text-[0.8rem]! font-semibold text-foreground!">
+                      {highlightText}
+                    </p>
+                  )}
+                </div>
               )
             })}
           </aside>

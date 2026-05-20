@@ -35,6 +35,8 @@ const mockProject: AdminProjectDetail = {
   status: 'submetido',
   created_at: '2025-01-01',
   updated_at: '2025-01-01',
+  analyzing_by_name: null,
+  reviewed_by_name: null,
 }
 
 const renderPage = () =>

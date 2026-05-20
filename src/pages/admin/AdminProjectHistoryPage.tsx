@@ -153,7 +153,7 @@ export function AdminProjectHistoryPage() {
     <>
       <PageHeader
         title="Historico de Projetos"
-        subtitle="Projetos que voce aprovou, recusou ou enviou para ajustes."
+        subtitle="Todos os projetos ja aprovados, recusados ou enviados para ajustes."
         actions={<ReportButton onGenerate={handleGenerateReport} />}
       />
       <article className={dashboardPanelClass}>
@@ -184,7 +184,7 @@ export function AdminProjectHistoryPage() {
         )}
         {error && <p className={errorTextClass}>{error}</p>}
         {!isLoading && total === 0 && (
-          <p className={dashboardNoteClass}>Nenhum projeto decidido por voce ainda.</p>
+          <p className={dashboardNoteClass}>Nenhum projeto decidido ainda.</p>
         )}
 
         <div

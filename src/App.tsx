@@ -149,10 +149,10 @@ function App() {
                   items={
                     session.role === 'superadmin'
                       ? [
+                          { label: 'Projetos', to: '/admin/projetos', icon: LayoutList },
+                          { label: 'Historico Geral', to: '/super/historico', icon: History },
                           { label: 'Usuarios', to: '/super/usuarios', icon: Users },
                           { label: 'Novo Usuario', to: '/super/usuarios/novo', icon: UserPlus },
-                          { label: 'Historico Geral', to: '/super/historico', icon: History },
-                          { label: 'Projetos', to: '/admin/projetos', icon: LayoutList },
                         ]
                       : [
                           { label: 'Projetos', to: '/admin/projetos', icon: LayoutList },
@@ -182,10 +182,10 @@ function App() {
                   onLogout={handleLogout}
                   onSessionUpdate={setSession}
                   items={[
+                    { label: 'Projetos', to: '/admin/projetos', icon: LayoutList },
+                    { label: 'Historico Geral', to: '/super/historico', icon: History },
                     { label: 'Usuarios', to: '/super/usuarios', icon: Users },
                     { label: 'Novo Usuario', to: '/super/usuarios/novo', icon: UserPlus },
-                    { label: 'Historico Geral', to: '/super/historico', icon: History },
-                    { label: 'Projetos', to: '/admin/projetos', icon: LayoutList },
                   ]}
                 />
               )

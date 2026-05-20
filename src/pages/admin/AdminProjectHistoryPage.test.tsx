@@ -59,7 +59,7 @@ describe('AdminProjectHistoryPage', () => {
     vi.mocked(listAdminProjectHistory).mockResolvedValue({ rows: [], total: 0 })
     renderPage()
     expect(
-      await screen.findByText('Nenhum projeto decidido por voce ainda.'),
+      await screen.findByText('Nenhum projeto decidido ainda.'),
     ).toBeInTheDocument()
   })
 

@@ -26,6 +26,7 @@ const mockProjects: AdminProjectCard[] = [
     budget: 500,
     status: 'submetido',
     created_at: '2025-01-01',
+    analyzing_by_name: null,
   },
 ]
 
