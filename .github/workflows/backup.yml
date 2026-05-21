@@ -55,7 +55,7 @@ jobs:
           DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           /usr/lib/postgresql/17/bin/psql "$DB_URL" -v ON_ERROR_STOP=1 \
-            -c "select backups.create_weekly_snapshot();" \
+            -c "select backups.create_weekly_snapshot('github_workflow');" \
             -c "select backups.cleanup_old_snapshots(4);"
 
       - name: pg_dump do schema public

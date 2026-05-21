@@ -4,11 +4,19 @@ import { supabase } from '../../lib/supabase'
 export type SnapshotTableInfo = {
   table_name: string
   row_count: number
-  created_at: string
 }
 
-export type SnapshotGroup = {
-  snapshot_date: string
+export type TriggerSource =
+  | 'pg_cron'
+  | 'manual_ui'
+  | 'github_workflow'
+  | 'manual_sql'
+  | 'unknown'
+
+export type SnapshotRun = {
+  snapshot_run_id: string
+  snapshot_started_at: string
+  trigger_source: TriggerSource
   table_count: number
   total_rows: number
   tables: SnapshotTableInfo[]
@@ -31,7 +39,8 @@ export type BackupSchedule = {
   now_utc: string
   next_internal_snapshot_utc: string
   next_external_dump_utc: string
-  last_snapshot_date: string | null
+  last_snapshot_at: string | null
+  total_runs: number
 }
 
 const getTokenOrThrow = () => {
@@ -40,11 +49,11 @@ const getTokenOrThrow = () => {
   return token
 }
 
-export const listSnapshots = async (): Promise<SnapshotGroup[]> => {
+export const listSnapshots = async (): Promise<SnapshotRun[]> => {
   const token = getTokenOrThrow()
   const { data, error } = await supabase.rpc('app_sa_list_snapshots', { p_token: token })
   if (error) throw new Error(error.message)
-  return (data ?? []) as SnapshotGroup[]
+  return (data ?? []) as SnapshotRun[]
 }
 
 export const triggerSnapshot = async (): Promise<unknown> => {
@@ -54,25 +63,22 @@ export const triggerSnapshot = async (): Promise<unknown> => {
   return data
 }
 
-export const restoreTable = async (
-  tableName: string,
-  snapshotDate: string,
-): Promise<unknown> => {
+export const restoreTable = async (runId: string, tableName: string): Promise<unknown> => {
   const token = getTokenOrThrow()
   const { data, error } = await supabase.rpc('app_sa_restore_table', {
     p_token: token,
+    p_run_id: runId,
     p_table_name: tableName,
-    p_snapshot_date: snapshotDate,
   })
   if (error) throw new Error(error.message)
   return data
 }
 
-export const restoreAll = async (snapshotDate: string): Promise<unknown> => {
+export const restoreAll = async (runId: string): Promise<unknown> => {
   const token = getTokenOrThrow()
   const { data, error } = await supabase.rpc('app_sa_restore_all', {
     p_token: token,
-    p_snapshot_date: snapshotDate,
+    p_run_id: runId,
   })
   if (error) throw new Error(error.message)
   return data

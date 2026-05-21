@@ -1,13 +1,19 @@
 import { useEffect, useState } from 'react'
 import {
   AlertCircle,
+  Bot,
   Calendar,
   CheckCircle2,
+  ChevronDown,
+  ChevronRight,
   Clock,
   Database,
+  Github,
   History,
   PlayCircle,
   RotateCcw,
+  Terminal,
+  UserRound,
 } from 'lucide-react'
 import { PageHeader } from '../../components/layout/PageHeader'
 import { Button } from '../../components/ui/button'
@@ -22,7 +28,8 @@ import {
   triggerSnapshot,
   type BackupSchedule,
   type RestoreAuditEntry,
-  type SnapshotGroup,
+  type SnapshotRun,
+  type TriggerSource,
 } from '../../features/super/backups'
 import {
   confirmModalActionsClass,
@@ -34,12 +41,22 @@ import {
   successTextClass,
 } from '../../lib/projectStyles'
 
-const sectionClass =
-  'mt-5 p-5 flex flex-col gap-3 rounded-[1.25rem] bg-card shadow-[0_4px_18px_hsl(var(--foreground)/0.06)]'
-
 type ConfirmState =
-  | { kind: 'restore_table'; date: string; table: string; row_count: number }
-  | { kind: 'restore_all'; date: string; table_count: number; total_rows: number }
+  | {
+      kind: 'restore_table'
+      runId: string
+      runLabel: string
+      table: string
+      row_count: number
+    }
+  | {
+      kind: 'restore_all'
+      runId: string
+      runLabel: string
+      runConfirmCode: string
+      table_count: number
+      total_rows: number
+    }
   | null
 
 const formatBrDateTime = (iso: string) => {
@@ -52,6 +69,8 @@ const formatBrDate = (yyyyMmDd: string) => {
   return `${d}/${m}/${y}`
 }
 
+const formatNumber = (n: number) => n.toLocaleString('pt-BR')
+
 const formatCountdown = (targetIso: string, nowMs: number): string => {
   const diff = Math.max(0, new Date(targetIso).getTime() - nowMs)
   const days = Math.floor(diff / 86_400_000)
@@ -63,8 +82,82 @@ const formatCountdown = (targetIso: string, nowMs: number): string => {
   return `${minutes}m ${seconds}s`
 }
 
+// Codigo compacto pro modal de confirmacao (YYYYMMDD-HHMM)
+const runConfirmCode = (iso: string): string => {
+  const d = new Date(iso)
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  return (
+    d.getUTCFullYear().toString() +
+    pad(d.getUTCMonth() + 1) +
+    pad(d.getUTCDate()) +
+    '-' +
+    pad(d.getUTCHours()) +
+    pad(d.getUTCMinutes())
+  )
+}
+
+type SourceMeta = {
+  label: string
+  Icon: typeof Bot
+  className: string
+}
+
+const sourceMetaMap: Record<TriggerSource, SourceMeta> = {
+  pg_cron: {
+    label: 'Automatico (banco)',
+    Icon: Bot,
+    className: 'bg-status-submitted-bg text-status-submitted-fg',
+  },
+  github_workflow: {
+    label: 'Automatico (GitHub)',
+    Icon: Github,
+    className: 'bg-status-adjust-bg text-status-adjust-fg',
+  },
+  manual_ui: {
+    label: 'Manual (painel)',
+    Icon: UserRound,
+    className: 'bg-status-approved-bg text-status-approved-fg',
+  },
+  manual_sql: {
+    label: 'SQL direto',
+    Icon: Terminal,
+    className: 'bg-muted text-muted-foreground',
+  },
+  unknown: {
+    label: '?',
+    Icon: Terminal,
+    className: 'bg-muted text-muted-foreground',
+  },
+}
+
+const statusCellClass =
+  'rounded-[1rem] border border-border bg-muted/40 px-3.5 py-2.5 flex flex-col gap-0.5 min-w-0'
+const statusLabelClass =
+  'm-0 text-[0.7rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground'
+const statusValueClass = 'mt-0.5 m-0 text-[1.05rem] font-bold leading-tight'
+const statusSubClass = 'm-0 text-[0.78rem] text-muted-foreground'
+
+const snapshotCardClass =
+  'rounded-[0.85rem] border border-border bg-card shadow-[0_2px_8px_hsl(var(--foreground)/0.05)] transition-shadow hover:shadow-[0_6px_18px_hsl(var(--foreground)/0.08)]'
+const snapshotHeaderClass = 'flex items-center gap-2 px-3.5 py-2.5 max-md:flex-wrap'
+const snapshotToggleButtonClass =
+  'inline-flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-foreground hover:text-primary transition-colors p-0 text-[0.9rem] font-semibold min-w-0'
+const snapshotTablesListClass =
+  'px-3.5 pb-3 pt-2 border-t border-border flex flex-col'
+const tableRowClass =
+  'flex items-center justify-between gap-2 py-1.5 border-b border-border/40 last:border-b-0'
+
+const sourceBadgeClass =
+  'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-[0.03em] whitespace-nowrap'
+
+const auditRowClass =
+  'rounded-[0.6rem] border border-border bg-card px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 text-[0.85rem]'
+
+const sectionClass =
+  'mt-5 flex flex-col gap-2.5 [&_h2]:m-0 [&_h2]:text-[0.95rem] [&_h2]:font-semibold [&_h2]:flex [&_h2]:items-center [&_h2]:gap-2'
+
 export function SuperBackupsPage() {
-  const [snapshots, setSnapshots] = useState<SnapshotGroup[]>([])
+  const [snapshots, setSnapshots] = useState<SnapshotRun[]>([])
   const [schedule, setSchedule] = useState<BackupSchedule | null>(null)
   const [audit, setAudit] = useState<RestoreAuditEntry[]>([])
   const [now, setNow] = useState(() => Date.now())
@@ -74,6 +167,7 @@ export function SuperBackupsPage() {
   const [success, setSuccess] = useState('')
   const [confirm, setConfirm] = useState<ConfirmState>(null)
   const [confirmText, setConfirmText] = useState('')
+  const [expandedRunId, setExpandedRunId] = useState<string | null>(null)
 
   const reload = async () => {
     setError('')
@@ -125,7 +219,7 @@ export function SuperBackupsPage() {
   const expectedConfirmText = (() => {
     if (!confirm) return ''
     if (confirm.kind === 'restore_table') return `RESTAURAR ${confirm.table}`
-    if (confirm.kind === 'restore_all') return `RESTAURAR TUDO ${confirm.date}`
+    if (confirm.kind === 'restore_all') return `RESTAURAR TUDO ${confirm.runConfirmCode}`
     return ''
   })()
 
@@ -136,13 +230,11 @@ export function SuperBackupsPage() {
     setSuccess('')
     try {
       if (confirm.kind === 'restore_table') {
-        await restoreTable(confirm.table, confirm.date)
-        setSuccess(
-          `Tabela ${confirm.table} restaurada do snapshot ${formatBrDate(confirm.date)}.`,
-        )
+        await restoreTable(confirm.runId, confirm.table)
+        setSuccess(`Tabela ${confirm.table} restaurada do snapshot ${confirm.runLabel}.`)
       } else if (confirm.kind === 'restore_all') {
-        await restoreAll(confirm.date)
-        setSuccess(`Banco restaurado completamente do snapshot ${formatBrDate(confirm.date)}.`)
+        await restoreAll(confirm.runId)
+        setSuccess(`Banco restaurado completamente do snapshot ${confirm.runLabel}.`)
       }
       closeConfirm()
       await reload()
@@ -155,29 +247,23 @@ export function SuperBackupsPage() {
 
   if (isLoading) {
     return (
-      <article className={dashboardPanelClass}>
-        <div className="flex items-center justify-center py-16">
-          <Spinner size="lg" />
-        </div>
-      </article>
+      <>
+        <PageHeader title="Backups do banco" subtitle="Snapshots e restauracao." />
+        <article className={dashboardPanelClass}>
+          <div className="flex items-center justify-center py-16">
+            <Spinner size="lg" />
+          </div>
+        </article>
+      </>
     )
   }
 
   return (
-    <article className={dashboardPanelClass}>
+    <>
       <PageHeader
         title="Backups do banco"
-        subtitle="Snapshots semanais e restauracao de dados."
-      />
-
-      {error && <p className={errorTextClass}>{error}</p>}
-      {success && <p className={successTextClass}>{success}</p>}
-
-      <section className={sectionClass}>
-        <header className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="m-0 text-base flex items-center gap-2">
-            <Clock size={16} /> Proximo backup automatico
-          </h2>
+        subtitle="Snapshots por evento, criacao sob demanda e restauracao."
+        actions={
           <Button
             type="button"
             size="sm"
@@ -187,166 +273,201 @@ export function SuperBackupsPage() {
             {actionLoading ? <Spinner size="sm" /> : <PlayCircle size={14} />}
             <span>Criar backup agora</span>
           </Button>
-        </header>
+        }
+      />
 
-        {schedule && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="rounded-[1rem] bg-muted/40 p-3">
-              <p className="m-0 text-[0.72rem] text-muted-foreground uppercase tracking-[0.04em]">
-                Snapshot interno
-              </p>
-              <p className="mt-1 m-0 text-[1.1rem] font-bold">
-                {formatCountdown(schedule.next_internal_snapshot_utc, now)}
-              </p>
-              <p className={dashboardNoteClass}>
-                {formatBrDateTime(schedule.next_internal_snapshot_utc)}
-              </p>
-            </div>
-            <div className="rounded-[1rem] bg-muted/40 p-3">
-              <p className="m-0 text-[0.72rem] text-muted-foreground uppercase tracking-[0.04em]">
-                Dump externo (GitHub)
-              </p>
-              <p className="mt-1 m-0 text-[1.1rem] font-bold">
-                {formatCountdown(schedule.next_external_dump_utc, now)}
-              </p>
-              <p className={dashboardNoteClass}>
-                {formatBrDateTime(schedule.next_external_dump_utc)}
-              </p>
-            </div>
-          </div>
-        )}
-        {schedule?.last_snapshot_date && (
-          <p className={dashboardNoteClass}>
-            Ultimo snapshot registrado: {formatBrDate(schedule.last_snapshot_date)}.
-          </p>
-        )}
-      </section>
+      <article className={dashboardPanelClass}>
+        {error && <p className={errorTextClass}>{error}</p>}
+        {success && <p className={successTextClass}>{success}</p>}
 
-      <section className={sectionClass}>
-        <h2 className="m-0 text-base flex items-center gap-2">
-          <Database size={16} /> Snapshots disponiveis
-        </h2>
-        {snapshots.length === 0 ? (
-          <p className={dashboardNoteClass}>
-            Nenhum snapshot disponivel ainda. O proximo sera gerado automaticamente na segunda-feira.
-          </p>
-        ) : (
-          <ul className="m-0 p-0 list-none flex flex-col gap-3">
-            {snapshots.map((snap) => (
-              <li
-                key={snap.snapshot_date}
-                className="rounded-[1rem] bg-muted/30 p-4 flex flex-col gap-2"
-              >
-                <header className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="m-0 font-semibold flex items-center gap-2">
-                      <Calendar size={14} />
-                      {formatBrDate(snap.snapshot_date)}
-                    </p>
-                    <p className={dashboardNoteClass}>
-                      {snap.table_count} tabelas - {snap.total_rows} linhas
-                    </p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={() =>
-                      setConfirm({
-                        kind: 'restore_all',
-                        date: snap.snapshot_date,
-                        table_count: snap.table_count,
-                        total_rows: snap.total_rows,
-                      })
-                    }
-                    disabled={actionLoading}
-                  >
-                    <RotateCcw size={14} />
-                    <span>Restaurar TUDO desta data</span>
-                  </Button>
-                </header>
-                <details className="mt-1">
-                  <summary className="cursor-pointer text-[0.85rem] text-muted-foreground">
-                    Ver tabelas individualmente
-                  </summary>
-                  <ul className="mt-2 m-0 p-0 list-none flex flex-col gap-1">
-                    {snap.tables.map((t) => (
-                      <li
-                        key={`${snap.snapshot_date}-${t.table_name}`}
-                        className="flex flex-wrap items-center justify-between gap-2 py-1"
+        <section className={sectionClass}>
+          <h2>
+            <Clock size={15} /> Proximo backup automatico
+          </h2>
+          {schedule && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+              <div className={statusCellClass}>
+                <p className={statusLabelClass}>Snapshot interno</p>
+                <p className={statusValueClass}>
+                  {formatCountdown(schedule.next_internal_snapshot_utc, now)}
+                </p>
+                <p className={statusSubClass}>
+                  {formatBrDateTime(schedule.next_internal_snapshot_utc)}
+                </p>
+              </div>
+              <div className={statusCellClass}>
+                <p className={statusLabelClass}>Dump externo (GitHub)</p>
+                <p className={statusValueClass}>
+                  {formatCountdown(schedule.next_external_dump_utc, now)}
+                </p>
+                <p className={statusSubClass}>
+                  {formatBrDateTime(schedule.next_external_dump_utc)}
+                </p>
+              </div>
+              <div className={statusCellClass}>
+                <p className={statusLabelClass}>Total de snapshots</p>
+                <p className={statusValueClass}>{schedule.total_runs}</p>
+                <p className={statusSubClass}>
+                  {schedule.last_snapshot_at
+                    ? `Ultimo: ${formatBrDateTime(schedule.last_snapshot_at)}`
+                    : 'Nenhum criado ainda'}
+                </p>
+              </div>
+            </div>
+          )}
+        </section>
+
+        <section className={sectionClass}>
+          <h2>
+            <Database size={15} /> Snapshots disponiveis
+          </h2>
+          {snapshots.length === 0 ? (
+            <p className={dashboardNoteClass}>
+              Nenhum snapshot disponivel ainda. Clica em "Criar backup agora" pra gerar um na hora,
+              ou espera o automatico de segunda-feira.
+            </p>
+          ) : (
+            <ul className="m-0 p-0 list-none flex flex-col gap-1.5">
+              {snapshots.map((snap) => {
+                const isExpanded = expandedRunId === snap.snapshot_run_id
+                const sourceMeta = sourceMetaMap[snap.trigger_source] ?? sourceMetaMap.unknown
+                const SourceIcon = sourceMeta.Icon
+                const runLabel = formatBrDateTime(snap.snapshot_started_at)
+                const confirmCode = runConfirmCode(snap.snapshot_started_at)
+
+                return (
+                  <li key={snap.snapshot_run_id} className={snapshotCardClass}>
+                    <header className={snapshotHeaderClass}>
+                      <button
+                        type="button"
+                        className={snapshotToggleButtonClass}
+                        onClick={() =>
+                          setExpandedRunId(isExpanded ? null : snap.snapshot_run_id)
+                        }
                       >
-                        <span className="font-mono text-[0.85rem] break-all">
-                          {t.table_name}{' '}
-                          <span className="text-muted-foreground">({t.row_count} linhas)</span>
-                        </span>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            setConfirm({
-                              kind: 'restore_table',
-                              date: snap.snapshot_date,
-                              table: t.table_name,
-                              row_count: t.row_count,
-                            })
-                          }
-                          disabled={actionLoading}
-                        >
-                          Restaurar
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+                        {isExpanded ? (
+                          <ChevronDown size={14} className="shrink-0" />
+                        ) : (
+                          <ChevronRight size={14} className="shrink-0" />
+                        )}
+                        <Calendar size={13} className="text-muted-foreground shrink-0" />
+                        <span>{runLabel}</span>
+                      </button>
 
-      <section className={sectionClass}>
-        <h2 className="m-0 text-base flex items-center gap-2">
-          <History size={16} /> Historico de acoes
-        </h2>
-        {audit.length === 0 ? (
-          <p className={dashboardNoteClass}>Nenhuma acao registrada ainda.</p>
-        ) : (
-          <ul className="m-0 p-0 list-none flex flex-col gap-1">
-            {audit.map((entry) => (
-              <li
-                key={entry.id}
-                className="rounded-[0.75rem] bg-muted/30 px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-[0.85rem]"
-              >
-                <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                  {entry.success ? (
-                    <CheckCircle2 size={14} className="text-success-foreground shrink-0" />
-                  ) : (
-                    <AlertCircle size={14} className="text-destructive shrink-0" />
-                  )}
-                  <span className="font-semibold">{entry.performed_by_username}</span>
-                  <span className="text-muted-foreground">
-                    {entry.action === 'snapshot'
-                      ? 'criou um snapshot'
-                      : entry.action === 'restore_table'
-                        ? `restaurou ${entry.table_name}`
-                        : 'restaurou tudo'}
-                    {entry.snapshot_date && ` (${formatBrDate(entry.snapshot_date)})`}
-                  </span>
-                  {!entry.success && entry.error_message && (
-                    <span className="text-destructive text-[0.78rem] break-all">
-                      - {entry.error_message}
+                      <span className={`${sourceBadgeClass} ${sourceMeta.className}`}>
+                        <SourceIcon size={11} />
+                        {sourceMeta.label}
+                      </span>
+
+                      <span className="text-muted-foreground text-[0.82rem] flex-1 min-w-0 truncate">
+                        {snap.table_count} tabelas - {formatNumber(snap.total_rows)} linhas
+                      </span>
+
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() =>
+                          setConfirm({
+                            kind: 'restore_all',
+                            runId: snap.snapshot_run_id,
+                            runLabel,
+                            runConfirmCode: confirmCode,
+                            table_count: snap.table_count,
+                            total_rows: snap.total_rows,
+                          })
+                        }
+                        disabled={actionLoading}
+                      >
+                        <RotateCcw size={13} />
+                        <span>Restaurar tudo</span>
+                      </Button>
+                    </header>
+
+                    {isExpanded && (
+                      <ul className={snapshotTablesListClass}>
+                        {snap.tables.map((t) => (
+                          <li
+                            key={`${snap.snapshot_run_id}-${t.table_name}`}
+                            className={tableRowClass}
+                          >
+                            <span className="font-mono text-[0.82rem] break-all">
+                              {t.table_name}
+                              <span className="ml-2 text-muted-foreground">
+                                ({formatNumber(t.row_count)} linhas)
+                              </span>
+                            </span>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                setConfirm({
+                                  kind: 'restore_table',
+                                  runId: snap.snapshot_run_id,
+                                  runLabel,
+                                  table: t.table_name,
+                                  row_count: t.row_count,
+                                })
+                              }
+                              disabled={actionLoading}
+                            >
+                              Restaurar
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </section>
+
+        <section className={sectionClass}>
+          <h2>
+            <History size={15} /> Historico de acoes
+          </h2>
+          {audit.length === 0 ? (
+            <p className={dashboardNoteClass}>Nenhuma acao registrada ainda.</p>
+          ) : (
+            <ul className="m-0 p-0 list-none flex flex-col gap-1">
+              {audit.map((entry) => (
+                <li key={entry.id} className={auditRowClass}>
+                  <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                    {entry.success ? (
+                      <CheckCircle2
+                        size={13}
+                        className="text-success-foreground shrink-0"
+                      />
+                    ) : (
+                      <AlertCircle size={13} className="text-destructive shrink-0" />
+                    )}
+                    <span className="font-semibold">{entry.performed_by_username}</span>
+                    <span className="text-muted-foreground">
+                      {entry.action === 'snapshot'
+                        ? 'criou um snapshot'
+                        : entry.action === 'restore_table'
+                          ? `restaurou ${entry.table_name}`
+                          : 'restaurou tudo'}
+                      {entry.snapshot_date && ` (${formatBrDate(entry.snapshot_date)})`}
                     </span>
-                  )}
-                </div>
-                <span className="text-muted-foreground text-[0.78rem]">
-                  {formatBrDateTime(entry.performed_at)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+                    {!entry.success && entry.error_message && (
+                      <span className="text-destructive text-[0.78rem] break-all">
+                        - {entry.error_message}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-muted-foreground text-[0.78rem]">
+                    {formatBrDateTime(entry.performed_at)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </article>
 
       {confirm && (
         <div
@@ -363,19 +484,19 @@ export function SuperBackupsPage() {
                 </h2>
                 <p>
                   Vai APAGAR todos os dados atuais de <code>{confirm.table}</code> e substituir
-                  pelos dados do snapshot de {formatBrDate(confirm.date)} ({confirm.row_count}{' '}
+                  pelos dados do snapshot de {confirm.runLabel} ({formatNumber(confirm.row_count)}{' '}
                   linhas). Esta acao e irreversivel.
                 </p>
               </>
             )}
             {confirm.kind === 'restore_all' && (
               <>
-                <h2>Restaurar TUDO de {formatBrDate(confirm.date)}?</h2>
+                <h2>Restaurar TUDO do snapshot de {confirm.runLabel}?</h2>
                 <p>
                   Vai APAGAR e substituir o conteudo de TODAS as tabelas ({confirm.table_count}{' '}
-                  tabelas, {confirm.total_rows} linhas). Dados criados depois de{' '}
-                  {formatBrDate(confirm.date)} serao perdidos. Sua sessao pode expirar se seu
-                  usuario nao existia naquela data.
+                  tabelas, {formatNumber(confirm.total_rows)} linhas). Dados criados depois desse
+                  snapshot serao perdidos. Sua sessao pode expirar se seu usuario nao existia
+                  naquele momento.
                 </p>
               </>
             )}
@@ -417,6 +538,6 @@ export function SuperBackupsPage() {
           </div>
         </div>
       )}
-    </article>
+    </>
   )
 }
