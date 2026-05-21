@@ -1,5 +1,5 @@
 import { type FormEvent, useEffect, useState } from 'react'
-import { FileSpreadsheet, LogOut, UserRound } from 'lucide-react'
+import { DatabaseBackup, FileSpreadsheet, LogOut, UserRound } from 'lucide-react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import type { AuthSession } from '../App'
 import { updateMyProfile } from '../auth/appAuth'
@@ -161,6 +161,28 @@ export function SettingsPage() {
             >
               <FileSpreadsheet size={14} />
               <span>Abrir importacao de planilha</span>
+            </Button>
+          </div>
+        </section>
+      )}
+
+      {session.role === 'superadmin' && (
+        <section className={sectionClass}>
+          <h2 className="m-0 text-base flex items-center gap-2">
+            <DatabaseBackup size={16} /> Backups do banco
+          </h2>
+          <p className={dashboardNoteClass}>
+            Veja os snapshots semanais, crie um backup imediato ou restaure uma data anterior.
+          </p>
+          <div className={cn(viewToggleClass)}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/super/backups')}
+            >
+              <DatabaseBackup size={14} />
+              <span>Abrir backups do banco</span>
             </Button>
           </div>
         </section>

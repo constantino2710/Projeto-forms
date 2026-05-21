@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { FilePlus2, FolderKanban, History, LayoutList, UserPlus, Users } from 'lucide-react'
+import { DatabaseBackup, FilePlus2, FolderKanban, History, LayoutList, UserPlus, Users } from 'lucide-react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import {
   clearSessionToken,
@@ -17,6 +17,7 @@ import { AdminProjectHistoryPage } from './pages/admin/AdminProjectHistoryPage'
 import { AdminProjectsPage } from './pages/admin/AdminProjectsPage'
 import { LoginPage } from './pages/LoginPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { SuperBackupsPage } from './pages/super/SuperBackupsPage'
 import { SuperDisciplinesPage } from './pages/super/SuperDisciplinesPage'
 import { SuperHistoryPage } from './pages/super/SuperHistoryPage'
 import { SuperNewUserPage } from './pages/super/SuperNewUserPage'
@@ -153,6 +154,7 @@ function App() {
                           { label: 'Historico Geral', to: '/super/historico', icon: History },
                           { label: 'Usuarios', to: '/super/usuarios', icon: Users },
                           { label: 'Novo Usuario', to: '/super/usuarios/novo', icon: UserPlus },
+                          { label: 'Backups', to: '/super/backups', icon: DatabaseBackup },
                         ]
                       : [
                           { label: 'Projetos', to: '/admin/projetos', icon: LayoutList },
@@ -186,6 +188,7 @@ function App() {
                     { label: 'Historico Geral', to: '/super/historico', icon: History },
                     { label: 'Usuarios', to: '/super/usuarios', icon: Users },
                     { label: 'Novo Usuario', to: '/super/usuarios/novo', icon: UserPlus },
+                    { label: 'Backups', to: '/super/backups', icon: DatabaseBackup },
                   ]}
                 />
               )
@@ -196,6 +199,7 @@ function App() {
         <Route path="usuarios/novo" element={<SuperNewUserPage />} />
         <Route path="disciplinas" element={<SuperDisciplinesPage />} />
         <Route path="historico" element={<SuperHistoryPage />} />
+        <Route path="backups" element={<SuperBackupsPage />} />
         <Route path="configuracoes" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to={session ? defaultPath : '/login'} replace />} />

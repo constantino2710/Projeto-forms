@@ -50,6 +50,14 @@ jobs:
           echo "dir=$DIR" >> "$GITHUB_OUTPUT"
           echo "date=$DATE" >> "$GITHUB_OUTPUT"
 
+      - name: Cria snapshot interno (aparece na tela do superadmin)
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          /usr/lib/postgresql/17/bin/psql "$DB_URL" -v ON_ERROR_STOP=1 \
+            -c "select backups.create_weekly_snapshot();" \
+            -c "select backups.cleanup_old_snapshots(4);"
+
       - name: pg_dump do schema public
         env:
           DB_URL: ${{ secrets.SUPABASE_DB_URL }}
