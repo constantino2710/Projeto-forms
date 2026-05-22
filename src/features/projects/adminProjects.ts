@@ -231,3 +231,16 @@ export const decideAdminProject = async (
 
   return data as AdminProjectDecisionResult
 }
+
+export const deleteAdminProject = async (projectId: string): Promise<void> => {
+  const token = getTokenOrThrow()
+
+  const { error } = await supabase.rpc('app_admin_delete_project', {
+    p_token: token,
+    p_project_id: projectId,
+  })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+}

@@ -8,6 +8,7 @@ import { supabase } from '../../lib/supabase'
 import {
   consumePrefetchedAdminProjects,
   decideAdminProject,
+  deleteAdminProject,
   getAdminProjectDetail,
   listAdminProjectHistory,
   listAdminProjects,
@@ -168,5 +169,27 @@ describe('decideAdminProject', () => {
     localStorage.setItem(TOKEN_KEY, 'tok')
     rpc.mockResolvedValue({ data: null, error: { message: 'falha' } } as never)
     await expect(decideAdminProject('p1', 'aprovado')).rejects.toThrow('falha')
+  })
+})
+
+describe('deleteAdminProject', () => {
+  it('lanca quando nao ha token', async () => {
+    await expect(deleteAdminProject('p1')).rejects.toThrow(/Sessao invalida/)
+  })
+
+  it('chama RPC com projectId', async () => {
+    localStorage.setItem(TOKEN_KEY, 'tok')
+    rpc.mockResolvedValue({ data: null, error: null } as never)
+    await deleteAdminProject('p1')
+    expect(rpc).toHaveBeenCalledWith('app_admin_delete_project', {
+      p_token: 'tok',
+      p_project_id: 'p1',
+    })
+  })
+
+  it('propaga erro do RPC', async () => {
+    localStorage.setItem(TOKEN_KEY, 'tok')
+    rpc.mockResolvedValue({ data: null, error: { message: 'falha del' } } as never)
+    await expect(deleteAdminProject('p1')).rejects.toThrow('falha del')
   })
 })

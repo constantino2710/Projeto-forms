@@ -1,4 +1,4 @@
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
@@ -18,16 +18,22 @@ import { sendProjectStatusEmail } from '../../features/notifications/projectEmai
 import { getProjectTimeline, type ProjectTimeline } from '../../features/projects/projectTimeline'
 import {
   decideAdminProject,
+  deleteAdminProject,
   type AdminProjectStatus,
   getAdminProjectDetail,
   type AdminProjectDetail,
 } from '../../features/projects/adminProjects'
+import { Input } from '../../components/ui/input'
 import { projectStatusLabel } from '../../features/projects/userProjects'
 import { formLabelClass } from '../../lib/formStyles'
 import {
   backLinkClass,
+  confirmModalActionsClass,
+  confirmModalBackdropClass,
+  confirmModalClass,
   dashboardPanelFlatClass,
   errorTextClass,
+  successTextClass,
   projectApprovalChipClass,
   projectApprovalDateClass,
   projectApprovalLabelClass,
@@ -61,8 +67,12 @@ export function AdminProjectDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isDeciding, setIsDeciding] = useState(false)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
   const [adminMessage, setAdminMessage] = useState('')
   const [timeline, setTimeline] = useState<ProjectTimeline | null>(null)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     const loadProject = async () => {
@@ -98,26 +108,31 @@ export function AdminProjectDetailPage() {
     }
 
     setError('')
+    setNotice('')
     setIsDeciding(true)
 
     try {
       const result = await decideAdminProject(projectId, decision, adminMessage)
 
-      if (result.recipient_email) {
-        try {
-          await sendProjectStatusEmail({
-            projectId: result.id,
-            recipientEmail: result.recipient_email,
-            recipientName: result.professor_name,
-            projectTitle: result.project_title,
-            decision: result.status,
-            adminMessage: result.admin_message,
-          })
-        } catch {
-          setError('Decisao registrada, mas nao foi possivel enviar o e-mail.')
-          setIsDeciding(false)
-          return
-        }
+      if (!result.recipient_email) {
+        setNotice('Decisao registrada. Professor sem e-mail cadastrado, nao foi notificado.')
+        window.setTimeout(() => navigate('/admin/projetos'), 2500)
+        return
+      }
+
+      try {
+        await sendProjectStatusEmail({
+          projectId: result.id,
+          recipientEmail: result.recipient_email,
+          recipientName: result.professor_name,
+          projectTitle: result.project_title,
+          decision: result.status,
+          adminMessage: result.admin_message,
+        })
+      } catch {
+        setError('Decisao registrada, mas nao foi possivel enviar o e-mail.')
+        window.setTimeout(() => navigate('/admin/projetos'), 2500)
+        return
       }
 
       navigate('/admin/projetos')
@@ -126,6 +141,28 @@ export function AdminProjectDetailPage() {
       setError(nextError)
     } finally {
       setIsDeciding(false)
+    }
+  }
+
+  const closeDelete = () => {
+    setIsDeleteOpen(false)
+    setDeleteConfirmText('')
+  }
+
+  const handleDelete = async () => {
+    if (!projectId) return
+    setError('')
+    setNotice('')
+    setIsDeleting(true)
+    try {
+      await deleteAdminProject(projectId)
+      closeDelete()
+      navigate('/admin/projetos')
+    } catch (err) {
+      const nextError = err instanceof Error ? err.message : 'Falha ao excluir projeto.'
+      setError(nextError)
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -329,6 +366,7 @@ export function AdminProjectDetailPage() {
         </div>
       )}
       {error && <p className={errorTextClass}>{error}</p>}
+      {notice && <p className={successTextClass}>{notice}</p>}
 
       {!isLoading && project && (
         <div className={projectTwoCardsClass}>
@@ -465,6 +503,17 @@ export function AdminProjectDetailPage() {
                 >
                   {isDeciding ? 'Processando...' : 'Recusar'}
                 </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsDeleteOpen(true)}
+                  disabled={isDeciding || isDeleting}
+                  className="ml-auto text-destructive hover:bg-destructive/10"
+                >
+                  <Trash2 size={14} />
+                  <span>Excluir projeto</span>
+                </Button>
               </div>
             </div>
           </section>
@@ -511,6 +560,55 @@ export function AdminProjectDetailPage() {
               )
             })}
           </aside>
+        </div>
+      )}
+
+      {isDeleteOpen && project && (
+        <div
+          className={confirmModalBackdropClass}
+          onClick={() => {
+            if (!isDeleting) closeDelete()
+          }}
+        >
+          <div className={confirmModalClass} onClick={(e) => e.stopPropagation()}>
+            <h2>Excluir projeto?</h2>
+            <p>
+              Vai marcar <strong>{project.title}</strong> como excluido. O projeto some das listas
+              e o professor nao consegue ver mais. Esta acao nao pode ser desfeita pelo painel.
+            </p>
+            <label className="mt-3 flex flex-col gap-1.5">
+              <span className="text-[0.85rem] text-muted-foreground">
+                Para confirmar, digite: <code className="font-bold">EXCLUIR</code>
+              </span>
+              <Input
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                disabled={isDeleting}
+                autoFocus
+              />
+            </label>
+            <div className={confirmModalActionsClass}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={closeDelete}
+                disabled={isDeleting}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={() => void handleDelete()}
+                disabled={isDeleting || deleteConfirmText !== 'EXCLUIR'}
+              >
+                {isDeleting && <Spinner size="sm" />}
+                <span>Excluir</span>
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </article>
