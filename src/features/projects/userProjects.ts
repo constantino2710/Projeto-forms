@@ -86,7 +86,9 @@ const formatRpcErrorMessage = (error: unknown) => {
 };
 
 const shouldClearSession = (message: string) =>
-  /sessao|sessão|token|uuid|autenticad/i.test(message);
+  /sess(a|ã)o\s+(invalida|inv[áa]lida|expirada|expired|nao\s+encontrada|n[ãa]o\s+encontrada)|invalid\s+session|n[ãa]o\s+autenticad|token\s+(invalido|inv[áa]lido|expirado|expirou|expired|invalid|n[ãa]o\s+encontrad)/i.test(
+    message,
+  );
 
 const getTokenOrThrow = () => {
   const token = getStoredSessionToken();

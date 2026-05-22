@@ -1,4 +1,3 @@
-import * as XLSX from 'xlsx'
 import type { DisciplineImportRow } from './disciplines'
 
 export type SpreadsheetParseResult = {
@@ -108,6 +107,7 @@ const cellToBoolean = (value: unknown): boolean | null => {
 }
 
 export const parseSpreadsheetFile = async (file: File): Promise<SpreadsheetParseResult> => {
+  const XLSX = await import('xlsx')
   const buffer = await file.arrayBuffer()
   const workbook = XLSX.read(buffer, { type: 'array' })
   const firstSheetName = workbook.SheetNames[0]

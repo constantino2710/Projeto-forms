@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { DatabaseBackup, FilePlus2, FolderKanban, History, LayoutList, UserPlus, Users } from 'lucide-react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import {
@@ -12,19 +12,50 @@ import {
 import { DashboardLayout } from './components/layout/DashboardLayout'
 import { Spinner } from './components/ui/spinner'
 import { prefetchAdminProjects, prefetchAdminProjectHistory } from './features/projects/adminProjects'
-import { AdminProjectDetailPage } from './pages/admin/AdminProjectDetailPage'
-import { AdminProjectHistoryPage } from './pages/admin/AdminProjectHistoryPage'
-import { AdminProjectsPage } from './pages/admin/AdminProjectsPage'
 import { LoginPage } from './pages/LoginPage'
-import { SettingsPage } from './pages/SettingsPage'
-import { SuperBackupsPage } from './pages/super/SuperBackupsPage'
-import { SuperDisciplinesPage } from './pages/super/SuperDisciplinesPage'
-import { SuperHistoryPage } from './pages/super/SuperHistoryPage'
-import { SuperNewUserPage } from './pages/super/SuperNewUserPage'
-import { SuperUsersPage } from './pages/super/SuperUsersPage'
-import { UserProjectDetailPage } from './pages/user/UserProjectDetailPage'
-import { UserNewProjectPage } from './pages/user/UserNewProjectPage'
-import { UserProjectsPage } from './pages/user/UserProjectsPage'
+
+const AdminProjectDetailPage = lazy(() =>
+  import('./pages/admin/AdminProjectDetailPage').then((m) => ({ default: m.AdminProjectDetailPage })),
+)
+const AdminProjectHistoryPage = lazy(() =>
+  import('./pages/admin/AdminProjectHistoryPage').then((m) => ({ default: m.AdminProjectHistoryPage })),
+)
+const AdminProjectsPage = lazy(() =>
+  import('./pages/admin/AdminProjectsPage').then((m) => ({ default: m.AdminProjectsPage })),
+)
+const SettingsPage = lazy(() =>
+  import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })),
+)
+const SuperBackupsPage = lazy(() =>
+  import('./pages/super/SuperBackupsPage').then((m) => ({ default: m.SuperBackupsPage })),
+)
+const SuperDisciplinesPage = lazy(() =>
+  import('./pages/super/SuperDisciplinesPage').then((m) => ({ default: m.SuperDisciplinesPage })),
+)
+const SuperHistoryPage = lazy(() =>
+  import('./pages/super/SuperHistoryPage').then((m) => ({ default: m.SuperHistoryPage })),
+)
+const SuperNewUserPage = lazy(() =>
+  import('./pages/super/SuperNewUserPage').then((m) => ({ default: m.SuperNewUserPage })),
+)
+const SuperUsersPage = lazy(() =>
+  import('./pages/super/SuperUsersPage').then((m) => ({ default: m.SuperUsersPage })),
+)
+const UserProjectDetailPage = lazy(() =>
+  import('./pages/user/UserProjectDetailPage').then((m) => ({ default: m.UserProjectDetailPage })),
+)
+const UserNewProjectPage = lazy(() =>
+  import('./pages/user/UserNewProjectPage').then((m) => ({ default: m.UserNewProjectPage })),
+)
+const UserProjectsPage = lazy(() =>
+  import('./pages/user/UserProjectsPage').then((m) => ({ default: m.UserProjectsPage })),
+)
+
+const routeFallback = (
+  <main className="min-h-[60vh] flex items-center justify-center text-muted-foreground">
+    <Spinner size="lg" />
+  </main>
+)
 
 export type AuthRole = 'admin' | 'user' | 'superadmin'
 
@@ -102,7 +133,8 @@ function App() {
         : '/usuario'
 
   return (
-    <Routes>
+    <Suspense fallback={routeFallback}>
+      <Routes>
       <Route
         path="/login"
         element={
@@ -203,7 +235,8 @@ function App() {
         <Route path="configuracoes" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to={session ? defaultPath : '/login'} replace />} />
-    </Routes>
+      </Routes>
+    </Suspense>
   )
 }
 
