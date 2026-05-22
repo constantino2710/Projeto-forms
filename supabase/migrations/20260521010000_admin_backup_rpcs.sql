@@ -261,3 +261,5 @@ grant execute on function public.app_sa_restore_table(uuid, text, date) to anon,
 grant execute on function public.app_sa_restore_all(uuid, date) to anon, authenticated;
 grant execute on function public.app_sa_next_backup_schedule(uuid) to anon, authenticated;
 grant execute on function public.app_sa_list_restore_audit(uuid, integer) to anon, authenticated;
+
+notify pgrst, 'reload schema';
