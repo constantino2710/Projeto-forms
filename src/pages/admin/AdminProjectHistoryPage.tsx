@@ -46,7 +46,7 @@ import {
 } from '../../lib/projectStyles'
 import { cn } from '../../lib/utils'
 
-const PAGE_SIZE = 9
+const PAGE_SIZE = 20
 const SEARCH_DEBOUNCE_MS = 350
 
 const STATUS_OPTIONS = [
@@ -85,7 +85,7 @@ export function AdminProjectHistoryPage() {
     ])
     const rows = adminProjectsToReportRows(pending.rows, history.rows)
     const data = buildReportData(rows, period)
-    const blob = generateReport(data, format)
+    const blob = await generateReport(data, format)
     downloadBlob(blob, buildReportFilename(format, period))
   }
 
