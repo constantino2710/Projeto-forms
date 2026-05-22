@@ -8,11 +8,9 @@ import {
   ChevronRight,
   Clock,
   Database,
-  Github,
   History,
   PlayCircle,
   RotateCcw,
-  Terminal,
   UserRound,
 } from 'lucide-react'
 import { PageHeader } from '../../components/layout/PageHeader'
@@ -104,28 +102,28 @@ type SourceMeta = {
 
 const sourceMetaMap: Record<TriggerSource, SourceMeta> = {
   pg_cron: {
-    label: 'Automatico (banco)',
+    label: 'Automatico',
     Icon: Bot,
     className: 'bg-status-submitted-bg text-status-submitted-fg',
   },
   github_workflow: {
-    label: 'Automatico (GitHub)',
-    Icon: Github,
-    className: 'bg-status-adjust-bg text-status-adjust-fg',
+    label: 'Automatico',
+    Icon: Bot,
+    className: 'bg-status-submitted-bg text-status-submitted-fg',
   },
   manual_ui: {
-    label: 'Manual (painel)',
+    label: 'Manual',
     Icon: UserRound,
     className: 'bg-status-approved-bg text-status-approved-fg',
   },
   manual_sql: {
-    label: 'SQL direto',
-    Icon: Terminal,
-    className: 'bg-muted text-muted-foreground',
+    label: 'Manual',
+    Icon: UserRound,
+    className: 'bg-status-approved-bg text-status-approved-fg',
   },
   unknown: {
     label: '?',
-    Icon: Terminal,
+    Icon: Bot,
     className: 'bg-muted text-muted-foreground',
   },
 }
