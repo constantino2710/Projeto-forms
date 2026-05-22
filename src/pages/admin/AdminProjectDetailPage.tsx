@@ -1,4 +1,4 @@
-import { ArrowLeft, Trash2 } from 'lucide-react'
+import { ArrowLeft, FileText, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
@@ -23,6 +23,11 @@ import {
   getAdminProjectDetail,
   type AdminProjectDetail,
 } from '../../features/projects/adminProjects'
+import {
+  buildSingleProjectPdfFilename,
+  downloadBlob,
+  generateSingleProjectPdf,
+} from '../../features/reports/projectReports'
 import { Input } from '../../components/ui/input'
 import { projectStatusLabel } from '../../features/projects/userProjects'
 import { formLabelClass } from '../../lib/formStyles'
@@ -73,6 +78,7 @@ export function AdminProjectDetailPage() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
 
   useEffect(() => {
     const loadProject = async () => {
@@ -163,6 +169,21 @@ export function AdminProjectDetailPage() {
       setError(nextError)
     } finally {
       setIsDeleting(false)
+    }
+  }
+
+  const handleGeneratePdf = async () => {
+    if (!project) return
+    setError('')
+    setIsGeneratingPdf(true)
+    try {
+      const blob = await generateSingleProjectPdf(project, timeline)
+      downloadBlob(blob, buildSingleProjectPdfFilename(project))
+    } catch (err) {
+      const nextError = err instanceof Error ? err.message : 'Falha ao gerar PDF.'
+      setError(nextError)
+    } finally {
+      setIsGeneratingPdf(false)
     }
   }
 
@@ -505,11 +526,22 @@ export function AdminProjectDetailPage() {
                 </Button>
                 <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleGeneratePdf}
+                  disabled={isGeneratingPdf || isDeciding}
+                  className="ml-auto"
+                >
+                  {isGeneratingPdf ? <Spinner size="sm" /> : <FileText size={14} />}
+                  <span>{isGeneratingPdf ? 'Gerando PDF...' : 'Gerar PDF'}</span>
+                </Button>
+                <Button
+                  type="button"
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsDeleteOpen(true)}
                   disabled={isDeciding || isDeleting}
-                  className="ml-auto text-destructive hover:bg-destructive/10"
+                  className="text-destructive hover:bg-destructive/10"
                 >
                   <Trash2 size={14} />
                   <span>Excluir projeto</span>

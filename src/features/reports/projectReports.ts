@@ -1,10 +1,22 @@
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
-import * as XLSX from 'xlsx-js-style'
+import type jsPDF from 'jspdf'
+import type * as XLSX from 'xlsx-js-style'
+
+type XlsxModule = typeof import('xlsx-js-style')
 import type {
   AdminProjectCard,
+  AdminProjectDetail,
   AdminProjectHistoryCard,
 } from '../projects/adminProjects'
+import {
+  ACKNOWLEDGEMENT_OPTIONS,
+  DISCIPLINE_ACKNOWLEDGEMENT_OPTIONS,
+  createExtensionPlanFromProject,
+} from '../projects/extensionPlan'
+import {
+  disciplineManagerialLabel,
+  parseDisciplineMetadataDescription,
+} from '../disciplines/disciplineProjectMetadata'
+import type { ProjectTimeline } from '../projects/projectTimeline'
 import type { SuperHistoryRow } from '../super/superAdmin'
 import { projectStatusLabel } from '../projects/userProjects'
 
@@ -310,6 +322,7 @@ type CellStyle = {
 }
 
 const setCell = (
+  xlsx: XlsxModule,
   sheet: XLSX.WorkSheet,
   row: number,
   col: number,
@@ -317,7 +330,7 @@ const setCell = (
   style?: CellStyle,
   type?: 'n' | 's',
 ): void => {
-  const ref = XLSX.utils.encode_cell({ r: row, c: col })
+  const ref = xlsx.utils.encode_cell({ r: row, c: col })
   const cellType = type ?? (typeof value === 'number' ? 'n' : 's')
   const cell: XLSX.CellObject = { t: cellType, v: value as XLSX.CellObject['v'] }
   if (style) (cell as XLSX.CellObject & { s?: CellStyle }).s = style
@@ -331,32 +344,39 @@ const thinBorder = (color = 'E5E7EB'): CellStyle['border'] => ({
   right: { style: 'thin', color: { rgb: color } },
 })
 
-const buildSummarySheet = (data: ReportData): XLSX.WorkSheet => {
+const buildSummarySheet = (xlsx: XlsxModule, data: ReportData): XLSX.WorkSheet => {
   const sheet: XLSX.WorkSheet = {}
   const colCount = 4
   let row = 0
+  const setCellHere = (
+    r: number,
+    c: number,
+    value: string | number | null,
+    style?: CellStyle,
+    type?: 'n' | 's',
+  ) => setCell(xlsx, sheet, r, c, value, style, type)
 
-  setCell(sheet, row, 0, 'RELATÓRIO DE PROJETOS', {
+  setCellHere(row, 0, 'RELATÓRIO DE PROJETOS', {
     font: { name: 'Calibri', sz: 20, bold: true, color: { rgb: 'FFFFFF' } },
     fill: { fgColor: { rgb: '1E293B' } },
     alignment: { horizontal: 'left', vertical: 'center' },
   })
   for (let c = 1; c < colCount; c += 1) {
-    setCell(sheet, row, c, '', { fill: { fgColor: { rgb: '1E293B' } } })
+    setCellHere(row, c, '', { fill: { fgColor: { rgb: '1E293B' } } })
   }
   row += 1
 
-  setCell(sheet, row, 0, `Gerado em ${data.generatedAt.toLocaleString('pt-BR')}  •  Período: ${data.rangeLabel}`, {
+  setCellHere(row, 0, `Gerado em ${data.generatedAt.toLocaleString('pt-BR')}  •  Período: ${data.rangeLabel}`, {
     font: { name: 'Calibri', sz: 11, color: { rgb: 'FFFFFF' } },
     fill: { fgColor: { rgb: '334155' } },
     alignment: { horizontal: 'left', vertical: 'center' },
   })
   for (let c = 1; c < colCount; c += 1) {
-    setCell(sheet, row, c, '', { fill: { fgColor: { rgb: '334155' } } })
+    setCellHere(row, c, '', { fill: { fgColor: { rgb: '334155' } } })
   }
   row += 2
 
-  setCell(sheet, row, 0, 'INDICADORES', {
+  setCellHere(row, 0, 'INDICADORES', {
     font: { name: 'Calibri', sz: 13, bold: true, color: { rgb: '0F172A' } },
     alignment: { horizontal: 'left', vertical: 'center' },
   })
@@ -368,49 +388,49 @@ const buildSummarySheet = (data: ReportData): XLSX.WorkSheet => {
     alignment: { horizontal: 'center', vertical: 'center' },
     border: thinBorder('0F172A'),
   }
-  setCell(sheet, row, 0, 'Indicador', { ...headerStyle, alignment: { horizontal: 'left', vertical: 'center' } })
-  setCell(sheet, row, 1, 'Quantidade', headerStyle)
-  setCell(sheet, row, 2, '', headerStyle)
-  setCell(sheet, row, 3, '', headerStyle)
+  setCellHere(row, 0, 'Indicador', { ...headerStyle, alignment: { horizontal: 'left', vertical: 'center' } })
+  setCellHere(row, 1, 'Quantidade', headerStyle)
+  setCellHere(row, 2, '', headerStyle)
+  setCellHere(row, 3, '', headerStyle)
   row += 1
 
   for (const ind of indicatorPalette) {
-    setCell(sheet, row, 0, ind.label, {
+    setCellHere(row, 0, ind.label, {
       font: { name: 'Calibri', sz: 11, color: { rgb: '0F172A' } },
       alignment: { horizontal: 'left', vertical: 'center' },
       border: thinBorder(),
     })
-    setCell(sheet, row, 1, data.stats[ind.key], {
+    setCellHere(row, 1, data.stats[ind.key], {
       font: { name: 'Calibri', sz: 14, bold: true, color: { rgb: ind.text } },
       fill: { fgColor: { rgb: ind.fill } },
       alignment: { horizontal: 'center', vertical: 'center' },
       border: thinBorder(ind.fill),
       numFmt: '0',
     })
-    setCell(sheet, row, 2, '', { border: thinBorder() })
-    setCell(sheet, row, 3, '', { border: thinBorder() })
+    setCellHere(row, 2, '', { border: thinBorder() })
+    setCellHere(row, 3, '', { border: thinBorder() })
     row += 1
   }
 
   row += 1
   const totalOrcamento = data.projects.reduce((acc, p) => acc + Number(p.budget || 0), 0)
-  setCell(sheet, row, 0, 'ORÇAMENTO TOTAL', {
+  setCellHere(row, 0, 'ORÇAMENTO TOTAL', {
     font: { name: 'Calibri', sz: 12, bold: true, color: { rgb: 'FFFFFF' } },
     fill: { fgColor: { rgb: '7C3AED' } },
     alignment: { horizontal: 'left', vertical: 'center' },
     border: thinBorder('7C3AED'),
   })
-  setCell(sheet, row, 1, totalOrcamento, {
+  setCellHere(row, 1, totalOrcamento, {
     font: { name: 'Calibri', sz: 14, bold: true, color: { rgb: 'FFFFFF' } },
     fill: { fgColor: { rgb: '7C3AED' } },
     alignment: { horizontal: 'right', vertical: 'center' },
     border: thinBorder('7C3AED'),
     numFmt: '"R$ "#,##0.00',
   })
-  setCell(sheet, row, 2, '', { fill: { fgColor: { rgb: '7C3AED' } } })
-  setCell(sheet, row, 3, '', { fill: { fgColor: { rgb: '7C3AED' } } })
+  setCellHere(row, 2, '', { fill: { fgColor: { rgb: '7C3AED' } } })
+  setCellHere(row, 3, '', { fill: { fgColor: { rgb: '7C3AED' } } })
 
-  sheet['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: row, c: colCount - 1 } })
+  sheet['!ref'] = xlsx.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: row, c: colCount - 1 } })
   sheet['!cols'] = [{ wch: 38 }, { wch: 18 }, { wch: 2 }, { wch: 2 }]
   sheet['!rows'] = [{ hpt: 32 }, { hpt: 22 }]
   sheet['!merges'] = [
@@ -421,19 +441,26 @@ const buildSummarySheet = (data: ReportData): XLSX.WorkSheet => {
   return sheet
 }
 
-const buildDetailSheet = (data: ReportData): XLSX.WorkSheet => {
+const buildDetailSheet = (xlsx: XlsxModule, data: ReportData): XLSX.WorkSheet => {
   const sheet: XLSX.WorkSheet = {}
   const rows = detailRows(data)
   const colCount = detailHeader.length
+  const setCellHere = (
+    r: number,
+    c: number,
+    value: string | number | null,
+    style?: CellStyle,
+    type?: 'n' | 's',
+  ) => setCell(xlsx, sheet, r, c, value, style, type)
 
   const titleStyle: CellStyle = {
     font: { name: 'Calibri', sz: 16, bold: true, color: { rgb: 'FFFFFF' } },
     fill: { fgColor: { rgb: '1E293B' } },
     alignment: { horizontal: 'left', vertical: 'center' },
   }
-  setCell(sheet, 0, 0, `PROJETOS (${rows.length})`, titleStyle)
+  setCellHere(0, 0, `PROJETOS (${rows.length})`, titleStyle)
   for (let c = 1; c < colCount; c += 1) {
-    setCell(sheet, 0, c, '', { fill: { fgColor: { rgb: '1E293B' } } })
+    setCellHere(0, c, '', { fill: { fgColor: { rgb: '1E293B' } } })
   }
 
   const headerRowIdx = 1
@@ -444,7 +471,7 @@ const buildDetailSheet = (data: ReportData): XLSX.WorkSheet => {
     border: thinBorder('0F172A'),
   }
   detailHeader.forEach((h, idx) => {
-    setCell(sheet, headerRowIdx, idx, h, headerStyle)
+    setCellHere(headerRowIdx, idx, h, headerStyle)
   })
 
   const numFmtCurrency = '"R$ "#,##0.00'
@@ -478,12 +505,12 @@ const buildDetailSheet = (data: ReportData): XLSX.WorkSheet => {
         baseStyle.numFmt = numFmtCurrency
       }
 
-      setCell(sheet, r, cIdx, val, baseStyle, isNumber ? 'n' : 's')
+      setCellHere(r, cIdx, val, baseStyle, isNumber ? 'n' : 's')
     })
   })
 
   const lastRow = headerRowIdx + rows.length
-  sheet['!ref'] = XLSX.utils.encode_range({
+  sheet['!ref'] = xlsx.utils.encode_range({
     s: { r: 0, c: 0 },
     e: { r: Math.max(lastRow, headerRowIdx), c: colCount - 1 },
   })
@@ -501,7 +528,7 @@ const buildDetailSheet = (data: ReportData): XLSX.WorkSheet => {
   sheet['!rows'] = [{ hpt: 28 }, { hpt: 24 }]
   sheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: colCount - 1 } }]
   sheet['!autofilter'] = {
-    ref: XLSX.utils.encode_range({
+    ref: xlsx.utils.encode_range({
       s: { r: headerRowIdx, c: 0 },
       e: { r: Math.max(lastRow, headerRowIdx), c: colCount - 1 },
     }),
@@ -511,18 +538,23 @@ const buildDetailSheet = (data: ReportData): XLSX.WorkSheet => {
   return sheet
 }
 
-export const generateXlsx = (data: ReportData): Blob => {
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, buildSummarySheet(data), 'Resumo')
-  XLSX.utils.book_append_sheet(wb, buildDetailSheet(data), 'Projetos')
-  const arrayBuffer = XLSX.write(wb, { type: 'array', bookType: 'xlsx' }) as ArrayBuffer
+export const generateXlsx = async (data: ReportData): Promise<Blob> => {
+  const xlsx = await import('xlsx-js-style')
+  const wb = xlsx.utils.book_new()
+  xlsx.utils.book_append_sheet(wb, buildSummarySheet(xlsx, data), 'Resumo')
+  xlsx.utils.book_append_sheet(wb, buildDetailSheet(xlsx, data), 'Projetos')
+  const arrayBuffer = xlsx.write(wb, { type: 'array', bookType: 'xlsx' }) as ArrayBuffer
   return new Blob([arrayBuffer], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   })
 }
 
-export const generatePdf = (data: ReportData): Blob => {
-  const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
+export const generatePdf = async (data: ReportData): Promise<Blob> => {
+  const [{ default: jsPDFLib }, { default: autoTable }] = await Promise.all([
+    import('jspdf'),
+    import('jspdf-autotable'),
+  ])
+  const doc = new jsPDFLib({ orientation: 'landscape', unit: 'pt', format: 'a4' })
   const pageWidth = doc.internal.pageSize.getWidth()
   const marginX = 40
 
@@ -618,8 +650,340 @@ export const downloadBlob = (blob: Blob, filename: string): void => {
   setTimeout(() => URL.revokeObjectURL(url), 0)
 }
 
-export const generateReport = (data: ReportData, format: ReportFormat): Blob => {
+export const generateReport = async (
+  data: ReportData,
+  format: ReportFormat,
+): Promise<Blob> => {
   if (format === 'pdf') return generatePdf(data)
   if (format === 'xlsx') return generateXlsx(data)
   return generateCsv(data)
+}
+
+const projectStatusPdfColor: Record<ReportProject['status'], [number, number, number]> = {
+  submetido: [14, 165, 233],
+  em_avaliacao: [234, 179, 8],
+  em_ajustes: [249, 115, 22],
+  aprovado: [34, 197, 94],
+  reprovado: [239, 68, 68],
+}
+
+const formatDateTimeBr = (iso: string | null | undefined): string => {
+  if (!iso) return '-'
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  return d.toLocaleString('pt-BR')
+}
+
+const slugifyForFilename = (value: string): string =>
+  value
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '')
+    .toLowerCase()
+    .slice(0, 60) || 'projeto'
+
+export const buildSingleProjectPdfFilename = (
+  project: Pick<AdminProjectDetail, 'title'>,
+  now: Date = new Date(),
+): string => {
+  const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`
+  return `projeto_${slugifyForFilename(project.title)}_${stamp}.pdf`
+}
+
+type DocWithAutoTable = jsPDF & { lastAutoTable?: { finalY: number } }
+
+const finalYOf = (doc: jsPDF, fallback: number): number =>
+  (doc as DocWithAutoTable).lastAutoTable?.finalY ?? fallback
+
+export const generateSingleProjectPdf = async (
+  project: AdminProjectDetail,
+  timeline: ProjectTimeline | null,
+  now: Date = new Date(),
+): Promise<Blob> => {
+  const [{ default: jsPDFLib }, { default: autoTable }] = await Promise.all([
+    import('jspdf'),
+    import('jspdf-autotable'),
+  ])
+  const doc = new jsPDFLib({ orientation: 'portrait', unit: 'pt', format: 'a4' })
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const pageHeight = doc.internal.pageSize.getHeight()
+  const marginX = 40
+  const contentWidth = pageWidth - marginX * 2
+
+  const ensureSpace = (needed: number, currentY: number): number => {
+    if (currentY + needed > pageHeight - 50) {
+      doc.addPage()
+      return 50
+    }
+    return currentY
+  }
+
+  const drawWrappedText = (
+    text: string,
+    x: number,
+    y: number,
+    maxWidth: number,
+    lineHeight = 12,
+  ): number => {
+    const lines = doc.splitTextToSize(text || '-', maxWidth)
+    let cursor = y
+    for (const line of lines as string[]) {
+      cursor = ensureSpace(lineHeight, cursor)
+      doc.text(line, x, cursor)
+      cursor += lineHeight
+    }
+    return cursor
+  }
+
+  doc.setFillColor(30, 41, 59)
+  doc.rect(0, 0, pageWidth, 70, 'F')
+  doc.setTextColor(255)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(16)
+  doc.text('Relatorio do Projeto', marginX, 32)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(10)
+  doc.text(`Gerado em ${now.toLocaleString('pt-BR')}`, marginX, 50)
+  doc.text(
+    project.tipo === 'disciplina' ? 'Disciplina' : 'Extensao',
+    pageWidth - marginX,
+    50,
+    { align: 'right' },
+  )
+  doc.setTextColor(20)
+
+  let y = 100
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(15)
+  y = drawWrappedText(project.title, marginX, y, contentWidth, 18)
+  y += 4
+
+  const statusColor = projectStatusPdfColor[project.status as ReportProject['status']] ?? [100, 116, 139]
+  const statusLabel = projectStatusLabel[project.status]
+  doc.setFillColor(statusColor[0], statusColor[1], statusColor[2])
+  const statusWidth = doc.getTextWidth(statusLabel) + 20
+  doc.roundedRect(marginX, y, statusWidth, 20, 6, 6, 'F')
+  doc.setTextColor(255)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(10)
+  doc.text(statusLabel, marginX + 10, y + 14)
+  doc.setTextColor(20)
+  y += 30
+
+  const infoPairs: Array<{ label: string; value: string }> = []
+  infoPairs.push({ label: 'Professor', value: project.professor || '-' })
+  if (project.tipo === 'disciplina') {
+    const meta = parseDisciplineMetadataDescription(project.description)
+    infoPairs.push({ label: 'Programa Unicap', value: project.discipline || '-' })
+    infoPairs.push({ label: 'Nome da disciplina', value: project.target_audience || '-' })
+    infoPairs.push({ label: 'Curso vinculado', value: project.course || '-' })
+    infoPairs.push({
+      label: 'Periodo de realizacao',
+      value: project.semestre_letivo || '-',
+    })
+    infoPairs.push({
+      label: 'Carga horaria de extensao',
+      value: `${Number(project.budget).toFixed(0)}h`,
+    })
+    infoPairs.push({ label: 'Codigo da extensao', value: meta?.codigoExtensao || '-' })
+    infoPairs.push({ label: 'Codigo da disciplina', value: meta?.codigoDisciplina || '-' })
+    infoPairs.push({ label: 'Codigo da turma', value: meta?.codigoTurma || '-' })
+    infoPairs.push({
+      label: 'Disciplina gerencial',
+      value: meta ? disciplineManagerialLabel(meta.disciplinaGerencial) : '-',
+    })
+    infoPairs.push({ label: 'Cursos gerenciados', value: meta?.cursosGerenciados || '-' })
+    infoPairs.push({
+      label: 'Datas no sistema',
+      value: `${formatBr(project.period_start)} ate ${formatBr(project.period_end)}`,
+    })
+  } else {
+    infoPairs.push({ label: 'Curso', value: project.course || '-' })
+    infoPairs.push({
+      label: 'Periodo',
+      value: `${formatBr(project.period_start)} ate ${formatBr(project.period_end)}`,
+    })
+    infoPairs.push({
+      label: 'Orcamento',
+      value: `R$ ${Number(project.budget).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+    })
+    infoPairs.push({ label: 'Publico alvo', value: project.target_audience || '-' })
+  }
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(12)
+  y = ensureSpace(20, y)
+  doc.text('Informacoes Gerais', marginX, y)
+  y += 14
+
+  autoTable(doc, {
+    startY: y,
+    body: infoPairs.map((pair) => [pair.label, pair.value]),
+    styles: { fontSize: 9, cellPadding: 6, overflow: 'linebreak' },
+    columnStyles: {
+      0: { fontStyle: 'bold', cellWidth: 160, fillColor: [241, 245, 249] },
+      1: { cellWidth: contentWidth - 160 },
+    },
+    margin: { left: marginX, right: marginX },
+    theme: 'grid',
+  })
+  y = finalYOf(doc, y) + 16
+
+  const extensionPlan =
+    project.tipo === 'extensao' || project.extension_form
+      ? createExtensionPlanFromProject(project)
+      : null
+
+  if (extensionPlan) {
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(12)
+    y = ensureSpace(20, y)
+    doc.text('Plano de Extensao', marginX, y)
+    y += 14
+
+    const planPairs: Array<{ label: string; value: string }> = []
+    if (project.tipo === 'extensao') {
+      planPairs.push({ label: 'Titulo da iniciativa', value: extensionPlan.title || '-' })
+      planPairs.push({ label: 'Carga horaria total', value: extensionPlan.totalWorkload || '-' })
+      planPairs.push({ label: 'Programa Unicap', value: extensionPlan.unicapProgram || '-' })
+      planPairs.push({ label: 'Curso vinculado', value: extensionPlan.linkedCourse || '-' })
+      planPairs.push({ label: 'Nome do curso', value: extensionPlan.courseName || '-' })
+      planPairs.push({
+        label: 'Coordenador',
+        value: extensionPlan.coordinatorName || '-',
+      })
+      planPairs.push({
+        label: 'E-mail do coordenador',
+        value: extensionPlan.coordinatorEmail || '-',
+      })
+      planPairs.push({ label: 'CPF do coordenador', value: extensionPlan.coordinatorCpf || '-' })
+      planPairs.push({ label: 'Telefone (WhatsApp)', value: extensionPlan.coordinatorPhone || '-' })
+      planPairs.push({
+        label: 'Participacao do coordenador',
+        value: extensionPlan.coordinatorParticipation || '-',
+      })
+    }
+    planPairs.push({
+      label: 'Objetivos de aprendizagem',
+      value: extensionPlan.learningObjectives.filter(Boolean).join(' | ') || '-',
+    })
+    planPairs.push({
+      label: 'Servico oferecido',
+      value: extensionPlan.serviceOffered || '-',
+    })
+    planPairs.push({
+      label: 'Atividades',
+      value: extensionPlan.activities.filter(Boolean).join(' | ') || '-',
+    })
+    planPairs.push({
+      label: 'Problema ou necessidade',
+      value: extensionPlan.problemStatement || '-',
+    })
+    planPairs.push({
+      label: 'ODS impactado',
+      value: extensionPlan.sustainableDevelopmentGoal || '-',
+    })
+    planPairs.push({ label: 'Publico atendido', value: extensionPlan.targetAudience || '-' })
+    planPairs.push({ label: 'Resumo', value: extensionPlan.projectSummary || '-' })
+    planPairs.push({
+      label: 'Informacoes adicionais',
+      value: extensionPlan.additionalInformation || '-',
+    })
+
+    const acknowledgementOptions =
+      project.tipo === 'disciplina' ? DISCIPLINE_ACKNOWLEDGEMENT_OPTIONS : ACKNOWLEDGEMENT_OPTIONS
+    planPairs.push({
+      label: 'Confirmacoes marcadas',
+      value:
+        acknowledgementOptions
+          .filter((item) => extensionPlan.acknowledgements.includes(item.id))
+          .map((item) => item.label)
+          .join(' | ') || '-',
+    })
+
+    autoTable(doc, {
+      startY: y,
+      body: planPairs.map((pair) => [pair.label, pair.value]),
+      styles: { fontSize: 9, cellPadding: 6, overflow: 'linebreak' },
+      columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 160, fillColor: [241, 245, 249] },
+        1: { cellWidth: contentWidth - 160 },
+      },
+      margin: { left: marginX, right: marginX },
+      theme: 'grid',
+    })
+    // @ts-expect-error jspdf-autotable types
+    y = (doc.lastAutoTable?.finalY ?? y) + 16
+  } else if (project.description) {
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(12)
+    y = ensureSpace(20, y)
+    doc.text('Descricao', marginX, y)
+    y += 14
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(10)
+    y = drawWrappedText(project.description, marginX, y, contentWidth, 12)
+    y += 8
+  }
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(12)
+  y = ensureSpace(20, y)
+  doc.text('Linha do Tempo', marginX, y)
+  y += 14
+
+  const approvalDate =
+    project.status === 'aprovado'
+      ? timeline?.approved_at ?? null
+      : project.status === 'reprovado'
+        ? timeline?.rejected_at ?? null
+        : null
+  const approvalLabel =
+    project.status === 'aprovado'
+      ? 'Aprovado em'
+      : project.status === 'reprovado'
+        ? 'Recusado em'
+        : 'Aprovacao'
+
+  const timelineRows: Array<[string, string]> = [
+    ['Criado em', formatDateTimeBr(timeline?.created_at ?? project.created_at)],
+    ['Submetido em', formatDateTimeBr(timeline?.submitted_at)],
+    ['Inicio da analise', formatDateTimeBr(timeline?.analysis_started_at)],
+    [approvalLabel, formatDateTimeBr(approvalDate)],
+  ]
+  if (project.analyzing_by_name) {
+    timelineRows.push(['Analisado por', project.analyzing_by_name])
+  }
+  if (project.reviewed_by_name) {
+    timelineRows.push(['Revisado por', project.reviewed_by_name])
+  }
+
+  autoTable(doc, {
+    startY: y,
+    body: timelineRows,
+    styles: { fontSize: 9, cellPadding: 6 },
+    columnStyles: {
+      0: { fontStyle: 'bold', cellWidth: 160, fillColor: [241, 245, 249] },
+      1: { cellWidth: contentWidth - 160 },
+    },
+    margin: { left: marginX, right: marginX },
+    theme: 'grid',
+    didDrawPage: () => {
+      const page = doc.getCurrentPageInfo().pageNumber
+      const total = doc.getNumberOfPages()
+      doc.setFontSize(9)
+      doc.setTextColor(120)
+      doc.text(
+        `Pagina ${page} de ${total}`,
+        pageWidth - marginX,
+        pageHeight - 16,
+        { align: 'right' },
+      )
+      doc.setTextColor(20)
+    },
+  })
+
+  return doc.output('blob')
 }
