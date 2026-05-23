@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { UserProjectDetailPage } from './UserProjectDetailPage'
 import {
+  duplicateMyProject,
   getMyProjectDetail,
   type UserProject,
 } from '../../features/projects/userProjects'
@@ -17,6 +19,7 @@ vi.mock('../../features/projects/userProjects', async (importOriginal) => {
     updateMyProjectDetails: vi.fn(),
     updateMyProjectStatus: vi.fn(),
     deleteMyProject: vi.fn(),
+    duplicateMyProject: vi.fn(),
   }
 })
 vi.mock('../../features/projects/projectAttachments', () => ({
@@ -60,6 +63,7 @@ const renderPage = () =>
 describe('UserProjectDetailPage', () => {
   beforeEach(() => {
     vi.mocked(getMyProjectDetail).mockReset()
+    vi.mocked(duplicateMyProject).mockReset()
     vi.mocked(listProjectAttachments).mockReset().mockResolvedValue([])
     vi.mocked(getProjectTimeline).mockReset().mockResolvedValue({
       status: 'rascunho',
@@ -81,6 +85,27 @@ describe('UserProjectDetailPage', () => {
     vi.mocked(getMyProjectDetail).mockResolvedValue(mockProject)
     renderPage()
     expect(await screen.findByRole('heading', { name: 'Projeto Detalhe' })).toBeInTheDocument()
+  })
+
+  it('permite duplicar o projeto e navega para o novo id', async () => {
+    vi.mocked(getMyProjectDetail).mockImplementation(async (id: string) =>
+      id === 'p1' ? mockProject : { ...mockProject, id },
+    )
+    vi.mocked(duplicateMyProject).mockResolvedValue({
+      id: 'p2',
+      title: 'Projeto Detalhe',
+      status: 'rascunho',
+      created_at: '2025-01-02',
+    })
+
+    renderPage()
+
+    const duplicateButton = await screen.findByRole('button', { name: /Duplicar/i })
+    await userEvent.click(duplicateButton)
+
+    expect(await screen.findByRole('heading', { name: 'Projeto Detalhe' })).toBeInTheDocument()
+    expect(vi.mocked(duplicateMyProject)).toHaveBeenCalledWith(mockProject)
+    expect(vi.mocked(getMyProjectDetail)).toHaveBeenCalledWith('p2')
   })
 
   it('mostra erro quando getMyProjectDetail lanca', async () => {

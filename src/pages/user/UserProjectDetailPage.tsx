@@ -33,6 +33,7 @@ import {
   updateMyProjectDetails,
   updateMyProjectStatus,
   deleteMyProject,
+  duplicateMyProject,
   type UserProject,
 } from "../../features/projects/userProjects";
 import {
@@ -111,6 +112,7 @@ export function UserProjectDetailPage() {
   const [project, setProject] = useState<UserProject | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDuplicating, setIsDuplicating] = useState(false);
   const [error, setError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<EditFormState | null>(null);
@@ -328,6 +330,26 @@ export function UserProjectDetailPage() {
         err instanceof Error ? err.message : "Falha ao excluir rascunho.";
       setError(nextError);
       setIsDeleting(false);
+    }
+  };
+
+  const handleDuplicateProject = async () => {
+    if (!project) {
+      return;
+    }
+
+    setError("");
+    setIsDuplicating(true);
+
+    try {
+      const result = await duplicateMyProject(project);
+      navigate(`/usuario/meus-projetos/${result.id}`);
+    } catch (err) {
+      const nextError =
+        err instanceof Error ? err.message : "Falha ao duplicar projeto.";
+      setError(nextError);
+    } finally {
+      setIsDuplicating(false);
     }
   };
 
@@ -731,6 +753,16 @@ export function UserProjectDetailPage() {
 
                   <div className={projectDetailActionsSpreadClass}>
                     <div className={projectDetailActionsLeftClass}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDuplicateProject}
+                      disabled={isDuplicating || isSubmitting || isDeleting}
+                    >
+                      {isDuplicating && <Spinner size="sm" />}
+                      <span>Duplicar</span>
+                    </Button>
                     {(project.status === "rascunho" ||
                       project.status === "em_ajustes") && (
                       <Button

@@ -8,6 +8,7 @@ import { supabase } from '../../lib/supabase'
 import {
   createUserProject,
   deleteMyProject,
+  duplicateMyProject,
   getMyProjectDetail,
   listMyProjects,
   projectStatusLabel,
@@ -178,6 +179,50 @@ describe('updateMyProjectStatus', () => {
     setToken()
     rpc.mockResolvedValue({ data: null, error: { message: 'x' } } as never)
     await expect(updateMyProjectStatus('p1', 'rascunho')).rejects.toThrow('x')
+  })
+})
+
+describe('duplicateMyProject', () => {
+  it('cria um novo projeto usando os dados do projeto existente', async () => {
+    setToken()
+    const project = {
+      id: 'p1',
+      title: 'Projeto Duplicado',
+      tipo: 'disciplina' as const,
+      codigo_disciplina: 'CS1',
+      semestre_letivo: '2025.1',
+      thematic_area: 'TIC',
+      course: 'CC',
+      school: 'TIC',
+      period_start: '2025-01-01',
+      period_end: '2025-06-30',
+      target_audience: 'Comunidade',
+      budget: 500,
+      description: 'Descricao',
+      status: 'rascunho' as const,
+      admin_message: null,
+      created_at: '2025-01-01',
+      updated_at: '2025-01-01',
+    }
+
+    rpc.mockResolvedValue({
+      data: { id: 'p2', title: 'Projeto Duplicado', status: 'rascunho', created_at: '2025-01-02' },
+      error: null,
+    } as never)
+
+    const result = await duplicateMyProject(project)
+
+    expect(result).toEqual({ id: 'p2', title: 'Projeto Duplicado', status: 'rascunho', created_at: '2025-01-02' })
+    expect(rpc).toHaveBeenCalledWith(
+      'app_create_project_v2',
+      expect.objectContaining({
+        p_token: VALID_TOKEN,
+        p_title: 'Projeto Duplicado',
+        p_type: 'disciplina',
+        p_codigo_disciplina: 'CS1',
+        p_semestre_letivo: '2025.1',
+      }),
+    )
   })
 })
 

@@ -136,6 +136,25 @@ export const createUserProject = async (
   return data as CreateProjectResult;
 };
 
+export const duplicateMyProject = async (
+  project: UserProject,
+): Promise<CreateProjectResult> => {
+  return createUserProject({
+    title: project.title,
+    thematicArea: project.thematic_area,
+    course: project.course ?? null,
+    periodStart: project.period_start,
+    periodEnd: project.period_end,
+    targetAudience: project.target_audience,
+    budget: project.budget,
+    description: project.description,
+    type: project.tipo,
+    codigo_disciplina: project.codigo_disciplina ?? null,
+    semestre_letivo: project.semestre_letivo ?? null,
+    extensionForm: project.extension_form ?? null,
+  });
+};
+
 type ListMyProjectsParams = {
   limit?: number;
   offset?: number;
