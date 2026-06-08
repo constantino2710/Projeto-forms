@@ -2,7 +2,7 @@ export const formLabelClass =
   'flex flex-col gap-1.5 text-[0.925rem] font-semibold'
 
 export const projectFormLabelClass =
-  'flex flex-col gap-1.5 text-[0.9rem] font-semibold has-[:required]:before:content-["*_"] has-[:required]:before:text-destructive has-[:required]:before:font-bold has-[:required]:before:mr-0.5'
+  'relative flex flex-col gap-1.5 pl-3 text-[0.9rem] font-semibold has-[:required]:before:absolute has-[:required]:before:left-0 has-[:required]:before:top-[0.1rem] has-[:required]:before:content-["*"] has-[:required]:before:text-destructive has-[:required]:before:font-bold'
 
 export const checkboxItemClass =
   'grid grid-cols-[18px_minmax(0,1fr)] items-start gap-2.5 font-medium w-full'

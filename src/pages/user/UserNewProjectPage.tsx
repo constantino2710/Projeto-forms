@@ -118,7 +118,7 @@ export function UserNewProjectPage() {
         const data = await listDisciplines()
         setCatalog(data)
       } catch (err) {
-        setCatalogError(err instanceof Error ? err.message : 'Falha ao carregar catalogo.')
+        setCatalogError(err instanceof Error ? err.message : 'Falha ao carregar catálogo.')
       } finally {
         setIsCatalogLoading(false)
       }
@@ -312,7 +312,7 @@ export function UserNewProjectPage() {
   return (
     <article className={dashboardPanelClass}>
       <h1>Novo Projeto</h1>
-      <p>Escolha o tipo e preencha o formulario correspondente.</p>
+      <p>Escolha o tipo e preencha o formulário correspondente.</p>
 
       <div className={projectTypeToggleClass}>
         <button
@@ -323,7 +323,7 @@ export function UserNewProjectPage() {
             projectType === 'extensao' ? projectTypeOptionActiveClass : projectTypeOptionInactiveClass,
           )}
         >
-          Projeto de Extensao
+          Projeto de Extensão
         </button>
         <button
           type="button"
@@ -344,7 +344,7 @@ export function UserNewProjectPage() {
           <>
             {!isCatalogLoading && catalog.length === 0 && !catalogError && (
               <p className="m-0 text-[0.88rem] text-muted-foreground rounded-xl bg-muted/50 p-3">
-                Catalogo de disciplinas vazio. Peca ao superadmin para importar a planilha para
+                Catálogo de disciplinas vazio. Peça à coordenação para importar a planilha para
                 habilitar autofill e dropdowns.
               </p>
             )}
@@ -353,7 +353,7 @@ export function UserNewProjectPage() {
             )}
 
             <label className={projectFormLabelClass}>
-              Titulo da Iniciativa
+              Título da Iniciativa
               <Input
                 value={disciplineForm.title}
                 onChange={(event) => setDisciplineForm((prev) => ({ ...prev, title: event.target.value }))}
@@ -409,7 +409,7 @@ export function UserNewProjectPage() {
               </label>
 
               <label className={projectFormLabelClass}>
-                Codigo Extensao
+                Código da Extensão
                 {catalog.length > 0 ? (
                   <select
                     className={selectInputClass}
@@ -440,7 +440,7 @@ export function UserNewProjectPage() {
 
             <div className={projectGrid2Class}>
               <label className={projectFormLabelClass}>
-                Curso em que a disciplina esta vinculada
+                Curso em que a disciplina está vinculada
                 {catalog.length > 0 ? (
                   <select
                     className={selectInputClass}
@@ -463,7 +463,7 @@ export function UserNewProjectPage() {
               </label>
 
               <label className={projectFormLabelClass}>
-                Periodo de realizacao da disciplina
+                Período de realização da disciplina
                 {catalog.length > 0 ? (
                   <select
                     className={selectInputClass}
@@ -494,7 +494,7 @@ export function UserNewProjectPage() {
 
             <div className={projectGrid2Class}>
               <label className={projectFormLabelClass}>
-                Carga horaria de Extensao da Disciplina
+                Carga horária de Extensão da Disciplina
                 {catalog.length > 0 ? (
                   <select
                     className={selectInputClass}
@@ -524,7 +524,7 @@ export function UserNewProjectPage() {
               </label>
 
               <label className={projectFormLabelClass}>
-                Codigo da Disciplina
+                Código da Disciplina
                 {catalog.length > 0 ? (
                   <select
                     className={selectInputClass}
@@ -555,7 +555,7 @@ export function UserNewProjectPage() {
 
             <div className={projectGrid2Class}>
               <label className={projectFormLabelClass}>
-                Codigo da Turma
+                Código da Turma
                 {catalog.length > 0 ? (
                   <select
                     className={selectInputClass}
@@ -616,7 +616,7 @@ export function UserNewProjectPage() {
 
             <div className={projectGrid2Class}>
               <label className={projectFormLabelClass}>
-                Inicio
+                Início
                 <Input
                   type="date"
                   value={disciplineForm.periodStart}

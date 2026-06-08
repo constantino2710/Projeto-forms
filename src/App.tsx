@@ -183,14 +183,14 @@ function App() {
                     session.role === 'superadmin'
                       ? [
                           { label: 'Projetos', to: '/admin/projetos', icon: LayoutList },
-                          { label: 'Historico Geral', to: '/super/historico', icon: History },
-                          { label: 'Usuarios', to: '/super/usuarios', icon: Users },
-                          { label: 'Novo Usuario', to: '/super/usuarios/novo', icon: UserPlus },
+                          { label: 'Histórico Geral', to: '/super/historico', icon: History },
+                          { label: 'Usuários', to: '/super/usuarios', icon: Users },
+                          { label: 'Novo Usuário', to: '/super/usuarios/novo', icon: UserPlus },
                           { label: 'Backups', to: '/super/backups', icon: DatabaseBackup },
                         ]
                       : [
                           { label: 'Projetos', to: '/admin/projetos', icon: LayoutList },
-                          { label: 'Historico', to: '/admin/historico', icon: History },
+                          { label: 'Histórico', to: '/admin/historico', icon: History },
                         ]
                   }
                 />
@@ -217,9 +217,9 @@ function App() {
                   onSessionUpdate={setSession}
                   items={[
                     { label: 'Projetos', to: '/admin/projetos', icon: LayoutList },
-                    { label: 'Historico Geral', to: '/super/historico', icon: History },
-                    { label: 'Usuarios', to: '/super/usuarios', icon: Users },
-                    { label: 'Novo Usuario', to: '/super/usuarios/novo', icon: UserPlus },
+                    { label: 'Histórico Geral', to: '/super/historico', icon: History },
+                    { label: 'Usuários', to: '/super/usuarios', icon: Users },
+                    { label: 'Novo Usuário', to: '/super/usuarios/novo', icon: UserPlus },
                     { label: 'Backups', to: '/super/backups', icon: DatabaseBackup },
                   ]}
                 />

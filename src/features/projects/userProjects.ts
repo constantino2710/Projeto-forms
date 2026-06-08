@@ -80,7 +80,7 @@ const formatRpcErrorMessage = (error: unknown) => {
     details?: string;
     hint?: string;
   };
-  const message = (rpcError.message || "Falha na operacao.").trim();
+  const message = (rpcError.message || "Falha na operação.").trim();
   const details = (rpcError.details || "").trim();
   const hint = (rpcError.hint || "").trim();
   const suffix = [details, hint].filter(Boolean).join(" | ");
@@ -95,12 +95,12 @@ const shouldClearSession = (message: string) =>
 const getTokenOrThrow = () => {
   const token = getStoredSessionToken();
   if (!token) {
-    throw new Error("Sessao invalida. Faca login novamente.");
+    throw new Error("Sessão inválida. Faça login novamente.");
   }
 
   if (!SESSION_TOKEN_PATTERN.test(token)) {
     clearSessionToken();
-    throw new Error("Sessao invalida. Faca login novamente.");
+    throw new Error("Sessão inválida. Faça login novamente.");
   }
 
   return token;
@@ -213,7 +213,7 @@ export const getMyProjectDetail = async (
 
   const project = data as UserProject | null;
   if (!project) {
-    throw new Error("Projeto nao encontrado.");
+    throw new Error("Projeto não encontrado.");
   }
 
   return project;
@@ -268,7 +268,7 @@ export const updateMyProjectDetails = async (input: UpdateProjectInput) => {
 export const projectStatusLabel: Record<UserProjectStatus, string> = {
   rascunho: "Rascunho",
   submetido: "Submetido",
-  em_avaliacao: "Em analise",
+  em_avaliacao: "Em análise",
   em_ajustes: "Em ajustes",
   pre_aprovado: "Pre-aprovado",
   pre_reprovado: "Pre-reprovado",

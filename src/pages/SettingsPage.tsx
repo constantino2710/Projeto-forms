@@ -54,7 +54,7 @@ export function SettingsPage() {
 
     const trimmedName = displayName.trim()
     if (!trimmedName) {
-      setError('Informe um nome de exibicao.')
+      setError('Informe um nome de exibição.')
       return
     }
 
@@ -80,8 +80,8 @@ export function SettingsPage() {
     <article className={dashboardPanelClass}>
       <div className={projectsHeaderClass}>
         <div>
-          <h1>Configuracoes</h1>
-          <p>Atualize seus dados de perfil exibidos no sistema.</p>
+          <h1>Configurações</h1>
+          <p>Atualize os dados do seu perfil exibidos no sistema.</p>
         </div>
       </div>
 
@@ -108,7 +108,7 @@ export function SettingsPage() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <label className={formLabelClass}>
-            Nome de exibicao
+            Nome de exibição
             <Input
               value={displayName}
               onChange={(event) => setDisplayName(event.target.value)}
@@ -138,7 +138,7 @@ export function SettingsPage() {
           <div className={cn(viewToggleClass)}>
             <Button type="submit" disabled={isSaving}>
               {isSaving && <Spinner size="sm" />}
-              <span>Salvar alteracoes</span>
+              <span>Salvar alterações</span>
             </Button>
           </div>
         </form>
@@ -147,10 +147,10 @@ export function SettingsPage() {
       {session.role === 'superadmin' && (
         <section className={sectionClass}>
           <h2 className="m-0 text-base flex items-center gap-2">
-            <FileSpreadsheet size={16} /> Catalogo de disciplinas
+            <FileSpreadsheet size={16} /> Catálogo de disciplinas
           </h2>
           <p className={dashboardNoteClass}>
-            Importe ou substitua a planilha utilizada nos formularios de extensao.
+            Importe ou substitua a planilha utilizada nos formulários de extensão.
           </p>
           <div className={cn(viewToggleClass)}>
             <Button
@@ -160,7 +160,7 @@ export function SettingsPage() {
               onClick={() => navigate('/super/disciplinas')}
             >
               <FileSpreadsheet size={14} />
-              <span>Abrir importacao de planilha</span>
+              <span>Abrir importação de planilha</span>
             </Button>
           </div>
         </section>
@@ -190,10 +190,10 @@ export function SettingsPage() {
 
       <section className={sectionClass}>
         <h2 className="m-0 text-base flex items-center gap-2">
-          <LogOut size={16} /> Sessao
+          <LogOut size={16} /> Sessão
         </h2>
         <p className={dashboardNoteClass}>
-          Encerrar sua sessao na plataforma neste dispositivo.
+          Encerrar sua sessão na plataforma neste dispositivo.
         </p>
         <div className={cn(viewToggleClass)}>
           <Button

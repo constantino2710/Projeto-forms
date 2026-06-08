@@ -27,8 +27,8 @@ export type SortOption = {
 
 export const sortOptions: SortOption[] = [
   { value: 'default', label: 'Padrao (mais recentes)', sortKey: null, sortDir: null },
-  { value: 'time-asc', label: 'Periodo: do mais antigo', sortKey: 'time', sortDir: 'asc' },
-  { value: 'time-desc', label: 'Periodo: do mais recente', sortKey: 'time', sortDir: 'desc' },
+  { value: 'time-asc', label: 'Período: do mais antigo', sortKey: 'time', sortDir: 'asc' },
+  { value: 'time-desc', label: 'Período: do mais recente', sortKey: 'time', sortDir: 'desc' },
   { value: 'budget-asc', label: 'Orcamento: do menor', sortKey: 'budget', sortDir: 'asc' },
   { value: 'budget-desc', label: 'Orcamento: do maior', sortKey: 'budget', sortDir: 'desc' },
 ]

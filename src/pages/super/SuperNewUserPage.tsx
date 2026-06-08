@@ -38,7 +38,7 @@ export function SuperNewUserPage() {
     setError('')
 
     if (password !== confirmPassword) {
-      setError('As senhas nao conferem.')
+      setError('As senhas não conferem.')
       return
     }
 
@@ -58,7 +58,7 @@ export function SuperNewUserPage() {
       })
       navigate('/super/usuarios')
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Falha ao criar usuario.'
+      const message = err instanceof Error ? err.message : 'Falha ao criar usuário.'
       setError(message)
     } finally {
       setIsSubmitting(false)
@@ -83,10 +83,10 @@ export function SuperNewUserPage() {
     <article className={dashboardPanelClass}>
       <div className={projectsHeaderClass}>
         <div>
-          <h1>Novo Usuario</h1>
+          <h1>Novo Usuário</h1>
           <p>
-            Cadastre um professor (RA) ou um administrador. Senha padrao{' '}
-            <strong>{DEFAULT_PASSWORD}</strong> - voce pode alterar antes de salvar.
+            Cadastre um docente (RA) ou um administrador. Senha padrão{' '}
+            <strong>{DEFAULT_PASSWORD}</strong> - você pode alterar antes de salvar.
           </p>
         </div>
       </div>
@@ -99,7 +99,7 @@ export function SuperNewUserPage() {
           className={role === 'user' ? activeSegmentClass : ''}
           onClick={() => handleRoleChange('user')}
         >
-          Professor
+          Docente
         </Button>
         <Button
           type="button"
@@ -114,11 +114,11 @@ export function SuperNewUserPage() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
         <label className={formLabelClass}>
-          Nome de usuario
+          Nome de usuário
           <Input
             value={username}
             onChange={(event) => handleUsernameChange(event.target.value)}
-            placeholder={role === 'user' ? 'RA com 11 digitos' : 'login do admin'}
+            placeholder={role === 'user' ? 'RA com 11 dígitos' : 'login do administrador'}
             required
             inputMode={role === 'user' ? 'numeric' : undefined}
             maxLength={role === 'user' ? 11 : 20}
@@ -126,7 +126,7 @@ export function SuperNewUserPage() {
         </label>
 
         <label className={formLabelClass}>
-          Nome de exibicao
+          Nome de exibição
           <Input
             value={displayName}
             onChange={(event) => setDisplayName(event.target.value)}
@@ -181,7 +181,7 @@ export function SuperNewUserPage() {
           </Button>
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting && <Spinner size="sm" />}
-            <span>Criar usuario</span>
+            <span>Criar usuário</span>
           </Button>
         </div>
       </form>

@@ -15,7 +15,7 @@ export const sendProjectStatusEmail = async (input: SendProjectStatusEmailInput)
   const token = getStoredSessionToken()
 
   if (!token) {
-    throw new Error('Sessao invalida. Faca login novamente.')
+    throw new Error('Sessão inválida. Faça login novamente.')
   }
 
   const { data, error } = await supabase.functions.invoke('send-project-status-email', {

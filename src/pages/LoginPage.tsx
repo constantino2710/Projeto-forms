@@ -50,20 +50,20 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           </div>
           <CardTitle>Login do Sistema</CardTitle>
           <CardDescription className="m-0 text-muted-foreground">
-            Informe seu usuario e senha para entrar.
+            Informe seu usuário e senha para entrar.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
             <label className={formLabelClass}>
-              Usuario
+              Usuário
               <Input
                 value={username}
                 onChange={(event) => {
                   setError('')
                   setUsername(event.target.value)
                 }}
-                placeholder="RA do professor ou login do admin"
+                placeholder="RA do docente ou login da coordenação"
                 required
                 autoComplete="username"
               />

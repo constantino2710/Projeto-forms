@@ -43,7 +43,7 @@ export type SuperHistoryRow = {
 const getTokenOrThrow = () => {
   const token = getStoredSessionToken()
   if (!token) {
-    throw new Error('Sessao invalida. Faca login novamente.')
+    throw new Error('Sessão inválida. Faça login novamente.')
   }
   return token
 }

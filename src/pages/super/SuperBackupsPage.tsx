@@ -80,7 +80,7 @@ const formatCountdown = (targetIso: string, nowMs: number): string => {
   return `${minutes}m ${seconds}s`
 }
 
-// Codigo compacto pro modal de confirmacao (YYYYMMDD-HHMM)
+// Código compacto para o modal de confirmação (YYYYMMDD-HHMM)
 const runConfirmCode = (iso: string): string => {
   const d = new Date(iso)
   const pad = (n: number) => n.toString().padStart(2, '0')
@@ -102,12 +102,12 @@ type SourceMeta = {
 
 const sourceMetaMap: Record<TriggerSource, SourceMeta> = {
   pg_cron: {
-    label: 'Automatico',
+    label: 'Automático',
     Icon: Bot,
     className: 'bg-status-submitted-bg text-status-submitted-fg',
   },
   github_workflow: {
-    label: 'Automatico',
+    label: 'Automático',
     Icon: Bot,
     className: 'bg-status-submitted-bg text-status-submitted-fg',
   },
@@ -246,7 +246,7 @@ export function SuperBackupsPage() {
   if (isLoading) {
     return (
       <>
-        <PageHeader title="Backups do banco" subtitle="Snapshots e restauracao." />
+        <PageHeader title="Backups do banco" subtitle="Snapshots e restauração." />
         <article className={dashboardPanelClass}>
           <div className="flex items-center justify-center py-16">
             <Spinner size="lg" />
@@ -260,7 +260,7 @@ export function SuperBackupsPage() {
     <>
       <PageHeader
         title="Backups do banco"
-        subtitle="Snapshots por evento, criacao sob demanda e restauracao."
+        subtitle="Snapshots por evento, criação sob demanda e restauração."
         actions={
           <Button
             type="button"
@@ -280,7 +280,7 @@ export function SuperBackupsPage() {
 
         <section className={sectionClass}>
           <h2>
-            <Clock size={15} /> Proximo backup automatico
+            <Clock size={15} /> Próximo backup automático
           </h2>
           {schedule && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
@@ -307,7 +307,7 @@ export function SuperBackupsPage() {
                 <p className={statusValueClass}>{schedule.total_runs}</p>
                 <p className={statusSubClass}>
                   {schedule.last_snapshot_at
-                    ? `Ultimo: ${formatBrDateTime(schedule.last_snapshot_at)}`
+                    ? `Último: ${formatBrDateTime(schedule.last_snapshot_at)}`
                     : 'Nenhum criado ainda'}
                 </p>
               </div>
@@ -321,8 +321,8 @@ export function SuperBackupsPage() {
           </h2>
           {snapshots.length === 0 ? (
             <p className={dashboardNoteClass}>
-              Nenhum snapshot disponivel ainda. Clica em "Criar backup agora" pra gerar um na hora,
-              ou espera o automatico de segunda-feira.
+              Nenhum snapshot disponível ainda. Clique em "Criar backup agora" para gerar um na hora,
+              ou aguarde o automático de segunda-feira.
             </p>
           ) : (
             <ul className="m-0 p-0 list-none flex flex-col gap-1.5">
@@ -425,10 +425,10 @@ export function SuperBackupsPage() {
 
         <section className={sectionClass}>
           <h2>
-            <History size={15} /> Historico de acoes
+            <History size={15} /> Histórico de ações
           </h2>
           {audit.length === 0 ? (
-            <p className={dashboardNoteClass}>Nenhuma acao registrada ainda.</p>
+            <p className={dashboardNoteClass}>Nenhuma ação registrada ainda.</p>
           ) : (
             <ul className="m-0 p-0 list-none flex flex-col gap-1">
               {audit.map((entry) => (
@@ -483,7 +483,7 @@ export function SuperBackupsPage() {
                 <p>
                   Vai APAGAR todos os dados atuais de <code>{confirm.table}</code> e substituir
                   pelos dados do snapshot de {confirm.runLabel} ({formatNumber(confirm.row_count)}{' '}
-                  linhas). Esta acao e irreversivel.
+                  linhas). Esta ação é irreversível.
                 </p>
               </>
             )}
@@ -493,7 +493,7 @@ export function SuperBackupsPage() {
                 <p>
                   Vai APAGAR e substituir o conteudo de TODAS as tabelas ({confirm.table_count}{' '}
                   tabelas, {formatNumber(confirm.total_rows)} linhas). Dados criados depois desse
-                  snapshot serao perdidos. Sua sessao pode expirar se seu usuario nao existia
+                  snapshot serão perdidos. Sua sessão pode expirar se seu usuário não existia
                   naquele momento.
                 </p>
               </>

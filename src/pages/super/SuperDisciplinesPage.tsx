@@ -161,7 +161,7 @@ export function SuperDisciplinesPage() {
     try {
       if (mode === 'replace') {
         const result = await replaceDisciplines(preview)
-        setActionMessage(`Catalogo substituido. ${result.inserted} linha(s) importada(s).`)
+      setActionMessage(`Catálogo substituído. ${result.inserted} linha(s) importada(s).`)
       } else {
         const result = await upsertDisciplines(preview)
         setActionMessage(`Mesclagem aplicada. ${result.affected} linha(s) atualizada(s)/inserida(s).`)
@@ -183,12 +183,12 @@ export function SuperDisciplinesPage() {
     setIsClearing(true)
     try {
       const result = await clearDisciplines()
-      setActionMessage(`Catalogo limpo. ${result.deleted} linha(s) removida(s).`)
+      setActionMessage(`Catálogo limpo. ${result.deleted} linha(s) removida(s).`)
       setConfirmClear(false)
       setPage(0)
       await load()
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Falha ao limpar catalogo.')
+      setActionError(err instanceof Error ? err.message : 'Falha ao limpar catálogo.')
     } finally {
       setIsClearing(false)
     }
@@ -198,13 +198,13 @@ export function SuperDisciplinesPage() {
     <article className={dashboardPanelClass}>
       <div className={projectsHeaderClass}>
         <div>
-          <h1>Catalogo de Disciplinas</h1>
+          <h1>Catálogo de Disciplinas</h1>
           <p>
             Importe uma planilha (CSV ou Excel) com os campos do fluxo real do Jotform:
-            <strong> Periodo</strong>, <strong>Codigo Extensao</strong>, <strong>Docente</strong>,
+            <strong> Período</strong>, <strong>Código da Extensão</strong>, <strong>Docente</strong>,
             <strong> Curso</strong>, <strong>Nome da Disciplina</strong>,{' '}
-            <strong>Carga Horaria</strong>, <strong>Codigo da Disciplina</strong>,{' '}
-            <strong>Codigo da Turma</strong>, <strong>Disciplina Gerencial</strong> e{' '}
+            <strong>Carga Horária</strong>, <strong>Código da Disciplina</strong>,{' '}
+            <strong>Código da Turma</strong>, <strong>Disciplina Gerencial</strong> e{' '}
             <strong>Cursos Gerenciados</strong>.
           </p>
         </div>
@@ -251,7 +251,7 @@ export function SuperDisciplinesPage() {
         <Input
           value={searchInput}
           onChange={(event) => setSearchInput(event.target.value)}
-          placeholder="Buscar por codigo extensao, disciplina, curso, docente, turma ou periodo"
+          placeholder="Buscar por código da extensão, disciplina, curso, docente, turma ou período"
         />
         <Button type="submit" variant="outline" size="sm">
           Buscar
@@ -267,18 +267,18 @@ export function SuperDisciplinesPage() {
           <div className={emptyStateClass}>
             <FileSpreadsheet size={28} className="opacity-60" />
             <p className="m-0">Nenhuma disciplina cadastrada.</p>
-            <p className="m-0 text-[0.82rem]">Use "Importar planilha" para preencher o catalogo.</p>
+            <p className="m-0 text-[0.82rem]">Use "Importar planilha" para preencher o catálogo.</p>
           </div>
         ) : (
           <div className={dataTableScrollClass}>
             <table className={dataTableClass}>
               <thead>
                 <tr>
-                  <th>Codigo Extensao</th>
+                  <th>Código da Extensão</th>
                   <th>Nome da Disciplina</th>
                   <th>Curso</th>
                   <th>Docente</th>
-                  <th>Periodo</th>
+                  <th>Período</th>
                   <th>CH Ext.</th>
                   <th>Cod. Disciplina</th>
                   <th>Turma</th>
@@ -319,7 +319,7 @@ export function SuperDisciplinesPage() {
             Anterior
           </Button>
           <span className={cn(dashboardNoteClass, 'self-center mx-3 my-0')}>
-            Pagina {page + 1} de {totalPages}
+            Página {page + 1} de {totalPages}
           </span>
           <Button
             type="button"
@@ -328,7 +328,7 @@ export function SuperDisciplinesPage() {
             disabled={page + 1 >= totalPages}
             onClick={() => setPage((p) => p + 1)}
           >
-            Proxima
+            Próxima
           </Button>
         </div>
       )}
@@ -386,8 +386,8 @@ export function SuperDisciplinesPage() {
             </div>
             <p className={dashboardNoteClass}>
               {mode === 'replace'
-                ? 'Substituir: apaga TODO o catalogo atual e insere apenas as linhas validas da nova planilha.'
-                : 'Mesclar: atualiza linhas existentes com o mesmo Codigo Extensao e adiciona novas. Linhas antigas nao listadas sao mantidas.'}
+                ? 'Substituir: apaga TODO o catálogo atual e insere apenas as linhas válidas da nova planilha.'
+                : 'Mesclar: atualiza linhas existentes com o mesmo Código da Extensão e adiciona novas. Linhas antigas não listadas são mantidas.'}
             </p>
 
             <label className={formLabelClass}>
@@ -421,11 +421,11 @@ export function SuperDisciplinesPage() {
                   <table className={previewTableClass}>
                     <thead>
                       <tr>
-                        <th>Codigo Extensao</th>
+                        <th>Código da Extensão</th>
                         <th>Nome da Disciplina</th>
                         <th>Curso</th>
                         <th>Docente</th>
-                        <th>Periodo</th>
+                        <th>Período</th>
                         <th>CH Ext.</th>
                         <th>Cod. Disciplina</th>
                         <th>Turma</th>
@@ -472,7 +472,7 @@ export function SuperDisciplinesPage() {
                 disabled={isSaving || preview.length === 0}
               >
                 {isSaving ? <Spinner size="sm" /> : <Upload size={14} />}
-                <span>Confirmar importacao</span>
+                <span>Confirmar importação</span>
               </Button>
             </div>
           </div>
@@ -497,7 +497,7 @@ export function SuperDisciplinesPage() {
               <Trash2 size={16} /> Confirmar limpeza
             </h2>
             <p>
-              Esta acao remove TODAS as disciplinas cadastradas. Os professores nao terao autofill
+              Esta ação remove TODAS as disciplinas cadastradas. Os docentes não terão preenchimento automático
               no formulario ate uma nova planilha ser importada.
             </p>
             <div className={confirmModalActionsClass}>

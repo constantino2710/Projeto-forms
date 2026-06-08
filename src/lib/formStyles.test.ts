@@ -15,8 +15,9 @@ describe('formStyles', () => {
   })
 
   it('projectFormLabelClass tem asterisco obrigatorio via has-[:required]', () => {
-    expect(projectFormLabelClass).toContain('has-[:required]:before:content-["*_"]')
+    expect(projectFormLabelClass).toContain('has-[:required]:before:content-["*"]')
     expect(projectFormLabelClass).toContain('has-[:required]:before:text-destructive')
+    expect(projectFormLabelClass).toContain('has-[:required]:before:absolute')
   })
 
   it('checkboxItemClass usa grid 18px + 1fr', () => {

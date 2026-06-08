@@ -232,7 +232,7 @@ export function UserProjectDetailPage() {
           )
 
     if (!hasRequiredAcknowledgements) {
-      setError("Marque todos os itens de confirmacao da conclusao para continuar.");
+      setError("Marque todos os itens de confirmação da conclusão para continuar.");
       setIsSubmitting(false);
       return;
     }
@@ -280,7 +280,7 @@ export function UserProjectDetailPage() {
       await loadProject();
     } catch (err) {
       const nextError =
-        err instanceof Error ? err.message : "Falha ao salvar alteracoes.";
+        err instanceof Error ? err.message : "Falha ao salvar alterações.";
       setError(nextError);
     } finally {
       setIsSubmitting(false);
@@ -383,12 +383,12 @@ export function UserProjectDetailPage() {
     { key: "submitted", label: "Submetido", date: timeline?.submitted_at ?? null },
     {
       key: "analysis",
-      label: "Em analise",
+      label: "Em análise",
       date: timeline?.analysis_started_at ?? null,
     },
     {
       key: "approval_status",
-      label: "Status da aprovacao",
+      label: "Status da aprovação",
       date: approvalStatusDate,
     },
   ];
@@ -446,14 +446,14 @@ export function UserProjectDetailPage() {
       {mode === "full" && (
         <>
           <section className={projectInfoSectionClass}>
-            <h3>Identificacao da Iniciativa Extensionista</h3>
+            <h3>Identificação da Iniciativa Extensionista</h3>
             <div className={projectInfoGridClass}>
               <div className={projectInfoItemClass}>
-                <p className={projectInfoLabelClass}>Titulo da Iniciativa</p>
+                <p className={projectInfoLabelClass}>Título da Iniciativa</p>
                 <p className={projectInfoValueClass}>{extensionForm.title}</p>
               </div>
               <div className={projectInfoItemClass}>
-                <p className={projectInfoLabelClass}>Carga horaria total</p>
+                <p className={projectInfoLabelClass}>Carga horária total</p>
                 <p className={projectInfoValueClass}>{extensionForm.totalWorkload}</p>
               </div>
               <div className={projectInfoItemClass}>
@@ -461,9 +461,9 @@ export function UserProjectDetailPage() {
                 <p className={projectInfoValueClass}>{extensionForm.unicapProgram}</p>
               </div>
               <div className={projectInfoItemClass}>
-                <p className={projectInfoLabelClass}>Periodo</p>
+                <p className={projectInfoLabelClass}>Período</p>
                 <p className={projectInfoValueClass}>
-                  {extensionForm.periodStart} ate {extensionForm.periodEnd}
+                  {extensionForm.periodStart} até {extensionForm.periodEnd}
                 </p>
               </div>
               <div className={projectInfoItemClass}>
@@ -475,7 +475,7 @@ export function UserProjectDetailPage() {
                 <p className={projectInfoValueClass}>{extensionForm.courseName}</p>
               </div>
               <div className={projectInfoItemClass}>
-                <p className={projectInfoLabelClass}>E-mail da Coordenacao</p>
+                <p className={projectInfoLabelClass}>E-mail da Coordenação</p>
                 <p className={projectInfoValueClass}>{extensionForm.coordinationEmail}</p>
               </div>
             </div>
@@ -501,25 +501,25 @@ export function UserProjectDetailPage() {
                 <p className={projectInfoValueClass}>{extensionForm.coordinatorPhone}</p>
               </div>
               <div className={projectInfoItemClass}>
-                <p className={projectInfoLabelClass}>Carga Horaria Semanal - Coordenador</p>
+                <p className={projectInfoLabelClass}>Carga Horária Semanal - Coordenador</p>
                 <p className={projectInfoValueClass}>{extensionForm.coordinatorWeeklyHours}</p>
               </div>
               <div className={projectInfoItemFullClass}>
-                <p className={projectInfoLabelClass}>Forma de participacao do Coordenador</p>
+                <p className={projectInfoLabelClass}>Forma de participação do Coordenador</p>
                 <p className={projectInfoValueClass}>{extensionForm.coordinatorParticipation}</p>
               </div>
               <div className={projectInfoItemFullClass}>
-                <p className={projectInfoLabelClass}>Outros docentes colaboradores voluntarios</p>
+                <p className={projectInfoLabelClass}>Outros docentes colaboradores voluntários</p>
                 <p className={projectInfoValueClass}>{extensionForm.otherVolunteerTeachers || "-"}</p>
               </div>
             </div>
           </section>
 
           <section className={projectInfoSectionClass}>
-            <h3>Estudantes voluntarios</h3>
+            <h3>Estudantes voluntários</h3>
             <div className={projectInfoGridClass}>
               <div className={projectInfoItemClass}>
-                <p className={projectInfoLabelClass}>Carga Horaria Semanal - Estudantes</p>
+                <p className={projectInfoLabelClass}>Carga Horária Semanal - Estudantes</p>
                 <p className={projectInfoValueClass}>{extensionForm.studentWeeklyHours}</p>
               </div>
               <div className={projectInfoItemFullClass}>
@@ -539,7 +539,7 @@ export function UserProjectDetailPage() {
             <p className={projectInfoValueClass}>{extensionForm.learningObjectives.filter(Boolean).join(" | ")}</p>
           </div>
           <div className={projectInfoItemFullClass}>
-            <p className={projectInfoLabelClass}>Competencias Transversais</p>
+            <p className={projectInfoLabelClass}>Competências Transversais</p>
             <p className={projectInfoValueClass}>
               {extensionForm.transversalCompetencies.filter(Boolean).join(" | ")}
             </p>
@@ -548,10 +548,10 @@ export function UserProjectDetailPage() {
       </section>
 
       <section className={projectInfoSectionClass}>
-        <h3>Eixo Servico</h3>
+        <h3>Eixo Serviço</h3>
         <div className={projectInfoGridClass}>
           <div className={projectInfoItemFullClass}>
-            <p className={projectInfoLabelClass}>Servico a ser oferecido</p>
+            <p className={projectInfoLabelClass}>Serviço a ser oferecido</p>
             <p className={projectInfoValueClass}>{extensionForm.serviceOffered}</p>
           </div>
           <div className={projectInfoItemFullClass}>
@@ -559,15 +559,15 @@ export function UserProjectDetailPage() {
             <p className={projectInfoValueClass}>{extensionForm.activities.filter(Boolean).join(" | ")}</p>
           </div>
           <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Local de realizacao</p>
+            <p className={projectInfoLabelClass}>Local de realização</p>
             <p className={projectInfoValueClass}>{extensionForm.executionLocation}</p>
           </div>
           <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Publico que sera atendido</p>
+            <p className={projectInfoLabelClass}>Público que será atendido</p>
             <p className={projectInfoValueClass}>{extensionForm.targetAudience}</p>
           </div>
           <div className={projectInfoItemFullClass}>
-            <p className={projectInfoLabelClass}>Procedimentos Metodologicos</p>
+            <p className={projectInfoLabelClass}>Procedimentos Metodológicos</p>
             <p className={projectInfoValueClass}>{extensionForm.methodologicalProcedures}</p>
           </div>
         </div>
@@ -577,11 +577,11 @@ export function UserProjectDetailPage() {
         <h3>Eixo Impacto</h3>
         <div className={projectInfoGridClass}>
           <div className={projectInfoItemFullClass}>
-            <p className={projectInfoLabelClass}>Problema ou Necessidade a ser respondido</p>
+            <p className={projectInfoLabelClass}>Problema ou necessidade a ser respondido</p>
             <p className={projectInfoValueClass}>{extensionForm.problemStatement}</p>
           </div>
           <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>ODS Impactado</p>
+            <p className={projectInfoLabelClass}>ODS impactado</p>
             <p className={projectInfoValueClass}>{extensionForm.sustainableDevelopmentGoal}</p>
           </div>
           <div className={projectInfoItemFullClass}>
@@ -589,7 +589,7 @@ export function UserProjectDetailPage() {
             <p className={projectInfoValueClass}>{extensionForm.goals.filter(Boolean).join(" | ")}</p>
           </div>
           <div className={projectInfoItemFullClass}>
-            <p className={projectInfoLabelClass}>Estrategias de Divulgacao</p>
+            <p className={projectInfoLabelClass}>Estratégias de Divulgação</p>
             <p className={projectInfoValueClass}>{extensionForm.disseminationStrategies}</p>
           </div>
           <div className={projectInfoItemFullClass}>
@@ -600,28 +600,28 @@ export function UserProjectDetailPage() {
       </section>
 
       <section className={projectInfoSectionClass}>
-        <h3>Eixo Reflexao e Avaliacao</h3>
+        <h3>Eixo Reflexão e Avaliação</h3>
         <div className={projectInfoGridClass}>
           <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Estrategias de Reflexao</p>
+            <p className={projectInfoLabelClass}>Estratégias de Reflexão</p>
             <p className={projectInfoValueClass}>{extensionForm.reflectionStrategies}</p>
           </div>
           <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Estrategias de Avaliacao</p>
+            <p className={projectInfoLabelClass}>Estratégias de Avaliação</p>
             <p className={projectInfoValueClass}>{extensionForm.evaluationStrategies}</p>
           </div>
           <div className={projectInfoItemFullClass}>
-            <p className={projectInfoLabelClass}>Feedback do Publico Parceiro</p>
+            <p className={projectInfoLabelClass}>Feedback do Público Parceiro</p>
             <p className={projectInfoValueClass}>{extensionForm.partnerFeedback}</p>
           </div>
         </div>
       </section>
 
       <section className={projectInfoSectionClass}>
-        <h3>Conclusao</h3>
+        <h3>Conclusão</h3>
         <div className={projectInfoGridClass}>
           <div className={projectInfoItemFullClass}>
-            <p className={projectInfoLabelClass}>Informacoes Adicionais</p>
+            <p className={projectInfoLabelClass}>Informações Adicionais</p>
             <p className={projectInfoValueClass}>{extensionForm.additionalInformation || "-"}</p>
           </div>
           <div className={projectInfoItemFullClass}>
@@ -688,7 +688,7 @@ export function UserProjectDetailPage() {
                     <div className={projectSectionsStackClass}>
                       <section className={projectInfoGridClass}>
                         <div className={projectInfoItemClass}>
-                          <p className={projectInfoLabelClass}>Titulo da Iniciativa</p>
+                          <p className={projectInfoLabelClass}>Título da Iniciativa</p>
                           <p className={projectInfoValueClass}>{project.title}</p>
                         </div>
                         <div className={projectInfoItemClass}>
@@ -706,25 +706,25 @@ export function UserProjectDetailPage() {
                           </p>
                         </div>
                         <div className={projectInfoItemClass}>
-                          <p className={projectInfoLabelClass}>Periodo de realizacao da disciplina</p>
+                          <p className={projectInfoLabelClass}>Período de realização da disciplina</p>
                           <p className={projectInfoValueClass}>{project.semestre_letivo || "-"}</p>
                         </div>
                         <div className={projectInfoItemClass}>
-                          <p className={projectInfoLabelClass}>Carga horaria de Extensao</p>
+                          <p className={projectInfoLabelClass}>Carga horária de Extensão</p>
                           <p className={projectInfoValueClass}>{Number(project.budget).toFixed(0)}h</p>
                         </div>
                         <div className={projectInfoItemClass}>
-                          <p className={projectInfoLabelClass}>Codigo Extensao</p>
+                          <p className={projectInfoLabelClass}>Código da Extensão</p>
                           <p className={projectInfoValueClass}>{disciplineMetadata?.codigoExtensao || "-"}</p>
                         </div>
                         <div className={projectInfoItemClass}>
-                          <p className={projectInfoLabelClass}>Codigo da Disciplina</p>
+                          <p className={projectInfoLabelClass}>Código da Disciplina</p>
                           <p className={projectInfoValueClass}>
                             {project.codigo_disciplina || disciplineMetadata?.codigoDisciplina || "-"}
                           </p>
                         </div>
                         <div className={projectInfoItemClass}>
-                          <p className={projectInfoLabelClass}>Codigo da Turma</p>
+                          <p className={projectInfoLabelClass}>Código da Turma</p>
                           <p className={projectInfoValueClass}>{disciplineMetadata?.codigoTurma || "-"}</p>
                         </div>
                         <div className={projectInfoItemClass}>
@@ -758,7 +758,7 @@ export function UserProjectDetailPage() {
                   )}
                   {project.admin_message && (
                     <div className={projectFeedbackNoteClass}>
-                      <p className={projectInfoLabelClass}>Mensagem da avaliacao</p>
+                      <p className={projectInfoLabelClass}>Mensagem da avaliação</p>
                       <p className={projectInfoValueClass}>{project.admin_message}</p>
                     </div>
                   )}
@@ -800,7 +800,7 @@ export function UserProjectDetailPage() {
                             {project.status === "submetido"
                               ? "Voltar para rascunho"
                               : project.status === "em_ajustes"
-                                ? "Reenviar para avaliacao"
+                                ? "Reenviar para avaliação"
                                 : "Submeter"}
                           </span>
                         </Button>
@@ -910,7 +910,7 @@ export function UserProjectDetailPage() {
                   ) : (
                     <>
                       <label className={projectFormLabelClass}>
-                        Titulo da Iniciativa
+                        Título da Iniciativa
                         <Input
                           value={editForm?.title ?? ""}
                           onChange={(event) =>
@@ -962,7 +962,7 @@ export function UserProjectDetailPage() {
 
                       <div className={projectGrid2Class}>
                         <label className={projectFormLabelClass}>
-                          Codigo Extensao
+                          Código da Extensão
                           <Input
                             value={editForm?.codigoExtensao ?? ""}
                             onChange={(event) =>
@@ -977,7 +977,7 @@ export function UserProjectDetailPage() {
                         </label>
 
                         <label className={projectFormLabelClass}>
-                          Codigo da Disciplina
+                          Código da Disciplina
                           <Input
                             value={editForm?.codigoDisciplina ?? ""}
                             onChange={(event) =>
@@ -1007,7 +1007,7 @@ export function UserProjectDetailPage() {
 
                       <div className={projectGrid2Class}>
                         <label className={projectFormLabelClass}>
-                          Periodo de realizacao da disciplina
+                          Período de realização da disciplina
                           <Input
                             value={editForm?.semestreLetivo ?? ""}
                             onChange={(event) =>
@@ -1022,7 +1022,7 @@ export function UserProjectDetailPage() {
                         </label>
 
                         <label className={projectFormLabelClass}>
-                          Carga horaria de Extensao
+                          Carga horária de Extensão
                           <Input
                             type="number"
                             min={0}
@@ -1052,7 +1052,7 @@ export function UserProjectDetailPage() {
 
                       <div className={projectGrid2Class}>
                         <label className={projectFormLabelClass}>
-                          Codigo da Turma
+                          Código da Turma
                           <Input
                             value={editForm?.codigoTurma ?? ""}
                             onChange={(event) =>
@@ -1146,7 +1146,7 @@ export function UserProjectDetailPage() {
                   <div className={projectInlineActionsClass}>
                     <Button type="submit" size="sm" disabled={isSubmitting}>
                       {isSubmitting && <Spinner size="sm" />}
-                      <span>Salvar alteracoes</span>
+                      <span>Salvar alterações</span>
                     </Button>
                     <Button
                       type="button"
@@ -1212,7 +1212,7 @@ export function UserProjectDetailPage() {
             <h2 id="delete-draft-title">Excluir rascunho?</h2>
             <p>
               Este rascunho vai sumir da sua lista, mas os dados ficam salvos
-              para recuperacao depois.
+              para recuperação depois.
             </p>
             <div className={confirmModalActionsClass}>
               <Button

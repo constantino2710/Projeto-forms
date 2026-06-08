@@ -112,7 +112,7 @@ export const parseSpreadsheetFile = async (file: File): Promise<SpreadsheetParse
   const workbook = XLSX.read(buffer, { type: 'array' })
   const firstSheetName = workbook.SheetNames[0]
   if (!firstSheetName) {
-    throw new Error('Arquivo nao contem nenhuma aba/planilha.')
+    throw new Error('Arquivo não contém nenhuma aba ou planilha.')
   }
 
   const sheet = workbook.Sheets[firstSheetName]
@@ -148,7 +148,7 @@ export const parseSpreadsheetFile = async (file: File): Promise<SpreadsheetParse
 
   if (missing.length > 0) {
     throw new Error(
-      `Colunas obrigatorias nao encontradas: ${missing.join(', ')}. Esperado: Periodo, Codigo Extensao, Docente, Curso, Nome da Disciplina, Carga Horaria, Codigo da Disciplina, Codigo da Turma, Disciplina Gerencial e Cursos Gerenciados.`,
+      `Colunas obrigatórias não encontradas: ${missing.join(', ')}. Esperado: Período, Código da Extensão, Docente, Curso, Nome da Disciplina, Carga Horária, Código da Disciplina, Código da Turma, Disciplina Gerencial e Cursos Gerenciados.`,
     )
   }
 

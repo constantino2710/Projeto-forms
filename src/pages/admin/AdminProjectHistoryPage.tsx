@@ -137,7 +137,7 @@ export function AdminProjectHistoryPage() {
       })
       .catch((err) => {
         if (cancelled) return
-        setError(err instanceof Error ? err.message : 'Falha ao carregar historico.')
+        setError(err instanceof Error ? err.message : 'Falha ao carregar histórico.')
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false)
@@ -154,8 +154,8 @@ export function AdminProjectHistoryPage() {
   return (
     <>
       <PageHeader
-        title="Historico de Projetos"
-        subtitle="Todos os projetos ja aprovados, recusados ou enviados para ajustes."
+        title="Histórico de Projetos"
+        subtitle="Todos os projetos já aprovados, recusados ou enviados para ajustes."
         actions={<ReportButton onGenerate={handleGenerateReport} />}
       />
       <article className={dashboardPanelClass}>
@@ -214,7 +214,7 @@ export function AdminProjectHistoryPage() {
                 </span>
                 <span className={cn(historyCardMetaClass, 'font-semibold')}>
                   {project.tipo === 'disciplina'
-                    ? `${Number(project.budget).toFixed(0)}h de extensao`
+                    ? `${Number(project.budget).toFixed(0)}h de extensão`
                     : `R$ ${Number(project.budget).toFixed(2)}`}
                 </span>
                 <span className={cn(statusBadgeBaseClass, statusColorMap[project.status])}>
@@ -237,7 +237,7 @@ export function AdminProjectHistoryPage() {
               Anterior
             </Button>
             <span className={cn(dashboardNoteClass, 'self-center mx-3 my-0')}>
-              Pagina {safePage + 1} de {totalPages}
+              Página {safePage + 1} de {totalPages}
             </span>
             <Button
               type="button"
@@ -246,7 +246,7 @@ export function AdminProjectHistoryPage() {
               disabled={safePage + 1 >= totalPages}
               onClick={() => setCurrentPage((p) => p + 1)}
             >
-              Proxima
+              Próxima
             </Button>
           </div>
         )}

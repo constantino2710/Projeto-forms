@@ -41,9 +41,9 @@ const PAGE_SIZE = 10
 type RoleFilter = 'all' | SuperUserRole
 
 const roleLabel: Record<SuperUserRole, string> = {
-  user: 'Professor',
+  user: 'Docente',
   admin: 'Admin',
-  superadmin: 'Superadmin',
+  superadmin: 'Coordenação',
 }
 
 type EditState = {
@@ -117,7 +117,7 @@ export function SuperUsersPage() {
       setRows(data)
       setTotal(totalCount)
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Falha ao carregar usuarios.'
+      const message = err instanceof Error ? err.message : 'Falha ao carregar usuários.'
       setError(message)
     } finally {
       setIsLoading(false)
@@ -152,7 +152,7 @@ export function SuperUsersPage() {
         email: editing.email.trim() || null,
         is_active: editing.is_active,
       })
-      setActionMessage('Usuario atualizado.')
+      setActionMessage('Usuário atualizado.')
       setEditing(null)
       await load()
     } catch (err) {
@@ -168,7 +168,7 @@ export function SuperUsersPage() {
     setActionError('')
     setActionMessage('')
     if (resetting.password !== resetting.confirm) {
-      setActionError('As senhas nao conferem.')
+      setActionError('As senhas não conferem.')
       return
     }
     setIsSaving(true)
@@ -191,11 +191,11 @@ export function SuperUsersPage() {
     setIsSaving(true)
     try {
       await deleteSuperUser({ id: removing.user.id })
-      setActionMessage('Usuario removido.')
+      setActionMessage('Usuário removido.')
       setRemoving(null)
       await load()
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Falha ao remover usuario.'
+      const message = err instanceof Error ? err.message : 'Falha ao remover usuário.'
       setActionError(message)
     } finally {
       setIsSaving(false)
@@ -207,13 +207,13 @@ export function SuperUsersPage() {
   return (
     <>
       <PageHeader
-        title="Usuarios da Plataforma"
-        subtitle="Liste, edite, redefina senha e remova professores e administradores."
+        title="Usuários da Plataforma"
+        subtitle="Liste, edite, redefina senha e remova docentes, administradores e membros da coordenação."
         actions={
           <Link to="/super/usuarios/novo">
             <Button type="button" size="sm">
               <UserCog size={14} />
-              <span>Novo Usuario</span>
+              <span>Novo Usuário</span>
             </Button>
           </Link>
         }
@@ -254,7 +254,7 @@ export function SuperUsersPage() {
         </div>
       )}
       {!isLoading && rows.length === 0 && (
-        <p className={dashboardNoteClass}>Nenhum usuario encontrado.</p>
+        <p className={dashboardNoteClass}>Nenhum usuário encontrado.</p>
       )}
 
       <div className={projectsListClass}>
@@ -306,7 +306,7 @@ export function SuperUsersPage() {
                   })
                 }}
                 disabled={user.role === 'superadmin'}
-                title={user.role === 'superadmin' ? 'Use outro fluxo para superadmin' : 'Editar usuario'}
+                title={user.role === 'superadmin' ? 'Use outro fluxo para a coordenação' : 'Editar usuário'}
               >
                 <Pencil size={14} />
                 <span>Editar</span>
@@ -364,7 +364,7 @@ export function SuperUsersPage() {
             Anterior
           </Button>
           <span className={cn(dashboardNoteClass, 'self-center mx-3 my-0')}>
-            Pagina {page + 1} de {totalPages}
+            Página {page + 1} de {totalPages}
           </span>
           <Button
             type="button"
@@ -373,7 +373,7 @@ export function SuperUsersPage() {
             disabled={page + 1 >= totalPages}
             onClick={() => setPage((p) => p + 1)}
           >
-            Proxima
+            Próxima
           </Button>
         </div>
       )}
@@ -523,10 +523,10 @@ export function SuperUsersPage() {
               </h2>
             </div>
             <p className={dashboardNoteClass}>
-              Esta acao remove o usuario da plataforma e encerra as sessoes ativas dele.
+              Esta ação remove o usuário da plataforma e encerra as sessões ativas dele.
             </p>
             <p className={dashboardNoteClass}>
-              Se esse usuario tiver projetos vinculados, a remocao sera bloqueada para preservar os dados.
+              Se esse usuário tiver projetos vinculados, a remoção será bloqueada para preservar os dados.
             </p>
             <div className={confirmModalActionsClass}>
               <Button type="button" variant="outline" size="sm" onClick={() => setRemoving(null)}>
@@ -534,7 +534,7 @@ export function SuperUsersPage() {
               </Button>
               <Button type="button" variant="destructive" size="sm" onClick={handleDeleteUser} disabled={isSaving}>
                 {isSaving && <Spinner size="sm" />}
-                <span>Confirmar remocao</span>
+                <span>Confirmar remoção</span>
               </Button>
             </div>
           </div>

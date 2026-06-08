@@ -37,7 +37,7 @@ export type DisciplineImportRow = {
 const getTokenOrThrow = () => {
   const token = getStoredSessionToken()
   if (!token) {
-    throw new Error('Sessao invalida. Faca login novamente.')
+    throw new Error('Sessão inválida. Faça login novamente.')
   }
   return token
 }
@@ -94,7 +94,7 @@ export const listAdminDisciplines = async (params: {
   })
 
   if (error) {
-    throwRpcError('Falha ao listar catalogo', error)
+    throwRpcError('Falha ao listar catálogo', error)
   }
 
   const rows = (data ?? []) as SuperDisciplineRow[]
@@ -113,7 +113,7 @@ export const replaceDisciplines = async (
   })
 
   if (error) {
-    throwRpcError('Falha ao substituir catalogo', error)
+    throwRpcError('Falha ao substituir catálogo', error)
   }
 
   return data as { inserted: number }
@@ -130,7 +130,7 @@ export const upsertDisciplines = async (
   })
 
   if (error) {
-    throwRpcError('Falha ao mesclar catalogo', error)
+    throwRpcError('Falha ao mesclar catálogo', error)
   }
 
   return data as { affected: number }
@@ -144,7 +144,7 @@ export const clearDisciplines = async (): Promise<{ deleted: number }> => {
   })
 
   if (error) {
-    throwRpcError('Falha ao limpar catalogo', error)
+    throwRpcError('Falha ao limpar catálogo', error)
   }
 
   return data as { deleted: number }

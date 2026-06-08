@@ -186,7 +186,7 @@ export function UserProjectsPage() {
         {error && <p className={errorTextClass}>{error}</p>}
 
         {!isLoading && total === 0 && (
-          <p className={dashboardNoteClass}>Voce ainda nao possui projetos cadastrados.</p>
+          <p className={dashboardNoteClass}>Você ainda não possui projetos cadastrados.</p>
         )}
 
         <div
@@ -219,11 +219,11 @@ export function UserProjectsPage() {
                 </div>
 
                 <p className={projectCardMetaClass}>
-                  Periodo: {project.period_start} ate {project.period_end}
+                  Período: {project.period_start} até {project.period_end}
                 </p>
                 <p className={projectCardMetaClass}>
                   {project.tipo === 'disciplina'
-                    ? `Carga horaria de extensao: ${Number(project.budget).toFixed(0)}h`
+                    ? `Carga horária de extensão: ${Number(project.budget).toFixed(0)}h`
                     : `Orcamento: R$ ${Number(project.budget).toFixed(2)}`}
                 </p>
               </section>
@@ -243,7 +243,7 @@ export function UserProjectsPage() {
               Anterior
             </Button>
             <span className={cn(dashboardNoteClass, 'self-center mx-3 my-0')}>
-              Pagina {safePage + 1} de {totalPages}
+              Página {safePage + 1} de {totalPages}
             </span>
             <Button
               type="button"
@@ -252,7 +252,7 @@ export function UserProjectsPage() {
               disabled={safePage + 1 >= totalPages}
               onClick={() => setCurrentPage((p) => p + 1)}
             >
-              Proxima
+              Próxima
             </Button>
           </div>
         )}

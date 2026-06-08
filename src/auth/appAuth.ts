@@ -28,7 +28,7 @@ const parseSession = (value: unknown): AuthSession => {
     !data.display_name ||
     (data.role !== 'admin' && data.role !== 'user' && data.role !== 'superadmin')
   ) {
-    throw new Error('Sessao invalida recebida do servidor.')
+    throw new Error('Sessão inválida recebida do servidor.')
   }
 
   return {
@@ -86,11 +86,11 @@ export const clearSessionToken = () => {
 
 const mapAuthErrorMessage = (message: string) => {
   if (message.includes('Usuario nao encontrado')) {
-    return 'Usuario nao encontrado.'
+    return 'Usuário não encontrado.'
   }
 
   if (message.includes('Senha invalida')) {
-    return 'Senha invalida.'
+    return 'Senha inválida.'
   }
 
   if (
@@ -98,7 +98,7 @@ const mapAuthErrorMessage = (message: string) => {
     message.includes('Load failed') ||
     message.includes('NetworkError')
   ) {
-    return 'Falha ao conectar com o Supabase. Verifique a configuracao do projeto e tente novamente.'
+    return 'Falha ao conectar com o Supabase. Verifique a configuração do projeto e tente novamente.'
   }
 
   return message
@@ -151,7 +151,7 @@ export const logoutSession = async () => {
 export const updateMyAvatar = async (avatarUrl: string): Promise<string | null> => {
   const token = getStoredSessionToken()
   if (!token) {
-    throw new Error('Sessao invalida. Faca login novamente.')
+    throw new Error('Sessão inválida. Faça login novamente.')
   }
 
   const { data, error } = await supabase.rpc('app_update_my_avatar', {
@@ -178,7 +178,7 @@ export const updateMyProfile = async (
 ): Promise<BasicProfileUpdate> => {
   const token = getStoredSessionToken()
   if (!token) {
-    throw new Error('Sessao invalida. Faca login novamente.')
+    throw new Error('Sessão inválida. Faça login novamente.')
   }
 
   const { data, error } = await supabase.rpc('app_update_my_basic_profile', {
@@ -193,7 +193,7 @@ export const updateMyProfile = async (
 
   const payload = data as { display_name?: string; avatar_url?: string | null } | null
   if (!payload || !payload.display_name) {
-    throw new Error('Resposta invalida do servidor ao atualizar perfil.')
+    throw new Error('Resposta inválida do servidor ao atualizar perfil.')
   }
 
   return {

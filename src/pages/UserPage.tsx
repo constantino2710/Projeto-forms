@@ -28,13 +28,13 @@ export function UserPage({ session, onLogout }: UserPageProps) {
           <div className="mb-2.5 flex justify-end">
             <ThemeToggle />
           </div>
-          <CardTitle>Painel do Usuario</CardTitle>
-          <CardDescription>Area exclusiva do professor.</CardDescription>
+          <CardTitle>Painel do Usuário</CardTitle>
+          <CardDescription>Área exclusiva do docente.</CardDescription>
         </CardHeader>
         <CardContent>
           <ul className="m-0 flex list-none flex-col gap-2 p-0">
             <li className="rounded-xl bg-muted/40 px-4 py-2.5">Bem-vindo, {session.display_name}.</li>
-            <li className="rounded-xl bg-muted/40 px-4 py-2.5">Usuario: {session.username}</li>
+            <li className="rounded-xl bg-muted/40 px-4 py-2.5">Usuário: {session.username}</li>
             <li className="rounded-xl bg-muted/40 px-4 py-2.5">Perfil: {session.role}</li>
           </ul>
           <div className="mt-3.5">

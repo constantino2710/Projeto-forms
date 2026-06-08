@@ -170,13 +170,13 @@ export function DashboardLayout({
                     isDesktopSidebarCollapsed && 'max-md:justify-start max-md:p-2.5 max-md:pl-5 md:justify-center md:pl-2 md:pr-2 md:[&>span]:hidden',
                   )
                 }
-                title="Configuracoes"
+                title="Configurações"
               >
                 {({ isActive }) => (
                   <>
                     {isActive && <SidebarActiveIndicator />}
                     <Settings size={20} />
-                    <span>Configuracoes</span>
+                    <span>Configurações</span>
                   </>
                 )}
               </NavLink>

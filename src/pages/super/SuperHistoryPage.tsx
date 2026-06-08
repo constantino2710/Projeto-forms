@@ -112,7 +112,7 @@ export function SuperHistoryPage() {
       })
       .catch((err) => {
         if (cancelled) return
-        const message = err instanceof Error ? err.message : 'Falha ao carregar historico.'
+        const message = err instanceof Error ? err.message : 'Falha ao carregar histórico.'
         setError(message)
       })
       .finally(() => {
@@ -143,8 +143,8 @@ export function SuperHistoryPage() {
   return (
     <>
       <PageHeader
-        title="Historico Geral de Projetos"
-        subtitle="Todos os projetos submetidos na plataforma, independente do revisor."
+        title="Histórico Geral de Projetos"
+        subtitle="Todos os projetos submetidos na plataforma, independentemente do revisor."
         actions={<ReportButton onGenerate={handleGenerateReport} />}
       />
       <article className={dashboardPanelClass}>
@@ -154,7 +154,7 @@ export function SuperHistoryPage() {
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar por titulo, professor ou curso"
+              placeholder="Buscar por título, docente ou curso"
             />
           </div>
           <ProjectFiltersBar
@@ -198,7 +198,7 @@ export function SuperHistoryPage() {
                 >
                   {project.tipo === 'disciplina' ? 'Disciplina' : 'Extensão'}
                 </span>
-                <span className={historyCardMetaClass}>Professor: {project.professor}</span>
+                <span className={historyCardMetaClass}>Docente: {project.professor}</span>
                 <span className={historyCardMetaClass}>
                   {project.period_start} – {project.period_end}
                 </span>
@@ -225,7 +225,7 @@ export function SuperHistoryPage() {
               Anterior
             </Button>
             <span className={cn(dashboardNoteClass, 'self-center mx-3 my-0')}>
-              Pagina {page + 1} de {totalPages}
+              Página {page + 1} de {totalPages}
             </span>
             <Button
               type="button"
@@ -234,7 +234,7 @@ export function SuperHistoryPage() {
               disabled={page + 1 >= totalPages}
               onClick={() => setPage((p) => p + 1)}
             >
-              Proxima
+              Próxima
             </Button>
           </div>
         )}

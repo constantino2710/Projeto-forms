@@ -126,7 +126,7 @@ export function AdminProjectDetailPage() {
       const result = await decideAdminProject(projectId, decision, adminMessage)
 
       if (!result.recipient_email) {
-        setNotice('Decisao registrada. Professor sem e-mail cadastrado, nao foi notificado.')
+        setNotice('Decisão registrada. Docente sem e-mail cadastrado, não foi notificado.')
         window.setTimeout(() => navigate('/admin/projetos'), 2500)
         return
       }
@@ -141,7 +141,7 @@ export function AdminProjectDetailPage() {
           adminMessage: result.admin_message,
         })
       } catch {
-        setError('Decisao registrada, mas nao foi possivel enviar o e-mail.')
+        setError('Decisão registrada, mas não foi possível enviar o e-mail.')
         window.setTimeout(() => navigate('/admin/projetos'), 2500)
         return
       }
@@ -220,10 +220,10 @@ export function AdminProjectDetailPage() {
   const timelineSteps = [
     { key: 'created', label: 'Criado', date: timeline?.created_at ?? null },
     { key: 'submitted', label: 'Submetido', date: timeline?.submitted_at ?? null },
-    { key: 'analysis', label: 'Em analise', date: timeline?.analysis_started_at ?? null },
+    { key: 'analysis', label: 'Em análise', date: timeline?.analysis_started_at ?? null },
     {
       key: 'approval_status',
-      label: 'Status da aprovacao',
+      label: 'Status da aprovação',
       date: approvalStatusDate,
     },
   ]
@@ -255,7 +255,7 @@ export function AdminProjectDetailPage() {
         analysisHighlight = `Analisado por ${analyzingName}`
       }
     } else if (project.status === 'em_avaliacao' && analyzingName) {
-      analysisHighlight = `Em analise por ${analyzingName}`
+      analysisHighlight = `Em análise por ${analyzingName}`
     }
   }
   const disciplineMetadata =
@@ -276,14 +276,14 @@ export function AdminProjectDetailPage() {
       {mode === 'full' && (
         <>
           <section className={projectInfoSectionClass}>
-            <h3>Identificacao da Iniciativa Extensionista</h3>
+            <h3>Identificação da Iniciativa Extensionista</h3>
             <div className={projectInfoGridClass}>
               <div className={projectInfoItemClass}>
-                <p className={projectInfoLabelClass}>Titulo da Iniciativa</p>
+                <p className={projectInfoLabelClass}>Título da Iniciativa</p>
                 <p className={projectInfoValueClass}>{extensionForm.title}</p>
               </div>
               <div className={projectInfoItemClass}>
-                <p className={projectInfoLabelClass}>Carga horaria total</p>
+                <p className={projectInfoLabelClass}>Carga horária total</p>
                 <p className={projectInfoValueClass}>{extensionForm.totalWorkload}</p>
               </div>
               <div className={projectInfoItemClass}>
@@ -291,9 +291,9 @@ export function AdminProjectDetailPage() {
                 <p className={projectInfoValueClass}>{extensionForm.unicapProgram}</p>
               </div>
               <div className={projectInfoItemClass}>
-                <p className={projectInfoLabelClass}>Periodo</p>
+                <p className={projectInfoLabelClass}>Período</p>
                 <p className={projectInfoValueClass}>
-                  {extensionForm.periodStart} ate {extensionForm.periodEnd}
+                  {extensionForm.periodStart} até {extensionForm.periodEnd}
                 </p>
               </div>
               <div className={projectInfoItemClass}>
@@ -311,7 +311,7 @@ export function AdminProjectDetailPage() {
             <h3>Docentes</h3>
             <div className={projectInfoGridClass}>
               <div className={projectInfoItemClass}>
-                <p className={projectInfoLabelClass}>Professor</p>
+                <p className={projectInfoLabelClass}>Docente</p>
                 <p className={projectInfoValueClass}>{project?.professor}</p>
               </div>
               <div className={projectInfoItemClass}>
@@ -331,7 +331,7 @@ export function AdminProjectDetailPage() {
                 <p className={projectInfoValueClass}>{extensionForm.coordinatorPhone}</p>
               </div>
               <div className={projectInfoItemClass}>
-                <p className={projectInfoLabelClass}>Participacao do Coordenador</p>
+                <p className={projectInfoLabelClass}>Participação do Coordenador</p>
                 <p className={projectInfoValueClass}>{extensionForm.coordinatorParticipation}</p>
               </div>
             </div>
@@ -340,14 +340,14 @@ export function AdminProjectDetailPage() {
       )}
 
       <section className={projectInfoSectionClass}>
-        <h3>Conteudo do Plano</h3>
+        <h3>Conteúdo do Plano</h3>
         <div className={projectInfoGridClass}>
           <div className={projectInfoItemFullClass}>
             <p className={projectInfoLabelClass}>Objetivos de Aprendizagem</p>
             <p className={projectInfoValueClass}>{extensionForm.learningObjectives.filter(Boolean).join(' | ')}</p>
           </div>
           <div className={projectInfoItemFullClass}>
-            <p className={projectInfoLabelClass}>Servico a ser oferecido</p>
+            <p className={projectInfoLabelClass}>Serviço a ser oferecido</p>
             <p className={projectInfoValueClass}>{extensionForm.serviceOffered}</p>
           </div>
           <div className={projectInfoItemFullClass}>
@@ -363,7 +363,7 @@ export function AdminProjectDetailPage() {
             <p className={projectInfoValueClass}>{extensionForm.sustainableDevelopmentGoal}</p>
           </div>
           <div className={projectInfoItemClass}>
-            <p className={projectInfoLabelClass}>Publico atendido</p>
+            <p className={projectInfoLabelClass}>Público atendido</p>
             <p className={projectInfoValueClass}>{extensionForm.targetAudience}</p>
           </div>
           <div className={projectInfoItemFullClass}>
@@ -371,11 +371,11 @@ export function AdminProjectDetailPage() {
             <p className={projectInfoValueClass}>{extensionForm.projectSummary}</p>
           </div>
           <div className={projectInfoItemFullClass}>
-            <p className={projectInfoLabelClass}>Informacoes adicionais</p>
+            <p className={projectInfoLabelClass}>Informações adicionais</p>
             <p className={projectInfoValueClass}>{extensionForm.additionalInformation || '-'}</p>
           </div>
           <div className={projectInfoItemFullClass}>
-            <p className={projectInfoLabelClass}>Confirmacoes marcadas</p>
+            <p className={projectInfoLabelClass}>Confirmações marcadas</p>
             <p className={projectInfoValueClass}>
               {acknowledgementOptions.filter((item) =>
                 extensionForm.acknowledgements.includes(item.id),
@@ -413,7 +413,7 @@ export function AdminProjectDetailPage() {
               </div>
 
               <div className={projectApprovalChipClass}>
-                <p className={projectApprovalLabelClass}>Status de aprovacao</p>
+                <p className={projectApprovalLabelClass}>Status de aprovação</p>
                 <p className={projectApprovalValueClass}>{approvalStatusLabel}</p>
                 <p className={projectApprovalDateClass}>{formatTimelineDate(approvalStatusDate)}</p>
               </div>
@@ -427,11 +427,11 @@ export function AdminProjectDetailPage() {
                   <div className={projectSectionsStackClass}>
                     <section className={projectInfoGridClass}>
                     <div className={projectInfoItemClass}>
-                      <p className={projectInfoLabelClass}>Professor</p>
+                      <p className={projectInfoLabelClass}>Docente</p>
                       <p className={projectInfoValueClass}>{project.professor}</p>
                     </div>
                     <div className={projectInfoItemClass}>
-                      <p className={projectInfoLabelClass}>Titulo da Iniciativa</p>
+                      <p className={projectInfoLabelClass}>Título da Iniciativa</p>
                       <p className={projectInfoValueClass}>{project.title}</p>
                     </div>
                     <div className={projectInfoItemClass}>
@@ -449,25 +449,25 @@ export function AdminProjectDetailPage() {
                       </p>
                     </div>
                     <div className={projectInfoItemClass}>
-                      <p className={projectInfoLabelClass}>Periodo de realizacao da disciplina</p>
+                      <p className={projectInfoLabelClass}>Período de realização da disciplina</p>
                       <p className={projectInfoValueClass}>{project.semestre_letivo || '-'}</p>
                     </div>
                     <div className={projectInfoItemClass}>
-                      <p className={projectInfoLabelClass}>Carga horaria de Extensao</p>
+                      <p className={projectInfoLabelClass}>Carga horária de Extensão</p>
                       <p className={projectInfoValueClass}>{Number(project.budget).toFixed(0)}h</p>
                     </div>
                     <div className={projectInfoItemClass}>
-                      <p className={projectInfoLabelClass}>Codigo Extensao</p>
+                      <p className={projectInfoLabelClass}>Código da Extensão</p>
                       <p className={projectInfoValueClass}>{disciplineMetadata?.codigoExtensao || '-'}</p>
                     </div>
                     <div className={projectInfoItemClass}>
-                      <p className={projectInfoLabelClass}>Codigo da Disciplina</p>
+                      <p className={projectInfoLabelClass}>Código da Disciplina</p>
                       <p className={projectInfoValueClass}>
                         {disciplineMetadata?.codigoDisciplina || '-'}
                       </p>
                     </div>
                     <div className={projectInfoItemClass}>
-                      <p className={projectInfoLabelClass}>Codigo da Turma</p>
+                      <p className={projectInfoLabelClass}>Código da Turma</p>
                       <p className={projectInfoValueClass}>{disciplineMetadata?.codigoTurma || '-'}</p>
                     </div>
                     <div className={projectInfoItemClass}>
@@ -502,7 +502,7 @@ export function AdminProjectDetailPage() {
               </section>
 
               <label className={formLabelClass}>
-                Mensagem ao professor
+                Mensagem ao docente
                 <Textarea
                   value={adminMessage}
                   onChange={(event) => setAdminMessage(event.target.value)}
@@ -621,7 +621,7 @@ export function AdminProjectDetailPage() {
             <h2>Excluir projeto?</h2>
             <p>
               Vai marcar <strong>{project.title}</strong> como excluido. O projeto some das listas
-              e o professor nao consegue ver mais. Esta acao nao pode ser desfeita pelo painel.
+              e o docente não consegue ver mais. Esta ação não pode ser desfeita pelo painel.
             </p>
             <label className="mt-3 flex flex-col gap-1.5">
               <span className="text-[0.85rem] text-muted-foreground">

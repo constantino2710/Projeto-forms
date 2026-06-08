@@ -24,7 +24,7 @@ export const getProjectTimeline = async (
 ): Promise<ProjectTimeline> => {
   const token = getStoredSessionToken();
   if (!token) {
-    throw new Error("Sessao invalida. Faca login novamente.");
+    throw new Error("Sessão inválida. Faça login novamente.");
   }
 
   const { data, error } = await supabase.rpc("app_get_project_timeline", {
@@ -38,7 +38,7 @@ export const getProjectTimeline = async (
 
   const timeline = data as ProjectTimeline | null;
   if (!timeline) {
-    throw new Error("Nao foi possivel carregar a linha do tempo.");
+    throw new Error("Não foi possível carregar a linha do tempo.");
   }
 
   return timeline;

@@ -11,9 +11,9 @@ export type DisciplineProjectMetadata = {
 }
 
 const FIELD_PREFIXES = {
-  codigoExtensao: 'Codigo Extensao:',
-  codigoDisciplina: 'Codigo da Disciplina:',
-  codigoTurma: 'Codigo da Turma:',
+  codigoExtensao: 'Código da Extensão:',
+  codigoDisciplina: 'Código da Disciplina:',
+  codigoTurma: 'Código da Turma:',
   disciplinaGerencial: 'Disciplina Gerencial:',
   cursosGerenciados: 'Cursos Gerenciados:',
 } as const

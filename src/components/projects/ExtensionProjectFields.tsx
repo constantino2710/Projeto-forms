@@ -61,13 +61,13 @@ export function ExtensionProjectFields({
         <>
           <section className={sectionClass}>
             <div className={sectionHeadingClass}>
-              <h2 className="m-0 text-base text-foreground">Identificacao da Iniciativa Extensionista</h2>
-              <p className="m-0 text-muted-foreground">Replica dos campos principais do plano de trabalho voluntario.</p>
+              <h2 className="m-0 text-base text-foreground">Identificação da Iniciativa Extensionista</h2>
+              <p className="m-0 text-muted-foreground">Réplica dos campos principais do plano de trabalho voluntário.</p>
             </div>
 
             <div className={grid2}>
               <label className={projectFormLabelClass}>
-                Titulo da Iniciativa
+                Título da Iniciativa
                 <Input
                   value={form.title}
                   onChange={(event) => setField('title', event.target.value)}
@@ -77,7 +77,7 @@ export function ExtensionProjectFields({
               </label>
 
               <label className={projectFormLabelClass}>
-                Carga horaria total da iniciativa
+                Carga horária total da iniciativa
                 <Input
                   type="number"
                   min={1}
@@ -98,7 +98,7 @@ export function ExtensionProjectFields({
                 required
                 disabled={disabled}
               >
-                <option value="">Selecione uma opcao</option>
+                <option value="">Selecione uma opção</option>
                 {UNICAP_PROGRAM_OPTIONS.map((option) => (
                   <option key={option} value={option}>
                     {option}
@@ -109,7 +109,7 @@ export function ExtensionProjectFields({
 
             <div className={grid2}>
               <label className={projectFormLabelClass}>
-                Data de realizacao - Inicio
+                Data de realização - Início
                 <Input
                   type="date"
                   value={form.periodStart}
@@ -120,7 +120,7 @@ export function ExtensionProjectFields({
               </label>
 
               <label className={projectFormLabelClass}>
-                Data de realizacao - Termino
+                Data de realização - Término
                 <Input
                   type="date"
                   value={form.periodEnd}
@@ -132,7 +132,7 @@ export function ExtensionProjectFields({
             </div>
 
             <label className={projectFormLabelClass}>
-              Curso ou Programa de Pos-Graduacao ao qual a disciplina esta vinculada
+              Curso ou Programa de Pós-Graduação ao qual a disciplina está vinculada
               <select
                 className={selectInputClass}
                 value={form.linkedCourse}
@@ -140,7 +140,7 @@ export function ExtensionProjectFields({
                 required
                 disabled={disabled}
               >
-                <option value="">Favor selecionar</option>
+                <option value="">Selecione uma opção</option>
                 {LINKED_COURSE_OPTIONS.map((option) => (
                   <option key={option} value={option}>
                     {option}
@@ -161,7 +161,7 @@ export function ExtensionProjectFields({
               </label>
 
               <label className={projectFormLabelClass}>
-                E-mail da Coordenacao
+                E-mail da Coordenação
                 <Input
                   type="email"
                   value={form.coordinationEmail}
@@ -176,7 +176,7 @@ export function ExtensionProjectFields({
           <section className={sectionClass}>
             <div className={sectionHeadingClass}>
               <h2 className="m-0 text-base text-foreground">Docentes</h2>
-              <p className="m-0 text-muted-foreground">Dados do coordenador e docentes colaboradores.</p>
+              <p className="m-0 text-muted-foreground">Dados do coordenador e dos docentes colaboradores.</p>
             </div>
 
             <div className={grid2}>
@@ -212,7 +212,7 @@ export function ExtensionProjectFields({
                   }
                   inputMode="numeric"
                   maxLength={11}
-                  placeholder="Apenas numeros"
+                  placeholder="Apenas números"
                   required
                   disabled={disabled}
                 />
@@ -227,14 +227,14 @@ export function ExtensionProjectFields({
                   }
                   inputMode="tel"
                   maxLength={13}
-                  placeholder="Apenas numeros (DDD + numero)"
+                  placeholder="Apenas números (DDD + número)"
                   required
                   disabled={disabled}
                 />
               </label>
 
               <label className={projectFormLabelClass}>
-                Carga Horaria Semanal - Coordenador
+                Carga Horária Semanal - Coordenador
                 <select
                   className={selectInputClass}
                   value={form.coordinatorWeeklyHours}
@@ -242,7 +242,7 @@ export function ExtensionProjectFields({
                   required
                   disabled={disabled}
                 >
-                  <option value="">Favor selecionar</option>
+                  <option value="">Selecione uma opção</option>
                   {WEEKLY_HOURS_OPTIONS.map((option) => (
                     <option key={option} value={option}>
                       {option}
@@ -253,7 +253,7 @@ export function ExtensionProjectFields({
             </div>
 
             <label className={projectFormLabelClass}>
-              Forma de participacao do Coordenador
+              Forma de participação do Coordenador
               <select
                 className={selectInputClass}
                 value={form.coordinatorParticipation}
@@ -261,7 +261,7 @@ export function ExtensionProjectFields({
                 required
                 disabled={disabled}
               >
-                <option value="">Favor selecionar</option>
+                <option value="">Selecione uma opção</option>
                 {COORDINATOR_PARTICIPATION_OPTIONS.map((option) => (
                   <option key={option} value={option}>
                     {option}
@@ -271,7 +271,7 @@ export function ExtensionProjectFields({
             </label>
 
             <label className={projectFormLabelClass}>
-              Outros docentes colaboradores voluntarios na atividade
+              Outros docentes colaboradores voluntários na atividade
               <Textarea
                 value={form.otherVolunteerTeachers}
                 onChange={(event) => setField('otherVolunteerTeachers', event.target.value)}
@@ -283,12 +283,12 @@ export function ExtensionProjectFields({
 
           <section className={sectionClass}>
             <div className={sectionHeadingClass}>
-              <h2 className="m-0 text-base text-foreground">Estudantes voluntarios</h2>
+              <h2 className="m-0 text-base text-foreground">Estudantes voluntários</h2>
             </div>
 
             <div className={grid2}>
               <label className={projectFormLabelClass}>
-                Carga Horaria Semanal - Estudantes
+                Carga Horária Semanal - Estudantes
                 <select
                   className={selectInputClass}
                   value={form.studentWeeklyHours}
@@ -296,7 +296,7 @@ export function ExtensionProjectFields({
                   required
                   disabled={disabled}
                 >
-                  <option value="">Favor selecionar</option>
+                  <option value="">Selecione uma opção</option>
                   {WEEKLY_HOURS_OPTIONS.map((option) => (
                     <option key={option} value={option}>
                       {option}
@@ -348,7 +348,7 @@ export function ExtensionProjectFields({
         <div className={grid3}>
           {form.transversalCompetencies.map((competency, index) => (
             <label key={`competency-${index}`} className={projectFormLabelClass}>
-              Competencia Transversal {index + 1}
+              Competência Transversal {index + 1}
               <select
                 className={selectInputClass}
                 value={competency}
@@ -375,11 +375,11 @@ export function ExtensionProjectFields({
 
       <section className={sectionClass}>
         <div className={sectionHeadingClass}>
-          <h2 className="m-0 text-base text-foreground">Eixo Servico</h2>
+          <h2 className="m-0 text-base text-foreground">Eixo Serviço</h2>
         </div>
 
         <label className={projectFormLabelClass}>
-          Servico a ser oferecido
+          Serviço a ser oferecido
           <Textarea
             value={form.serviceOffered}
             onChange={(event) => setField('serviceOffered', event.target.value)}
@@ -407,7 +407,7 @@ export function ExtensionProjectFields({
         </div>
 
         <label className={projectFormLabelClass}>
-          Local de realizacao
+          Local de realização
           <Textarea
             value={form.executionLocation}
             onChange={(event) => setField('executionLocation', event.target.value)}
@@ -418,7 +418,7 @@ export function ExtensionProjectFields({
         </label>
 
         <label className={projectFormLabelClass}>
-          Publico que sera atendido
+          Público que será atendido
           <Textarea
             value={form.targetAudience}
             onChange={(event) => setField('targetAudience', event.target.value)}
@@ -429,7 +429,7 @@ export function ExtensionProjectFields({
         </label>
 
         <label className={projectFormLabelClass}>
-          Procedimentos Metodologicos
+          Procedimentos Metodológicos
           <Textarea
             value={form.methodologicalProcedures}
             onChange={(event) => setField('methodologicalProcedures', event.target.value)}
@@ -446,7 +446,7 @@ export function ExtensionProjectFields({
         </div>
 
         <label className={projectFormLabelClass}>
-          Problema ou Necessidade a ser respondido
+          Problema ou necessidade a ser respondido
           <Textarea
             value={form.problemStatement}
             onChange={(event) => setField('problemStatement', event.target.value)}
@@ -457,7 +457,7 @@ export function ExtensionProjectFields({
         </label>
 
         <label className={projectFormLabelClass}>
-          Principal Objetivo de Desenvolvimento Sustentavel Impactado
+          Principal Objetivo de Desenvolvimento Sustentável impactado
           <select
             className={selectInputClass}
             value={form.sustainableDevelopmentGoal}
@@ -465,7 +465,7 @@ export function ExtensionProjectFields({
             required
             disabled={disabled}
           >
-            <option value="">Selecione uma opcao</option>
+            <option value="">Selecione uma opção</option>
             {SDG_OPTIONS.map((option) => (
               <option key={option} value={option}>
                 {option}
@@ -490,7 +490,7 @@ export function ExtensionProjectFields({
         </div>
 
         <label className={projectFormLabelClass}>
-          Estrategias de Divulgacao da Atividade
+          Estratégias de Divulgação da Atividade
           <Textarea
             value={form.disseminationStrategies}
             onChange={(event) => setField('disseminationStrategies', event.target.value)}
@@ -501,7 +501,7 @@ export function ExtensionProjectFields({
         </label>
 
         <label className={projectFormLabelClass}>
-          Texto breve com uma apresentacao/resumo do projeto
+          Texto breve com uma apresentação/resumo do projeto
           <Textarea
             value={form.projectSummary}
             onChange={(event) => setField('projectSummary', event.target.value)}
@@ -514,11 +514,11 @@ export function ExtensionProjectFields({
 
       <section className={sectionClass}>
         <div className={sectionHeadingClass}>
-          <h2 className="m-0 text-base text-foreground">Eixo Reflexao e Avaliacao</h2>
+          <h2 className="m-0 text-base text-foreground">Eixo Reflexão e Avaliação</h2>
         </div>
 
         <label className={projectFormLabelClass}>
-          Estrategias de Reflexao
+          Estratégias de Reflexão
           <Textarea
             value={form.reflectionStrategies}
             onChange={(event) => setField('reflectionStrategies', event.target.value)}
@@ -529,7 +529,7 @@ export function ExtensionProjectFields({
         </label>
 
         <label className={projectFormLabelClass}>
-          Estrategias de Avaliacao
+          Estratégias de Avaliação
           <Textarea
             value={form.evaluationStrategies}
             onChange={(event) => setField('evaluationStrategies', event.target.value)}
@@ -540,7 +540,7 @@ export function ExtensionProjectFields({
         </label>
 
         <label className={projectFormLabelClass}>
-          Feedback do Publico Parceiro
+          Feedback do Público Parceiro
           <Textarea
             value={form.partnerFeedback}
             onChange={(event) => setField('partnerFeedback', event.target.value)}
@@ -553,11 +553,11 @@ export function ExtensionProjectFields({
 
       <section className={sectionClass}>
         <div className={sectionHeadingClass}>
-          <h2 className="m-0 text-base text-foreground">Conclusao</h2>
+          <h2 className="m-0 text-base text-foreground">Conclusão</h2>
         </div>
 
         <label className={projectFormLabelClass}>
-          Informacoes Adicionais
+          Informações Adicionais
           <Textarea
             value={form.additionalInformation}
             onChange={(event) => setField('additionalInformation', event.target.value)}
@@ -567,7 +567,7 @@ export function ExtensionProjectFields({
         </label>
 
         <div className="flex flex-col items-start gap-2.5">
-          <p className="m-0 font-bold text-foreground">Compreendi que....</p>
+          <p className="m-0 font-bold text-foreground">Compreendi que...</p>
           {acknowledgementOptions.map((item) => (
             <label key={item.id} className={checkboxItemClass}>
               <input

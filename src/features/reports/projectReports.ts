@@ -779,23 +779,23 @@ export const generateSingleProjectPdf = async (
   y += 30
 
   const infoPairs: Array<{ label: string; value: string }> = []
-  infoPairs.push({ label: 'Professor', value: project.professor || '-' })
+  infoPairs.push({ label: 'Docente', value: project.professor || '-' })
   if (project.tipo === 'disciplina') {
     const meta = parseDisciplineMetadataDescription(project.description)
     infoPairs.push({ label: 'Programa Unicap', value: project.discipline || '-' })
     infoPairs.push({ label: 'Nome da disciplina', value: project.target_audience || '-' })
     infoPairs.push({ label: 'Curso vinculado', value: project.course || '-' })
     infoPairs.push({
-      label: 'Periodo de realizacao',
+      label: 'Período de realização',
       value: project.semestre_letivo || '-',
     })
     infoPairs.push({
-      label: 'Carga horaria de extensao',
+      label: 'Carga horária de extensão',
       value: `${Number(project.budget).toFixed(0)}h`,
     })
-    infoPairs.push({ label: 'Codigo da extensao', value: meta?.codigoExtensao || '-' })
-    infoPairs.push({ label: 'Codigo da disciplina', value: meta?.codigoDisciplina || '-' })
-    infoPairs.push({ label: 'Codigo da turma', value: meta?.codigoTurma || '-' })
+    infoPairs.push({ label: 'Código da extensão', value: meta?.codigoExtensao || '-' })
+    infoPairs.push({ label: 'Código da disciplina', value: meta?.codigoDisciplina || '-' })
+    infoPairs.push({ label: 'Código da turma', value: meta?.codigoTurma || '-' })
     infoPairs.push({
       label: 'Disciplina gerencial',
       value: meta ? disciplineManagerialLabel(meta.disciplinaGerencial) : '-',
@@ -803,25 +803,25 @@ export const generateSingleProjectPdf = async (
     infoPairs.push({ label: 'Cursos gerenciados', value: meta?.cursosGerenciados || '-' })
     infoPairs.push({
       label: 'Datas no sistema',
-      value: `${formatBr(project.period_start)} ate ${formatBr(project.period_end)}`,
+      value: `${formatBr(project.period_start)} até ${formatBr(project.period_end)}`,
     })
   } else {
     infoPairs.push({ label: 'Curso', value: project.course || '-' })
     infoPairs.push({
-      label: 'Periodo',
-      value: `${formatBr(project.period_start)} ate ${formatBr(project.period_end)}`,
+      label: 'Período',
+      value: `${formatBr(project.period_start)} até ${formatBr(project.period_end)}`,
     })
     infoPairs.push({
       label: 'Orcamento',
       value: `R$ ${Number(project.budget).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
     })
-    infoPairs.push({ label: 'Publico alvo', value: project.target_audience || '-' })
+    infoPairs.push({ label: 'Público-alvo', value: project.target_audience || '-' })
   }
 
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(12)
   y = ensureSpace(20, y)
-  doc.text('Informacoes Gerais', marginX, y)
+  doc.text('Informações Gerais', marginX, y)
   y += 14
 
   autoTable(doc, {
@@ -846,13 +846,13 @@ export const generateSingleProjectPdf = async (
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(12)
     y = ensureSpace(20, y)
-    doc.text('Plano de Extensao', marginX, y)
+    doc.text('Plano de Extensão', marginX, y)
     y += 14
 
     const planPairs: Array<{ label: string; value: string }> = []
     if (project.tipo === 'extensao') {
-      planPairs.push({ label: 'Titulo da iniciativa', value: extensionPlan.title || '-' })
-      planPairs.push({ label: 'Carga horaria total', value: extensionPlan.totalWorkload || '-' })
+      planPairs.push({ label: 'Título da iniciativa', value: extensionPlan.title || '-' })
+      planPairs.push({ label: 'Carga horária total', value: extensionPlan.totalWorkload || '-' })
       planPairs.push({ label: 'Programa Unicap', value: extensionPlan.unicapProgram || '-' })
       planPairs.push({ label: 'Curso vinculado', value: extensionPlan.linkedCourse || '-' })
       planPairs.push({ label: 'Nome do curso', value: extensionPlan.courseName || '-' })
@@ -867,7 +867,7 @@ export const generateSingleProjectPdf = async (
       planPairs.push({ label: 'CPF do coordenador', value: extensionPlan.coordinatorCpf || '-' })
       planPairs.push({ label: 'Telefone (WhatsApp)', value: extensionPlan.coordinatorPhone || '-' })
       planPairs.push({
-        label: 'Participacao do coordenador',
+        label: 'Participação do coordenador',
         value: extensionPlan.coordinatorParticipation || '-',
       })
     }
@@ -876,7 +876,7 @@ export const generateSingleProjectPdf = async (
       value: extensionPlan.learningObjectives.filter(Boolean).join(' | ') || '-',
     })
     planPairs.push({
-      label: 'Servico oferecido',
+      label: 'Serviço oferecido',
       value: extensionPlan.serviceOffered || '-',
     })
     planPairs.push({
@@ -891,17 +891,17 @@ export const generateSingleProjectPdf = async (
       label: 'ODS impactado',
       value: extensionPlan.sustainableDevelopmentGoal || '-',
     })
-    planPairs.push({ label: 'Publico atendido', value: extensionPlan.targetAudience || '-' })
+    planPairs.push({ label: 'Público atendido', value: extensionPlan.targetAudience || '-' })
     planPairs.push({ label: 'Resumo', value: extensionPlan.projectSummary || '-' })
     planPairs.push({
-      label: 'Informacoes adicionais',
+      label: 'Informações adicionais',
       value: extensionPlan.additionalInformation || '-',
     })
 
     const acknowledgementOptions =
       project.tipo === 'disciplina' ? DISCIPLINE_ACKNOWLEDGEMENT_OPTIONS : ACKNOWLEDGEMENT_OPTIONS
     planPairs.push({
-      label: 'Confirmacoes marcadas',
+      label: 'Confirmações marcadas',
       value:
         acknowledgementOptions
           .filter((item) => extensionPlan.acknowledgements.includes(item.id))
@@ -951,12 +951,12 @@ export const generateSingleProjectPdf = async (
       ? 'Aprovado em'
       : project.status === 'reprovado'
         ? 'Recusado em'
-        : 'Aprovacao'
+        : 'Aprovação'
 
   const timelineRows: Array<[string, string]> = [
     ['Criado em', formatDateTimeBr(timeline?.created_at ?? project.created_at)],
     ['Submetido em', formatDateTimeBr(timeline?.submitted_at)],
-    ['Inicio da analise', formatDateTimeBr(timeline?.analysis_started_at)],
+    ['Início da análise', formatDateTimeBr(timeline?.analysis_started_at)],
     [approvalLabel, formatDateTimeBr(approvalDate)],
   ]
   if (project.analyzing_by_name) {
@@ -982,7 +982,7 @@ export const generateSingleProjectPdf = async (
       doc.setFontSize(9)
       doc.setTextColor(120)
       doc.text(
-        `Pagina ${page} de ${total}`,
+        `Página ${page} de ${total}`,
         pageWidth - marginX,
         pageHeight - 16,
         { align: 'right' },

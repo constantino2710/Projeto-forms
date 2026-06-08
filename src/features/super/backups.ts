@@ -45,7 +45,7 @@ export type BackupSchedule = {
 
 const getTokenOrThrow = () => {
   const token = getStoredSessionToken()
-  if (!token) throw new Error('Sessao invalida. Faca login novamente.')
+  if (!token) throw new Error('Sessão inválida. Faça login novamente.')
   return token
 }
 
