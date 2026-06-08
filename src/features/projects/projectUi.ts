@@ -34,6 +34,8 @@ export const statusBadgeByStatus: Record<AdminProjectStatus, string> = {
   submetido: 'bg-status-submitted-bg text-status-submitted-fg',
   em_avaliacao: 'bg-status-review-bg text-status-review-fg',
   em_ajustes: 'bg-status-adjust-bg text-status-adjust-fg',
+  pre_aprovado: 'bg-status-approved-bg/60 text-status-approved-fg',
+  pre_reprovado: 'bg-status-rejected-bg/60 text-status-rejected-fg',
   aprovado: 'bg-status-approved-bg text-status-approved-fg',
   reprovado: 'bg-status-rejected-bg text-status-rejected-fg',
 }

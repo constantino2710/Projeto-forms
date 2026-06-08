@@ -1,6 +1,11 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-type Decision = 'aprovado' | 'reprovado' | 'em_ajustes'
+type Decision =
+  | 'aprovado'
+  | 'reprovado'
+  | 'em_ajustes'
+  | 'pre_aprovado'
+  | 'pre_reprovado'
 
 type RequestBody = {
   appSessionToken?: string
@@ -22,6 +27,8 @@ const statusLabel: Record<Decision, string> = {
   aprovado: 'Aprovado',
   reprovado: 'Recusado',
   em_ajustes: 'Em ajustes',
+  pre_aprovado: 'Pre-aprovado',
+  pre_reprovado: 'Pre-reprovado',
 }
 
 const decisionContent: Record<
@@ -42,6 +49,18 @@ const decisionContent: Record<
     headline: 'Seu projeto precisa de ajustes',
     summary: 'A avaliacao foi concluida com pedido de ajustes.',
     nextStep: 'Acesse os detalhes para revisar o que precisa ser ajustado.',
+  },
+  pre_aprovado: {
+    headline: 'Seu projeto foi pre-aprovado',
+    summary:
+      'A analise inicial foi concluida com pre-aprovacao. Aguarde a decisao final do superadministrador.',
+    nextStep: 'Acesse os detalhes para acompanhar a etapa de decisao final.',
+  },
+  pre_reprovado: {
+    headline: 'Seu projeto foi pre-reprovado',
+    summary:
+      'A analise inicial sinalizou pre-reprovacao. Aguarde a decisao final do superadministrador.',
+    nextStep: 'Acesse os detalhes para entender os motivos informados pelo analista.',
   },
 }
 

@@ -24,6 +24,9 @@ vi.mock('../../features/projects/projectTimeline', () => ({
 vi.mock('../../features/notifications/projectEmails', () => ({
   sendProjectStatusEmail: vi.fn(),
 }))
+vi.mock('../../auth/appAuth', () => ({
+  getStoredSessionRole: vi.fn(() => 'superadmin'),
+}))
 
 const mockProject: AdminProjectDetail = {
   id: 'p1',
@@ -67,6 +70,7 @@ describe('AdminProjectDetailPage', () => {
       analysis_started_at: null,
       approved_at: null,
       rejected_at: null,
+      reviewed_at: null,
     })
   })
 

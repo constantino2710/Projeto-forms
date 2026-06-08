@@ -38,6 +38,8 @@ export type ReportProject = {
     | 'submetido'
     | 'em_avaliacao'
     | 'em_ajustes'
+    | 'pre_aprovado'
+    | 'pre_reprovado'
     | 'aprovado'
     | 'reprovado'
   period_start: string
@@ -235,6 +237,8 @@ const statusPalette: Record<StatusKey, { fill: string; text: string }> = {
   submetido: { fill: 'DBEAFE', text: '1E3A8A' },
   em_avaliacao: { fill: 'FEF3C7', text: '92400E' },
   em_ajustes: { fill: 'FFEDD5', text: '9A3412' },
+  pre_aprovado: { fill: 'D1FAE5', text: '065F46' },
+  pre_reprovado: { fill: 'FECACA', text: '7F1D1D' },
   aprovado: { fill: 'DCFCE7', text: '166534' },
   reprovado: { fill: 'FEE2E2', text: '991B1B' },
 }
@@ -663,6 +667,8 @@ const projectStatusPdfColor: Record<ReportProject['status'], [number, number, nu
   submetido: [14, 165, 233],
   em_avaliacao: [234, 179, 8],
   em_ajustes: [249, 115, 22],
+  pre_aprovado: [110, 231, 183],
+  pre_reprovado: [252, 165, 165],
   aprovado: [34, 197, 94],
   reprovado: [239, 68, 68],
 }

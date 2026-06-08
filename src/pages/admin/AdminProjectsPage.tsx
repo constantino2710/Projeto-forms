@@ -1,6 +1,7 @@
 import { Grid3X3, List, Search } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { getStoredSessionRole } from '../../auth/appAuth'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Spinner } from '../../components/ui/spinner'
@@ -43,9 +44,15 @@ type ViewMode = 'list' | 'grid'
 const VIEW_MODE_KEY = 'admin_projects_view_mode'
 const PAGE_SIZE = 9
 const SEARCH_DEBOUNCE_MS = 350
-const STATUS_OPTIONS = [
+const STATUS_OPTIONS_ADMIN = [
   { value: 'submetido', label: projectStatusLabel.submetido },
   { value: 'em_avaliacao', label: projectStatusLabel.em_avaliacao },
+]
+const STATUS_OPTIONS_SUPER = [
+  { value: 'submetido', label: projectStatusLabel.submetido },
+  { value: 'em_avaliacao', label: projectStatusLabel.em_avaliacao },
+  { value: 'pre_aprovado', label: projectStatusLabel.pre_aprovado },
+  { value: 'pre_reprovado', label: projectStatusLabel.pre_reprovado },
 ]
 
 const mergeUniqueSorted = (current: string[], incoming: (string | null | undefined)[]): string[] => {
@@ -73,6 +80,10 @@ export function AdminProjectsPage() {
   })
   const [currentPage, setCurrentPage] = useState(0)
   const hasUsedPrefetchRef = useRef(false)
+  const statusOptions = useMemo(
+    () => (getStoredSessionRole() === 'superadmin' ? STATUS_OPTIONS_SUPER : STATUS_OPTIONS_ADMIN),
+    [],
+  )
 
   useEffect(() => {
     const handle = setTimeout(() => setDebouncedQuery(query.trim()), SEARCH_DEBOUNCE_MS)
@@ -184,7 +195,7 @@ export function AdminProjectsPage() {
             onChange={setFilters}
             courses={courseOptions}
             schools={schoolOptions}
-            statusOptions={STATUS_OPTIONS}
+            statusOptions={statusOptions}
             selectedStatuses={selectedStatuses}
             onStatusesChange={setSelectedStatuses}
           />

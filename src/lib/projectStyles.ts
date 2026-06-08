@@ -60,6 +60,8 @@ export const statusColorMap: Record<string, string> = {
   submetido: 'bg-muted text-muted-foreground',
   em_avaliacao: 'bg-status-adjust-bg text-status-adjust-fg',
   em_ajustes: 'bg-status-adjust-bg text-status-adjust-fg',
+  pre_aprovado: 'bg-status-approved-bg/60 text-status-approved-fg',
+  pre_reprovado: 'bg-status-rejected-bg/60 text-status-rejected-fg',
   aprovado: 'bg-status-approved-bg text-status-approved-fg',
   reprovado: 'bg-status-rejected-bg text-status-rejected-fg',
 }

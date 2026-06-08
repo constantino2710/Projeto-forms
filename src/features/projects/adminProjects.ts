@@ -7,8 +7,15 @@ export type AdminProjectStatus =
   | 'submetido'
   | 'em_avaliacao'
   | 'em_ajustes'
+  | 'pre_aprovado'
+  | 'pre_reprovado'
   | 'aprovado'
   | 'reprovado'
+
+export type AdminDecisionStatus = Extract<
+  AdminProjectStatus,
+  'aprovado' | 'reprovado' | 'em_ajustes' | 'pre_aprovado' | 'pre_reprovado'
+>
 
 export type AdminProjectCard = {
   id: string
@@ -33,7 +40,10 @@ export type AdminProjectHistoryCard = {
   period_start: string
   period_end: string
   budget: number
-  status: Extract<AdminProjectStatus, 'aprovado' | 'reprovado' | 'em_ajustes'>
+  status: Extract<
+    AdminProjectStatus,
+    'aprovado' | 'reprovado' | 'em_ajustes' | 'pre_aprovado' | 'pre_reprovado'
+  >
   reviewed_at: string | null
 }
 
@@ -62,7 +72,7 @@ export type AdminProjectDetail = {
 
 export type AdminProjectDecisionResult = {
   id: string
-  status: Extract<AdminProjectStatus, 'aprovado' | 'reprovado' | 'em_ajustes'>
+  status: AdminDecisionStatus
   updated_at: string
   project_title: string
   professor_name: string | null
@@ -213,7 +223,7 @@ export const getAdminProjectDetail = async (projectId: string): Promise<AdminPro
 
 export const decideAdminProject = async (
   projectId: string,
-  decision: Extract<AdminProjectStatus, 'aprovado' | 'reprovado' | 'em_ajustes'>,
+  decision: AdminDecisionStatus,
   adminMessage?: string,
 ): Promise<AdminProjectDecisionResult> => {
   const token = getTokenOrThrow()

@@ -43,6 +43,8 @@ const STATUS_OPTIONS = [
   { value: 'submetido', label: projectStatusLabel.submetido },
   { value: 'em_avaliacao', label: projectStatusLabel.em_avaliacao },
   { value: 'em_ajustes', label: projectStatusLabel.em_ajustes },
+  { value: 'pre_aprovado', label: projectStatusLabel.pre_aprovado },
+  { value: 'pre_reprovado', label: projectStatusLabel.pre_reprovado },
   { value: 'aprovado', label: projectStatusLabel.aprovado },
   { value: 'reprovado', label: projectStatusLabel.reprovado },
 ]

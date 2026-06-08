@@ -1,6 +1,7 @@
 import { ArrowLeft, FileText, Trash2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { getStoredSessionRole } from '../../auth/appAuth'
 import { Button } from '../../components/ui/button'
 import { Spinner } from '../../components/ui/spinner'
 import { Textarea } from '../../components/ui/textarea'
@@ -19,7 +20,7 @@ import { getProjectTimeline, type ProjectTimeline } from '../../features/project
 import {
   decideAdminProject,
   deleteAdminProject,
-  type AdminProjectStatus,
+  type AdminDecisionStatus,
   getAdminProjectDetail,
   type AdminProjectDetail,
 } from '../../features/projects/adminProjects'
@@ -79,6 +80,12 @@ export function AdminProjectDetailPage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
+  const sessionRole = useMemo(() => getStoredSessionRole(), [])
+  const isSuperadmin = sessionRole === 'superadmin'
+  const approveDecision: AdminDecisionStatus = isSuperadmin ? 'aprovado' : 'pre_aprovado'
+  const rejectDecision: AdminDecisionStatus = isSuperadmin ? 'reprovado' : 'pre_reprovado'
+  const approveLabel = isSuperadmin ? 'Aprovar' : 'Pre-aprovar'
+  const rejectLabel = isSuperadmin ? 'Recusar' : 'Pre-recusar'
 
   useEffect(() => {
     const loadProject = async () => {
@@ -106,9 +113,7 @@ export function AdminProjectDetailPage() {
     loadProject()
   }, [projectId])
 
-  const handleDecision = async (
-    decision: Extract<AdminProjectStatus, 'aprovado' | 'reprovado' | 'em_ajustes'>,
-  ) => {
+  const handleDecision = async (decision: AdminDecisionStatus) => {
     if (!projectId) {
       return
     }
@@ -194,6 +199,24 @@ export function AdminProjectDetailPage() {
     return new Date(value).toLocaleString('pt-BR')
   }
 
+  const approvalStatusDate =
+    project?.status === 'aprovado'
+      ? timeline?.approved_at ?? null
+      : project?.status === 'reprovado'
+        ? timeline?.rejected_at ?? null
+        : project?.status === 'pre_aprovado' || project?.status === 'pre_reprovado'
+          ? timeline?.reviewed_at ?? null
+          : null
+  const approvalStatusLabel =
+    project?.status === 'aprovado'
+      ? 'Aprovado'
+      : project?.status === 'reprovado'
+        ? 'Recusado'
+        : project?.status === 'pre_aprovado'
+          ? 'Pre-aprovado'
+          : project?.status === 'pre_reprovado'
+            ? 'Pre-reprovado'
+            : 'Pendente'
   const timelineSteps = [
     { key: 'created', label: 'Criado', date: timeline?.created_at ?? null },
     { key: 'submitted', label: 'Submetido', date: timeline?.submitted_at ?? null },
@@ -201,34 +224,26 @@ export function AdminProjectDetailPage() {
     {
       key: 'approval_status',
       label: 'Status da aprovacao',
-      date: timeline?.approved_at ?? timeline?.rejected_at ?? null,
+      date: approvalStatusDate,
     },
   ]
   const latestTimelineIndex = timelineSteps.reduce(
     (latest, step, index) => (step.date ? index : latest),
     -1,
   )
-  const approvalStatusLabel =
-    project?.status === 'aprovado'
-      ? 'Aprovado'
-      : project?.status === 'reprovado'
-        ? 'Recusado'
-        : 'Pendente'
-  const approvalStatusDate =
-    project?.status === 'aprovado'
-      ? timeline?.approved_at ?? null
-      : project?.status === 'reprovado'
-        ? timeline?.rejected_at ?? null
-        : null
 
   const decisionVerb =
     project?.status === 'aprovado'
       ? 'Aprovado'
       : project?.status === 'reprovado'
         ? 'Recusado'
-        : project?.status === 'em_ajustes'
-          ? 'Enviado para ajustes'
-          : null
+        : project?.status === 'pre_aprovado'
+          ? 'Pre-aprovado'
+          : project?.status === 'pre_reprovado'
+            ? 'Pre-reprovado'
+            : project?.status === 'em_ajustes'
+              ? 'Enviado para ajustes'
+              : null
   const analyzingName = project?.analyzing_by_name ?? null
   const reviewedName = project?.reviewed_by_name ?? null
   let analysisHighlight: string | null = null
@@ -501,10 +516,10 @@ export function AdminProjectDetailPage() {
                 <Button
                   type="button"
                   size="sm"
-                  onClick={() => handleDecision('aprovado')}
+                  onClick={() => handleDecision(approveDecision)}
                   disabled={isDeciding}
                 >
-                  {isDeciding ? 'Processando...' : 'Aprovar'}
+                  {isDeciding ? 'Processando...' : approveLabel}
                 </Button>
                 <Button
                   type="button"
@@ -519,10 +534,10 @@ export function AdminProjectDetailPage() {
                   type="button"
                   variant="destructive"
                   size="sm"
-                  onClick={() => handleDecision('reprovado')}
+                  onClick={() => handleDecision(rejectDecision)}
                   disabled={isDeciding}
                 >
-                  {isDeciding ? 'Processando...' : 'Recusar'}
+                  {isDeciding ? 'Processando...' : rejectLabel}
                 </Button>
                 <Button
                   type="button"

@@ -370,6 +370,14 @@ export function UserProjectDetailPage() {
     return new Date(value).toLocaleString("pt-BR");
   };
 
+  const approvalStatusDate =
+    project?.status === "aprovado"
+      ? timeline?.approved_at ?? null
+      : project?.status === "reprovado"
+        ? timeline?.rejected_at ?? null
+        : project?.status === "pre_aprovado" || project?.status === "pre_reprovado"
+          ? timeline?.reviewed_at ?? null
+          : null;
   const timelineSteps = [
     { key: "created", label: "Criado", date: timeline?.created_at ?? null },
     { key: "submitted", label: "Submetido", date: timeline?.submitted_at ?? null },
@@ -381,15 +389,19 @@ export function UserProjectDetailPage() {
     {
       key: "approval_status",
       label: "Status da aprovacao",
-      date: timeline?.approved_at ?? timeline?.rejected_at ?? null,
+      date: approvalStatusDate,
     },
   ];
   const approvalStatusLabel =
-    timeline?.approved_at !== null
+    project?.status === "aprovado"
       ? "Aprovado"
-      : timeline?.rejected_at !== null
+      : project?.status === "reprovado"
         ? "Recusado"
-        : "Pendente";
+        : project?.status === "pre_aprovado"
+          ? "Pre-aprovado"
+          : project?.status === "pre_reprovado"
+            ? "Pre-reprovado"
+            : "Pendente";
   const disciplineMetadata = project?.tipo === "disciplina"
     ? parseDisciplineMetadataDescription(project.description)
     : null;

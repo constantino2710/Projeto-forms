@@ -72,6 +72,7 @@ describe('UserProjectDetailPage', () => {
       analysis_started_at: null,
       approved_at: null,
       rejected_at: null,
+      reviewed_at: null,
     })
   })
 

@@ -98,7 +98,11 @@ export function SuperHistoryPage() {
       .then(({ rows: data, total: totalCount }) => {
         if (cancelled) return
         const filtered = data.filter(
-          (row) => row.status !== 'em_avaliacao' && row.status !== 'rascunho',
+          (row) =>
+            row.status !== 'em_avaliacao' &&
+            row.status !== 'rascunho' &&
+            row.status !== 'pre_aprovado' &&
+            row.status !== 'pre_reprovado',
         )
         const adjustedTotal = totalCount - (data.length - filtered.length)
         setRows(filtered)

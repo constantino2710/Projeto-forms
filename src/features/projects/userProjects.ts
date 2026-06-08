@@ -7,6 +7,8 @@ export type UserProjectStatus =
   | "submetido"
   | "em_avaliacao"
   | "em_ajustes"
+  | "pre_aprovado"
+  | "pre_reprovado"
   | "aprovado"
   | "reprovado";
 
@@ -268,6 +270,8 @@ export const projectStatusLabel: Record<UserProjectStatus, string> = {
   submetido: "Submetido",
   em_avaliacao: "Em analise",
   em_ajustes: "Em ajustes",
+  pre_aprovado: "Pre-aprovado",
+  pre_reprovado: "Pre-reprovado",
   aprovado: "Aprovado",
   reprovado: "Recusado",
 };

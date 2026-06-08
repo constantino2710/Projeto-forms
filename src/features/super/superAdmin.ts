@@ -24,7 +24,15 @@ export type SuperHistoryRow = {
   period_start: string
   period_end: string
   budget: number
-  status: 'rascunho' | 'submetido' | 'em_avaliacao' | 'em_ajustes' | 'aprovado' | 'reprovado'
+  status:
+    | 'rascunho'
+    | 'submetido'
+    | 'em_avaliacao'
+    | 'em_ajustes'
+    | 'pre_aprovado'
+    | 'pre_reprovado'
+    | 'aprovado'
+    | 'reprovado'
   professor: string
   reviewer: string | null
   reviewed_at: string | null

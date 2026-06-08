@@ -1,13 +1,13 @@
 import { getStoredSessionToken } from '../../auth/appAuth'
 import { supabase } from '../../lib/supabase'
-import type { AdminProjectStatus } from '../projects/adminProjects'
+import type { AdminDecisionStatus } from '../projects/adminProjects'
 
 type SendProjectStatusEmailInput = {
   projectId: string
   recipientEmail: string
   recipientName: string | null
   projectTitle: string
-  decision: Extract<AdminProjectStatus, 'aprovado' | 'reprovado' | 'em_ajustes'>
+  decision: AdminDecisionStatus
   adminMessage: string | null
 }
 

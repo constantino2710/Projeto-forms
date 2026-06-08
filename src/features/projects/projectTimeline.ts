@@ -2,12 +2,21 @@ import { getStoredSessionToken } from "../../auth/appAuth";
 import { supabase } from "../../lib/supabase";
 
 export type ProjectTimeline = {
-  status: "rascunho" | "submetido" | "em_avaliacao" | "em_ajustes" | "aprovado" | "reprovado";
+  status:
+    | "rascunho"
+    | "submetido"
+    | "em_avaliacao"
+    | "em_ajustes"
+    | "pre_aprovado"
+    | "pre_reprovado"
+    | "aprovado"
+    | "reprovado";
   created_at: string | null;
   submitted_at: string | null;
   analysis_started_at: string | null;
   approved_at: string | null;
   rejected_at: string | null;
+  reviewed_at: string | null;
 };
 
 export const getProjectTimeline = async (
